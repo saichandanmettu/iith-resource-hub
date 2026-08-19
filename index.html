@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IIT-H Resource Hub — Academic Resources, Reimagined</title>
+<meta name="description" content="Notes, past papers, assignments and reference material for every course at IIT Hyderabad — in one classy, searchable hub.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<header class="site-header" id="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="34" height="34">
+          <rect x="2" y="2" width="36" height="36" rx="10" fill="var(--color-accent)"/>
+          <path d="M11 27V13.5L20 9l9 4.5V27" stroke="var(--color-primary-dark)" stroke-width="2" stroke-linejoin="round" fill="none"/>
+          <path d="M11 18.5L20 23l9-4.5" stroke="var(--color-primary-dark)" stroke-width="2" stroke-linejoin="round" fill="none"/>
+          <path d="M20 23v6" stroke="var(--color-primary-dark)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <strong>IIT-H</strong> Resource&nbsp;Hub
+      </span>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="#browse">Browse</a>
+      <a href="#contribute">Contribute</a>
+      <a href="#leaderboard">Leaderboard</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <a href="#leaderboard" class="btn btn-ghost">Leaderboard</a>
+      <a href="#contribute" class="btn btn-primary">Contribute</a>
+    </div>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <nav class="mobile-nav" id="mobileNav" aria-label="Mobile">
+    <a href="#browse">Browse</a>
+    <a href="#contribute">Contribute</a>
+    <a href="#leaderboard">Leaderboard</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="container hero-inner">
+      <p class="eyebrow reveal">IIT Hyderabad</p>
+      <h1 class="hero-title reveal">
+        Everything for class,<br>in one place.
+      </h1>
+      <p class="hero-sub reveal">
+        Notes, past papers, and assignments — organised by
+        department, semester, and course.
+      </p>
+      <hr class="hero-rule reveal">
+
+      <div class="hero-stats reveal" id="heroStats">
+        <div class="stat">
+          <span class="stat-num" data-count-from="resources">0</span>
+          <span class="stat-label">Resources</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" data-count-from="departments">0</span>
+          <span class="stat-label">Departments</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" data-count-from="courses">0</span>
+          <span class="stat-label">Courses</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTER BAR -->
+  <section class="filter-section" id="browse">
+    <div class="container">
+      <div class="filter-card reveal">
+        <div class="filter-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search by title, course or professor…" autocomplete="off">
+          </div>
+
+          <div class="dropdown" data-dropdown="department">
+            <button class="dropdown-trigger" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 4l9 5.5M5 10v9h14v-9M10 19v-5h4v5"/></svg>
+              <span class="dropdown-label">Department</span>
+              <svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="dropdown-panel" role="listbox"></div>
+          </div>
+
+          <div class="dropdown" data-dropdown="semester">
+            <button class="dropdown-trigger" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+              <span class="dropdown-label">Semester</span>
+              <svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="dropdown-panel" role="listbox"></div>
+          </div>
+
+          <div class="dropdown" data-dropdown="course">
+            <button class="dropdown-trigger" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V4a2 2 0 00-2-2H6.5A2.5 2.5 0 004 4.5v15z"/></svg>
+              <span class="dropdown-label">Course</span>
+              <svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="dropdown-panel" role="listbox"></div>
+          </div>
+        </div>
+
+        <div class="type-row" id="typeRow"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="results-section">
+    <div class="container">
+      <div class="results-head reveal">
+        <h2 id="resultsCount">Loading resources…</h2>
+        <div class="sort-field">
+          <label for="sortSelect">Sort by</label>
+          <select id="sortSelect">
+            <option value="recent">Most recent</option>
+            <option value="popular">Most downloaded</option>
+            <option value="az">Title A–Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="resource-grid" id="resourceGrid"></div>
+
+      <div class="empty-state" id="emptyState" hidden>
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+        <h3>No resources match those filters</h3>
+        <p>Try clearing a filter or searching a broader term.</p>
+        <button class="btn btn-ghost" id="clearFiltersBtn">Clear all filters</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTRIBUTE CTA -->
+  <section class="cta-section" id="contribute">
+    <div class="container cta-inner reveal">
+      <div class="cta-copy">
+        <p class="eyebrow">Contribute</p>
+        <h2>Add your notes.</h2>
+        <p class="cta-sub">
+          Got a quiz, an assignment, or notes worth keeping?
+          Upload them. Takes two minutes, helps the next batch.
+        </p>
+        <a href="#" class="btn btn-primary btn-lg">Upload a resource</a>
+      </div>
+      <div class="cta-visual" aria-hidden="true">
+        <div class="floating-card card-a">
+          <span class="fc-type" style="--dot: var(--type-notes)"></span>
+          <span>Notes</span>
+        </div>
+        <div class="floating-card card-b">
+          <span class="fc-type" style="--dot: var(--type-papers)"></span>
+          <span>Past Paper</span>
+        </div>
+        <div class="floating-card card-c">
+          <span class="fc-type" style="--dot: var(--type-reference)"></span>
+          <span>Reference</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section class="leaderboard-section" id="leaderboard">
+    <div class="container">
+      <p class="eyebrow reveal center">Leaderboard</p>
+      <h2 class="section-title reveal center">Opens with your first upload</h2>
+      <div class="leaderboard-placeholder reveal">
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z"/><path d="M7 6H4v2a3 3 0 003 3M17 6h3v2a3 3 0 01-3 3"/></svg>
+        <p>No contributions yet — the leaderboard fills in once students start uploading.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about-section" id="about">
+    <div class="container about-inner reveal">
+      <p class="eyebrow">About</p>
+      <h2>Welcome to IIT-H Resource Hub.</h2>
+      <p>
+        A platform designed with the sole purpose of providing valuable academic
+        resources to students of IIT Hyderabad. Developed by students, for students,
+        it offers a centralised repository of notes, assignments, quizzes, and other
+        academic materials — an inclusive space where knowledge can be shared and
+        accessed freely, helping students excel in their academic journeys.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer" id="contact">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <span class="brand-mark small" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="26" height="26">
+          <rect x="2" y="2" width="36" height="36" rx="10" fill="var(--color-accent)"/>
+          <path d="M11 27V13.5L20 9l9 4.5V27" stroke="var(--color-primary-dark)" stroke-width="2" stroke-linejoin="round" fill="none"/>
+          <path d="M11 18.5L20 23l9-4.5" stroke="var(--color-primary-dark)" stroke-width="2" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </span>
+      <span>IIT-H Resource Hub</span>
+    </div>
+    <p class="footer-note">A student-run project · Not an official IIT Hyderabad service</p>
+    <div class="footer-links">
+      <a href="#browse">Browse</a>
+      <a href="#contribute">Contribute</a>
+      <a href="#about">About</a>
+      <a href="mailto:hello@resourcehub.iith.online">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
