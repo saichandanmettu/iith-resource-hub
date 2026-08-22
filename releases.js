@@ -63,41 +63,90 @@ const STATUS = {
   const root = document.getElementById("releaseList");
   if (!root) return;
 
-  const order = ["building", "shipped", "next"];
+  /* Chronological, not arbitrary: what already shipped, what is happening
+     right now, then what's next — so the rail below reads left to right
+     as a route, with "building" glowing as the current stop. */
+  const order = ["shipped", "building", "next"];
+
+  const sheet = (r, ci, i) => `
+    <article class="rel-sheet" style="--d:${ci * 60 + i * 70}ms">
+      <div class="rel-sheet-top">
+        <span class="rel-tag">${esc(r.tag)}</span>
+        ${r.date ? `<span class="rel-date">${esc(r.date)}</span>` : ""}
+      </div>
+      <h3 class="rel-title">${esc(r.title)}</h3>
+      <p class="rel-text">${esc(r.body)}</p>
+      ${r.items && r.items.length
+        ? `<ul class="rel-items">${r.items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`
+        : ""}
+    </article>`;
 
   root.innerHTML = order.map((status, ci) => {
     const meta = STATUS[status];
     const rows = RELEASES.filter((r) => r.status === status);
 
-    const sheets = rows.length
-      ? rows.map((r, i) => `
-          <article class="rel-sheet" style="--d:${ci * 60 + i * 70}ms">
-            <div class="rel-sheet-top">
-              <span class="rel-tag">${esc(r.tag)}</span>
-              ${r.date ? `<span class="rel-date">${esc(r.date)}</span>` : ""}
-            </div>
-            <h3 class="rel-title">${esc(r.title)}</h3>
-            <p class="rel-text">${esc(r.body)}</p>
-            ${r.items && r.items.length
-              ? `<ul class="rel-items">${r.items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`
-              : ""}
-          </article>`).join("")
-      : `<div class="rel-empty">Nothing here yet.</div>`;
+    let body;
+    if (!rows.length) {
+      body = `<div class="rel-empty">Nothing here yet.</div>`;
+    } else if (rows.length === 1) {
+      /* Nothing to tuck away for a single update — show it straight,
+         same as the archive folders do for a one-file course. */
+      body = `<div class="rel-sheets">${sheet(rows[0], ci, 0)}</div>`;
+    } else {
+      /* Closed: the exact three-layer folder from the archive cards —
+         .rel-back (the folder body), a real sheet peeking out behind
+         (the newest update's tag + title, same as .fc-sheet shows a
+         filename), a solid flap on top. Hovering springs the sheet up
+         and sinks the flap; a click opens the full list below, since
+         these updates carry a paragraph each and can't all live in
+         the peek the way one filename can. */
+      body = `
+        <button type="button" class="rel-cover" aria-expanded="false">
+          ${rows[2] ? `<div class="rel-peek s3"></div>` : ""}
+          ${rows[1] ? `<div class="rel-peek s2"></div>` : ""}
+          <div class="rel-peek s1">
+            <div class="rel-peek-top"><i></i><small>${esc(rows[0].date || "")}</small></div>
+            <b>${esc(rows[0].title)}</b>
+          </div>
+          <div class="rel-flap">
+            <span>View updates <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <div class="rel-flap-stat">${rows.length}<small>updates</small></div>
+          </div>
+        </button>
+        <div class="rel-spread">
+          <div class="rel-spread-inner">
+            <div class="rel-sheets">${rows.map((r, i) => sheet(r, ci, i)).join("")}</div>
+            <button type="button" class="rel-restack">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+              <span>Close</span>
+            </button>
+          </div>
+        </div>`;
+    }
 
-    /* The status label sits outside the folder, on the paper, so the rail
-       can run unbroken across all three instead of hiding behind them. */
+    /* The circle carries the count, not a step number — the label sits
+       centred beneath it, on the paper, so the rail can run unbroken
+       behind both instead of hiding behind the folder. */
     return `
       <div class="rel-track s-${meta.kind}" style="--d:${ci * 90}ms">
         <header class="rel-head">
-          <span class="rel-node" aria-hidden="true"></span>
+          <span class="rel-num">${rows.length}</span>
           <span class="rel-label">${esc(meta.label)}</span>
-          <span class="rel-n">${rows.length}</span>
         </header>
-        <section class="rel-col">
-          <div class="rel-sheets">${sheets}</div>
-        </section>
+        <section class="rel-col">${body}</section>
       </div>`;
   }).join("");
+
+  // The whole folder is the open trigger; the tab at the bottom of the
+  // spread closes it back up.
+  root.querySelectorAll(".rel-cover, .rel-restack").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const col = btn.closest(".rel-col");
+      const open = col.classList.toggle("is-open");
+      const cover = col.querySelector(".rel-cover");
+      if (cover) cover.setAttribute("aria-expanded", String(open));
+    });
+  });
 
   // Native scroll-driven animation handles arrival where supported.
   if (window.CSS && CSS.supports("(animation-timeline: view()) and (animation-range: entry)") &&
@@ -116,125 +165,276 @@ const STATUS = {
    VERSIONS — the big releases, shown as a timeline below the board.
 
    The three folders above are for small, in-flight updates. A numbered
-   release goes here instead. Keep every line a short bullet: this is a
-   changelog, not an announcement post.
-
-   status: "upcoming" | "shipped"
+   release goes here instead — a pill node on a rail, a card with a
+   date badge, an announcement callout for the headline releases, and a
+   checklist of what shipped. Functions here are declared at top level
+   (not inside an IIFE) because the generated markup wires them up via
+   inline onclick handlers, which only resolve against the global scope.
    ============================================================ */
 const VERSIONS = [
   {
-    version: "2.1",
-    status: "upcoming",
-    date: "Next up",
+    id: "v3-0",
+    version: "3.0",
+    theme: "notes", // Green (#698B39)
+    title: "Version 3.0",
+    date: "22 Aug 2025",
+    daysSince: "310 days later",
+    votes: 184,
+    announcement: [
+      "Resource Hub has officially evolved into <strong>Abhyas</strong>. We've completely rebuilt the platform from scratch with a new brand identity, a redesigned file architecture, faster access, and updated course materials across all engineering departments."
+    ],
     groups: [
-      { label: "New", items: [
-        "Semester 1 materials across more departments",
-        "Multi-file upload in one submission",
-        "Android app in development"
-      ]},
-      { label: "Improved", items: [
-        "Expanded coverage for Mechanical and other streams"
-      ]}
+      {
+        label: "REVAMP & REBRANDING",
+        items: [
+          "Platform Evolution: Resource Hub is now Abhyas with our official brand logo & identity",
+          "Built From Scratch: Re-architected website, new deployment pipeline, file system, and design system",
+          "Usability & Performance: Faster navigation and a more user-friendly interface across devices"
+        ]
+      },
+      {
+        label: "CONTENT UPDATES",
+        items: [
+          "50+ Course Materials Added: Fresh resources uploaded across multiple engineering departments",
+          "More Releases Soon: Stay tuned for ongoing course material expansions"
+        ]
+      }
     ]
   },
   {
+    id: "v2-0",
     version: "2.0",
-    status: "shipped",
+    theme: "papers", // Warm Amber (#F28700)
+    title: "Version 2.0",
     date: "16 Oct 2024",
     groups: [
-      { label: "New", items: [
-        "Contribution system — upload notes, quizzes, papers and assignments",
-        "Content management interface for organising submissions"
-      ]},
-      { label: "Improved", items: [
-        "Faster navigation across the platform",
-        "Cleaner buttons, layout and responsiveness"
-      ]}
+      {
+        label: "NEW FEATURES",
+        items: [
+          "Contribution System: Actively contribute to the platform by uploading notes, quizzes, past papers, and assignments directly",
+          "Content Management Interface: Brand-new interface to easily upload, organize, and manage your contributions in one place"
+        ]
+      },
+      {
+        label: "IMPROVEMENTS",
+        items: [
+          "Performance Optimizations: Faster platform load times and smoother navigation",
+          "UI Enhancements: Cleaner, intuitive interface with improved buttons, layout, and responsiveness across devices"
+        ]
+      }
+    ]
+  },
+  {
+    id: "v1-5",
+    version: "1.5",
+    theme: "reference", // Clay Mauve (#8C6597)
+    title: "Release 1.5",
+    date: "13 Oct 2024",
+    groups: [
+      {
+        label: "WHAT'S NEW",
+        items: [
+          "Added new pages showcasing detailed content and improved resource categorization for better user accessibility",
+          "Enhanced platform interface to ensure faster navigation between different website sections",
+          "Uploaded sample content to give users a sneak peek of the platform's full capabilities"
+        ]
+      }
+    ]
+  },
+  {
+    id: "v1-0",
+    version: "1.0",
+    theme: "assignment", // Terracotta Coral (#D04724)
+    title: "Version 1.0",
+    date: "10 Oct 2024",
+    groups: [
+      {
+        label: "FEATURES",
+        items: [
+          "Official platform launch with foundational features to browse and access resources",
+          "Homepage setup and access to initial sample content",
+          "Primary pages developed and deployed for core site navigation",
+          "Initial enhancements to optimize page load times and refine the user interface layout"
+        ]
+      }
     ]
   }
 ];
 
-(function renderVersions() {
-  const esc = (v) => String(v).replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
-  const root = document.getElementById("versionTrack");
-  if (!root) return;
-
-  const ICON = {
-    upcoming: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
-    shipped:  '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
-  };
-
-  root.innerHTML =
-    '<span class="vt-line" aria-hidden="true"></span>' +
-    VERSIONS.map((v, i) => `
-      <article class="vt-item s-${v.status === "shipped" ? "shipped" : "next"}" style="--d:${i * 80}ms">
-        <span class="vt-node" aria-hidden="true">${ICON[v.status] || ICON.shipped}</span>
-        <div class="vt-card">
-          <div class="vt-head">
-            <h3 class="vt-version">Version ${esc(v.version)}</h3>
-            <span class="vt-date">${esc(v.date)}</span>
-          </div>
-          ${v.groups.map((g) => `
-            <div class="vt-group">
-              <h4 class="vt-group-label">${esc(g.label)}</h4>
-              <ul class="vt-list">${g.items.map((it) => `<li>${esc(it)}</li>`).join("")}</ul>
-            </div>`).join("")}
-        </div>
-      </article>`).join("");
-
-  /* Always observer-driven here — see the note in styles.css. Anything that
-     cannot be observed is shown immediately rather than left hidden. */
-  const items = [...root.querySelectorAll(".vt-item")];
-  if (!("IntersectionObserver" in window) ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    items.forEach((el) => el.classList.add("in"));
-    return;
-  }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
-    });
-  }, { rootMargin: "0px 0px -8% 0px" });
-  items.forEach((el) => io.observe(el));
-  /* safety net: never leave a card stuck invisible */
-  setTimeout(() => items.forEach((el) => el.classList.add("in")), 2500);
-})();
+const esc = (v) => String(v).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 /* ------------------------------------------------------------
-   Rail progress.
-
-   Driven here rather than with a view() timeline: .vt-line is
-   position:absolute, and an absolutely-positioned subject leaves the
-   ViewTimeline inactive (currentTime null) even when fully on screen.
-   Measured, not assumed — see DESIGN.md §6.
+   RENDER FUNCTION
    ------------------------------------------------------------ */
-(function railProgress() {
-  const line = document.querySelector(".vt-line");
-  const track = document.getElementById("versionTrack");
-  if (!line || !track) return;
+function renderTimeline() {
+  const root = document.getElementById("versionTimeline");
+  if (!root) return;
 
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    line.style.backgroundSize = "100% 100%";
-    return;
+  root.innerHTML =
+    '<div class="vt-rail-line" aria-hidden="true"><div class="vt-rail-fill" id="railFill"></div></div>' +
+    VERSIONS.map((v, i) => `
+      <article class="vt-item s-${v.theme}" id="version-${v.version.replace('.', '-')}" style="--d:${i * 80}ms">
+        <!-- Left Oval Pill Node -->
+        <div class="vt-node-pill" title="Jump to v${esc(v.version)}" onclick="scrollToVersion('${v.version.replace('.', '-')}');">
+          ${esc(v.version)}
+        </div>
+
+        <!-- Right Winner Card -->
+        <div class="vt-card-winner">
+          <div class="vt-winner-head">
+            <div class="vt-winner-title-group">
+              <span class="vt-winner-dot"></span>
+              <h3 class="vt-winner-title">${esc(v.title)}</h3>
+            </div>
+
+            <div class="vt-head-actions">
+              <!-- Upvote Reaction Button (Only for Version 3.0) -->
+              ${v.version === "3.0" ? `
+                <button class="vt-react-btn" id="react-${v.id}" onclick="toggleVote('${v.id}')" title="Mark as helpful">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                  <span id="vote-count-${v.id}">${v.votes}</span>
+                </button>
+              ` : ''}
+
+              <!-- Tactile Date Badge -->
+              <span class="vt-date-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                ${esc(v.date)}
+              </span>
+
+              <!-- Separate Red Sticky Note Patch Badge for Time Gap -->
+              ${v.daysSince ? `
+                <span class="vt-patch-badge" title="Time elapsed since Version 2.0">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  ${esc(v.daysSince)}
+                </span>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Condensed Announcement Paragraph -->
+          ${v.announcement ? `
+            <div class="vt-announcement">
+              ${v.announcement.map(p => `<p>${p}</p>`).join('')}
+            </div>
+          ` : ''}
+
+          <!-- Feature Group Intro Boxes -->
+          <div class="vt-winner-groups">
+            ${v.groups.map(g => `
+              <div class="vt-winner-group">
+                <div class="vt-winner-group-header">
+                  ${g.label ? `<span class="vt-winner-group-label">${esc(g.label)}</span>` : ''}
+                </div>
+                ${g.items.map(item => `
+                  <div class="vt-capsule-row" onclick="toggleCapsuleCheck(this)">
+                    <span class="vt-check-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg>
+                    </span>
+                    <span class="vt-capsule-text">${esc(item)}</span>
+                  </div>
+                `).join('')}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </article>
+    `).join('');
+
+  // Trigger scroll entrance animations
+  const items = [...root.querySelectorAll(".vt-item")];
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    items.forEach((el) => el.classList.add("in"));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+      });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    items.forEach((el) => io.observe(el));
   }
 
-  function update() {
-    const r = track.getBoundingClientRect();
-    const vh = window.innerHeight;
-    /* 0 when the track's top reaches 85% down the viewport,
-       1 by the time it has travelled to 25% — fills as you read. */
-    const start = vh * 0.85;
-    const end = vh * 0.25;
-    const p = (start - r.top) / (start - end + r.height);
-    line.style.backgroundSize = "100% " + Math.max(0, Math.min(1, p)) * 100 + "%";
+  updateRailFill();
+}
+
+/* ------------------------------------------------------------
+   INTERACTIVE MICRO-DELIGHT FUNCTIONS
+   ------------------------------------------------------------ */
+
+/* 1. Toggle Interactive Upvotes (v3.0) */
+function toggleVote(id) {
+  const btn = document.getElementById(`react-${id}`);
+  const countEl = document.getElementById(`vote-count-${id}`);
+  const item = VERSIONS.find(v => v.id === id);
+  if (!btn || !countEl || !item) return;
+
+  const isVoted = btn.classList.toggle("voted");
+  item.votes += isVoted ? 1 : -1;
+  countEl.textContent = item.votes;
+
+  showToast(isVoted ? `Appreciated release ${item.version}!` : "Vote removed");
+}
+
+/* 2. Interactive Capsule Checklist Toggle */
+function toggleCapsuleCheck(row) {
+  const isChecked = row.classList.toggle("checked");
+  if (isChecked) {
+    showToast("Marked feature as reviewed");
   }
-  /* Run inline rather than behind a rAF flag: a queued-flag pattern
-     deadlocks if a frame never fires (throttled or backgrounded tab) and
-     every later scroll is silently dropped. One rect read and one style
-     write on a single 2px element is cheaper than that risk. */
-  window.addEventListener("scroll", update, { passive: true });
-  window.addEventListener("resize", update, { passive: true });
-  update();
-})();
+}
+
+/* 3. Toast Notification System */
+let toastTimer = null;
+function showToast(msg) {
+  const toast = document.getElementById("vtToast");
+  if (!toast) return;
+
+  toast.textContent = msg;
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2200);
+}
+
+/* 4. Scroll To Version Helper */
+function scrollToVersion(id) {
+  const target = document.getElementById(`version-${id}`);
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+/* 5. Scroll Rail Fill & Node Scrollspy */
+function updateRailFill() {
+  const fill = document.getElementById("railFill");
+  const root = document.getElementById("versionTimeline");
+  if (!fill || !root) return;
+
+  const r = root.getBoundingClientRect();
+  const vh = window.innerHeight;
+  const start = vh * 0.85;
+  const end = vh * 0.25;
+  const p = (start - r.top) / (start - end + r.height);
+  fill.style.backgroundSize = "100% " + Math.max(0, Math.min(1, p)) * 100 + "%";
+
+  // ScrollSpy Node Highlighting
+  const items = root.querySelectorAll(".vt-item");
+  items.forEach(item => {
+    const box = item.getBoundingClientRect();
+    if (box.top <= vh * 0.55 && box.bottom >= vh * 0.25) {
+      item.classList.add("active-node");
+    } else {
+      item.classList.remove("active-node");
+    }
+  });
+}
+
+/* Init */
+window.addEventListener("DOMContentLoaded", () => {
+  renderTimeline();
+  window.addEventListener("scroll", updateRailFill, { passive: true });
+  window.addEventListener("resize", updateRailFill, { passive: true });
+});
