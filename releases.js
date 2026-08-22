@@ -362,18 +362,54 @@ function renderTimeline() {
    INTERACTIVE MICRO-DELIGHT FUNCTIONS
    ------------------------------------------------------------ */
 
-/* 1. Toggle Interactive Upvotes (v3.0) */
-function toggleVote(id) {
+/* 1. Upvotes — a real, shared count.
+   Backed by a tiny Google Apps Script web app sitting in front of a
+   Sheet (same pattern as the Aarambh Tools setup): a GET request reads
+   or increments/decrements one cell. localStorage only remembers
+   *this browser's* own vote, so a second click here un-votes instead
+   of double-counting — the shared number itself always lives on the
+   sheet, not in the page. */
+const VOTE_API = "PASTE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+function votedKey(id) { return `abhyas_voted_${id}`; }
+
+async function loadVoteCount(id) {
+  const countEl = document.getElementById(`vote-count-${id}`);
+  const btn = document.getElementById(`react-${id}`);
+  if (!countEl || VOTE_API.indexOf("PASTE_") === 0) return;
+  try {
+    const res = await fetch(`${VOTE_API}?action=read`);
+    const data = await res.json();
+    countEl.textContent = data.votes;
+  } catch (e) { /* offline or not configured yet — keep the static count */ }
+  if (btn && localStorage.getItem(votedKey(id)) === "1") btn.classList.add("voted");
+}
+
+async function toggleVote(id) {
   const btn = document.getElementById(`react-${id}`);
   const countEl = document.getElementById(`vote-count-${id}`);
-  const item = VERSIONS.find(v => v.id === id);
-  if (!btn || !countEl || !item) return;
+  if (!btn || !countEl) return;
+  if (VOTE_API.indexOf("PASTE_") === 0) {
+    showToast("Voting isn't connected yet");
+    return;
+  }
 
-  const isVoted = btn.classList.toggle("voted");
-  item.votes += isVoted ? 1 : -1;
-  countEl.textContent = item.votes;
+  const alreadyVoted = localStorage.getItem(votedKey(id)) === "1";
+  const delta = alreadyVoted ? "down" : "up";
 
-  showToast(isVoted ? `Appreciated release ${item.version}!` : "Vote removed");
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${VOTE_API}?action=vote&delta=${delta}`);
+    const data = await res.json();
+    countEl.textContent = data.votes;
+    btn.classList.toggle("voted", !alreadyVoted);
+    localStorage.setItem(votedKey(id), alreadyVoted ? "0" : "1");
+    showToast(alreadyVoted ? "Vote removed" : "Appreciated this release!");
+  } catch (e) {
+    showToast("Couldn't reach the vote counter");
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 /* 2. Interactive Capsule Checklist Toggle */
@@ -435,6 +471,7 @@ function updateRailFill() {
 /* Init */
 window.addEventListener("DOMContentLoaded", () => {
   renderTimeline();
+  loadVoteCount("v3-0");
   window.addEventListener("scroll", updateRailFill, { passive: true });
   window.addEventListener("resize", updateRailFill, { passive: true });
 });
