@@ -84,14 +84,19 @@ const STATUS = {
           </article>`).join("")
       : `<div class="rel-empty">Nothing here yet.</div>`;
 
+    /* The status label sits outside the folder, on the paper, so the rail
+       can run unbroken across all three instead of hiding behind them. */
     return `
-      <section class="rel-col s-${meta.kind}" style="--d:${ci * 90}ms">
-        <header class="rel-col-head">
-          <span class="rel-status"><i></i>${esc(meta.label)}</span>
+      <div class="rel-track s-${meta.kind}" style="--d:${ci * 90}ms">
+        <header class="rel-head">
+          <span class="rel-node" aria-hidden="true"></span>
+          <span class="rel-label">${esc(meta.label)}</span>
           <span class="rel-n">${rows.length}</span>
         </header>
-        <div class="rel-sheets">${sheets}</div>
-      </section>`;
+        <section class="rel-col">
+          <div class="rel-sheets">${sheets}</div>
+        </section>
+      </div>`;
   }).join("");
 
   // Native scroll-driven animation handles arrival where supported.
@@ -103,7 +108,7 @@ const STATUS = {
       if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
     });
   }, { rootMargin: "0px 0px -8% 0px" });
-  root.querySelectorAll(".rel-col").forEach((el) => io.observe(el));
+  root.querySelectorAll(".rel-track").forEach((el) => io.observe(el));
 })();
 
 

@@ -1149,7 +1149,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 
     /* hand control to the scroll timeline: clear the observer's base state */
     .fcard.reveal-card,
-    .rel-col {
+    .rel-track {
       opacity: 1;
       transform: none;
       filter: none;
@@ -1174,7 +1174,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
     .grid > .fcard:nth-child(4n + 3) { animation-range: entry 8% cover 32%; }
     .grid > .fcard:nth-child(4n + 4) { animation-range: entry 12% cover 35%; }
 
-    .rel-col {
+    .rel-track {
       animation: arrive linear both;
       animation-timeline: view();
       animation-range: entry 0% cover 24%;
@@ -1235,77 +1235,60 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 26px;
   align-items: start;
-  padding: 20px 0 var(--section-y);
+  padding: 10px 0 var(--section-y);
 }
 
-/* A rail turns the three status folders into one sequence. It runs behind
-   them, so only the two gaps show: about 52px of line in total. That is far
-   too little to read as a connection in --hair, so it carries the three
-   column colours instead and sits on exactly the same line as the nodes.
-   Rail centre and node centre are both 55px from the board top, which is
-   the status pill's own centre line. */
+
+/* The header sits above the folder now, so the rail behind it is visible
+   for its whole length instead of only in the 26px gaps. */
+.rel-track { position: relative; }
+
+.rel-head {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 4px 14px;
+}
+.rel-node {
+  width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0;
+  background: var(--k);
+  box-shadow: 0 0 0 4px var(--paper), 0 2px 6px rgba(40, 33, 41, .18);
+}
+.rel-label {
+  font: 500 .7rem var(--font-mono); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--k-ink);
+}
+.rel-n {
+  margin-left: auto;
+  min-width: 24px; height: 24px; padding: 0 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 500 .72rem var(--font-mono);
+  color: var(--k-ink); background: var(--k-tint); border-radius: 999px;
+}
+
+/* the rail: one unbroken line through every node */
 .rel-board::before {
   content: "";
   position: absolute;
   z-index: 0;
-  top: 54px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  border-radius: 3px;
+  /* 10px board padding + 12px to the centre of the 24px header row */
+  top: 21px;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  border-radius: 2px;
   background: linear-gradient(90deg,
     var(--papers) 0%, var(--notes) 50%, var(--reference) 100%);
-  opacity: .9;
+  opacity: .55;
 }
 
 .rel-col {
   position: relative;
-  z-index: 1;
   border-radius: 28px 48px 28px 28px;   /* the folder corner, site-wide */
   background: var(--col-back);
-  padding: 20px 18px 18px;
+  padding: 18px;
   box-shadow: 0 16px 34px -14px var(--col-glow);
 }
-/* One node per gap, sitting on the rail where it emerges between two
-   folders. Centring a node inside each column instead put it ~330px from
-   the nearest visible rail stub, so the eye never joined the two and the
-   whole thing read as unrelated ticks. */
-.rel-col:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  top: 35px;
-  right: -13px;              /* the centre of the 26px gap */
-  width: 13px;
-  height: 13px;
-  border: 3px solid var(--paper);
-  border-radius: 50%;
-  background: var(--col-dot);
-  box-shadow: 0 2px 6px rgba(40, 33, 41, .22);
-  transform: translate(50%, -50%);
-  pointer-events: none;
-}
 
-.rel-col-head {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; padding: 2px 6px 16px;
-}
-.rel-status {
-  display: inline-flex; align-items: center; gap: 9px;
-  font: 500 .7rem var(--font-mono); letter-spacing: .12em;
-  text-transform: uppercase; color: #fff;
-}
-.rel-status i {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--col-dot);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, .16);
-}
-.rel-n {
-  min-width: 26px; height: 26px; padding: 0 8px;
-  display: inline-flex; align-items: center; justify-content: center;
-  font: 500 .74rem var(--font-mono); color: #fff;
-  background: rgba(255, 255, 255, .2); border-radius: 999px;
-}
 
 .rel-sheets { display: grid; gap: 12px; }
 
@@ -1348,7 +1331,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 
 @media (max-width: 900px) {
   .rel-board { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-  .rel-board::before, .rel-col::after { display: none; }
+  .rel-board::before { display: none; }
 }
 @media (max-width: 620px) {
   .rel-board { grid-template-columns: 1fr; gap: 18px; padding-bottom: 70px; }
