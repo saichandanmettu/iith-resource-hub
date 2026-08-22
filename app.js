@@ -26,6 +26,36 @@ function groupByCourse(list) {
   return [...map.values()].sort((a, b) => b.items.length - a.items.length);
 }
 
+/* How recent a folder is. There is no timestamp in the data, so newest
+   year wins and id breaks the tie: ids are handed out in the order files
+   were added, so a higher id is a later addition. */
+function folderRecency(f) {
+  return f.items.reduce((best, r) => {
+    const score = (r.year || 0) * 1e6 + (r.id || 0);
+    return score > best ? score : best;
+  }, 0);
+}
+
+/* Lead the grid with one folder of each kind, most recent first, so the
+   opening row shows all four folder styles at once instead of whatever
+   the count sort happens to surface. Only for the unfiltered view: once
+   someone picks a kind or searches, their order is the one that matters. */
+const KIND_ORDER = ["papers", "notes", "assignment", "reference"];
+
+function leadWithEachKind(folders) {
+  const lead = [];
+  const taken = new Set();
+
+  KIND_ORDER.forEach((kind) => {
+    const pick = folders
+      .filter((f) => !taken.has(f.course) && dominantKind(f) === kind)
+      .sort((a, b) => folderRecency(b) - folderRecency(a))[0];
+    if (pick) { lead.push(pick); taken.add(pick.course); }
+  });
+
+  return [...lead, ...folders.filter((f) => !taken.has(f.course))];
+}
+
 function fileLabel(r) {
   const parts = r.title.split(/\s+[—–-]\s+/);
   return parts.length > 1 ? parts.slice(1).join(" — ") : r.title;
@@ -102,7 +132,8 @@ function render() {
       (r.code && r.code.toLowerCase().includes(q)) ||
       (r.professor && r.professor.toLowerCase().includes(q)));
   }
-  const folders = groupByCourse(list);
+  let folders = groupByCourse(list);
+  if (state.kind === "all" && !state.q) folders = leadWithEachKind(folders);
   const grid = document.getElementById("grid");
   grid.innerHTML = folders.map(card).join("");
   document.getElementById("count").textContent =
