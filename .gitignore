@@ -1,6 +1,9 @@
-node_modules/
-dist/
-.next/
-out/
+# Local-only: superseded versions, UI experiments, unused source images.
+# Nothing in here is deployed.
+_local/
+
+# OS / editor
 .DS_Store
 *.log
+node_modules/
+.claude/

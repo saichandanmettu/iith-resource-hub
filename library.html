@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="assets/abhyas-mark.png">
-<title>Abhyas</title>
+<title>The Library — Abhyas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,58 +15,37 @@
 
   <header class="top">
     <div class="wrap top-in">
-      <a class="logo" href="#"><img src="assets/abhyas-mark.png" alt="" width="34" height="34"> Abhyas</a>
+      <a class="logo" href="index.html"><img src="assets/abhyas-mark.png" alt="" width="34" height="34"> Abhyas</a>
       <nav>
-        <a class="on" href="index.html">Browse</a>
-        <a href="library.html">Library</a>
+        <a href="index.html">Browse</a>
+        <a class="on" href="library.html">Library</a>
         <a href="index.html#archive">Contribute</a>
       </nav>
-      <button class="btn-add" type="button">Share a file</button>
+      <button class="btn-add" type="button">Add a book</button>
     </div>
   </header>
 
-  <section class="hero" id="archive">
+  <section class="hero lib-hero">
     <div class="wrap">
       <h1>
-        <span class="h-muted">Notes, Papers, Books</span>
-        <span class="h-solid">All in one place</span>
+        <span class="h-muted">Every Textbook</span>
+        <span class="h-solid">On One Shelf</span>
       </h1>
-      <p class="hero-sub">Grouped by course. Found in seconds.</p>
+      <p class="hero-sub">Pull one out to see what it is good for.</p>
 
       <div class="search">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="q" type="text" placeholder="Search a course, professor or topic…" autocomplete="off">
+        <input id="libSearch" type="text" placeholder="Search a course code, course, title or author…" autocomplete="off">
         <div class="search-kbd" title="Press ⌘K or / to search"><kbd>⌘</kbd><kbd>K</kbd></div>
       </div>
-      <div class="pills">
-        <button class="pill on" data-kind="all" type="button"><i></i> Everything</button>
-        <button class="pill" data-kind="papers" type="button"><i style="background:var(--papers)"></i> Past papers</button>
-        <button class="pill" data-kind="notes" type="button"><i style="background:var(--notes)"></i> Notes</button>
-        <button class="pill" data-kind="assignment" type="button"><i style="background:var(--assignment)"></i> Assignments</button>
-        <button class="pill" data-kind="reference" type="button"><i style="background:var(--reference)"></i> Reference</button>
-      </div>
-      <p class="count" id="count"></p>
+      <div class="pills" id="libPills"></div>
+      <p class="count" id="libCount"></p>
     </div>
   </section>
 
   <main class="wrap">
-    <div class="grid" id="grid"></div>
+    <div id="shelves"></div>
   </main>
-
-  <section class="library">
-    <div class="wrap">
-      <div class="lib-head">
-        <div>
-          <h2>The reference shelf</h2>
-          <p>The textbooks your courses actually lean on.</p>
-        </div>
-        <a class="lib-hint lib-all" href="library.html">All shelves &rarr;</a>
-      </div>
-      <div class="shelf">
-        <div class="shelf-row" id="shelfRow"></div>
-      </div>
-    </div>
-  </section>
 
 
   <footer class="foot">
@@ -96,7 +75,7 @@
             <li><a href="index.html">Browse archive</a></li>
             <li><a href="library.html">The library</a></li>
             <li><a href="releases.html">Releases &amp; updates</a></li>
-            <li><a href="#archive">Contribute a file</a></li>
+            <li><a href="index.html#archive">Contribute a file</a></li>
           </ul>
         </div>
 
@@ -121,7 +100,6 @@
 
 </div>
 
-<!-- Book Detail Modal -->
 <div class="modal" id="bookModal" role="dialog" aria-modal="true" aria-labelledby="modalBody" hidden>
   <div class="modal-back"></div>
   <div class="modal-card">
@@ -130,38 +108,6 @@
     <div class="modal-page">
       <div id="modalBody"></div>
       <div class="flap" id="modalFlap" aria-hidden="true"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Course Folder Detail Modal -->
-<div class="modal" id="folderModal" role="dialog" aria-modal="true" aria-labelledby="fmTitle" hidden>
-  <div class="modal-back"></div>
-  <div class="folder-modal-card">
-    <button class="modal-close" id="folderModalClose" type="button" aria-label="Close">&times;</button>
-    <div class="fm-header">
-      <div class="fm-meta-row">
-        <span class="fm-badge-dept" id="fmDept">CS &middot; Sem 3</span>
-        <span class="fm-badge-code" id="fmCode">CS2010</span>
-      </div>
-      <h2 class="fm-title" id="fmTitle">Data Structures and Algorithms</h2>
-      <p class="fm-sub" id="fmSub">All resources for this course, organized by category.</p>
-      <div class="fm-tabs" id="fmTabs">
-        <button class="fm-tab on" data-fmtab="all" type="button">All Files (<span id="fmTabAllCount">0</span>)</button>
-        <button class="fm-tab" data-fmtab="papers" type="button">Past Papers</button>
-        <button class="fm-tab" data-fmtab="notes" type="button">Notes & Slides</button>
-        <button class="fm-tab" data-fmtab="assignment" type="button">Assignments</button>
-        <button class="fm-tab" data-fmtab="reference" type="button">Reference Books</button>
-      </div>
-    </div>
-    <div class="fm-body" id="fmBody">
-      <!-- Dynamically generated resource rows -->
-    </div>
-    <div class="fm-footer">
-      <button class="btn-share-course" id="fmShareBtn" type="button">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Upload a file to this course
-      </button>
     </div>
   </div>
 </div>
@@ -175,41 +121,32 @@
       <div class="sm-icon">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       </div>
-      <h2 class="sm-title" id="shareModalTitle">Share Course Resources</h2>
-      <p class="sm-sub">Help fellow students by uploading past papers, lecture notes, or assignments.</p>
+      <h2 class="sm-title" id="shareModalTitle">Add a Book / Resource</h2>
+      <p class="sm-sub">Recommend or upload a textbook for courses at IITH.</p>
     </div>
     <div class="sm-dropzone" id="smDropzone">
       <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
-      <b>Drag & drop your file here</b>
-      <span>PDF, PPTX, DOCX, ZIP up to 50MB</span>
+      <b>Drag & drop textbook PDF here</b>
+      <span>PDF up to 100MB</span>
       <button class="cta-solid sm-choose-btn" type="button">Browse Files</button>
       <input type="file" id="smFileInput" style="display:none" multiple>
     </div>
     <form class="sm-form" id="smForm" onsubmit="event.preventDefault();">
       <div class="sm-field">
-        <label for="smCourseInput">Course Name or Code</label>
-        <input type="text" id="smCourseInput" placeholder="e.g. Data Structures (CS2010)" required>
+        <label for="smCourseInput">Book Title & Author</label>
+        <input type="text" id="smCourseInput" placeholder="e.g. Introduction to Algorithms — CLRS" required>
       </div>
       <div class="sm-grid">
         <div class="sm-field">
-          <label for="smTypeSelect">Resource Type</label>
-          <select id="smTypeSelect">
-            <option value="papers">Past Exam Paper / Quiz</option>
-            <option value="notes">Lecture Notes / Slides</option>
-            <option value="assignment">Assignment / Lab Sheet</option>
-            <option value="reference">Reference Book</option>
-          </select>
+          <label for="smTypeSelect">Department</label>
+          <select id="smTypeSelect"></select>
         </div>
         <div class="sm-field">
-          <label for="smDeptSelect">Branch</label>
-          <select id="smDeptSelect"></select>
-        </div>
-        <div class="sm-field">
-          <label for="smYearInput">Academic Year / Sem</label>
-          <input type="text" id="smYearInput" placeholder="e.g. 2024 &middot; Sem 3">
+          <label for="smYearInput">Course Code</label>
+          <input type="text" id="smYearInput" placeholder="e.g. CS2010">
         </div>
       </div>
-      <button class="cta-solid sm-submit-btn" id="smSubmitBtn" type="submit">Submit Resource</button>
+      <button class="cta-solid sm-submit-btn" id="smSubmitBtn" type="submit">Submit Book</button>
     </form>
   </div>
 </div>
@@ -219,6 +156,6 @@
 
 <script src="data.js?v=5"></script>
 <script src="books.js?v=4"></script>
-<script src="app.js?v=5"></script>
+<script src="library.js?v=9"></script>
 </body>
 </html>
