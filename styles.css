@@ -251,6 +251,14 @@ body { background: #EADCC2; padding: 14px; }
 }
 .h-muted { color: #b9b2ab; }
 .h-solid { color: var(--ink); }
+.h-serif {
+  font-family: "Fraunces", "Newsreader", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: "SOFT" 40, "WONK" 1;
+  color: var(--ink);
+  letter-spacing: -0.018em;
+}
 .hero h1 .h-underline {
   position: relative;
   display: inline-block !important;
