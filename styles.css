@@ -1235,7 +1235,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 .foot-word {
   margin: 124px 0 0;
   font-family: var(--font-display); font-weight: 800;
-  font-size: min(25vw, 19.5rem);   /* fallback: no container units */
+  font-size: min(22vw, 16.5rem);   /* fallback: no container units */
   line-height: .82;
   letter-spacing: -.035em;
   font-optical-sizing: none;
@@ -1250,7 +1250,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 }
 
 @supports (font-size: 1cqi) {
-  .foot-word { font-size: 28.5cqi; }
+  .foot-word { font-size: 24.5cqi; }
 }
 
 @media (max-width: 900px) {

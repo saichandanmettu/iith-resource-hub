@@ -436,11 +436,11 @@ content column exactly:
 
 ```css
 .foot-word-wrap { container-type: inline-size; }
-.foot-word      { font-size: 31.4cqi; }   /* 100 ÷ 3.064em advance */
+.foot-word      { font-size: 24.5cqi; }   /* sized to prevent glyph overshoot */
 ```
 
-It fills ~96%, not 100% — at exactly 100% the final "s" overshoots the
-`background-clip: text` box and gets sliced flat.
+It fills ~88–90%, leaving safe margin on both sides so the final "s" never overshoots the
+`background-clip: text` box or gets sliced flat.
 
 ---
 
