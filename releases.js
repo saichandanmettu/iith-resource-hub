@@ -369,7 +369,7 @@ function renderTimeline() {
    *this browser's* own vote, so a second click here un-votes instead
    of double-counting — the shared number itself always lives on the
    sheet, not in the page. */
-const VOTE_API = "PASTE_APPS_SCRIPT_WEB_APP_URL_HERE";
+const VOTE_API = "https://script.google.com/macros/s/AKfycbwaLinr_EnJPy8926LJ2l2l5D9MduWWrmZGwHH6QBNrcmJzEb2cm3XXtpsiyhvAhj4C/exec";
 
 function votedKey(id) { return `abhyas_voted_${id}`; }
 
