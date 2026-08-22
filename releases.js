@@ -47,15 +47,13 @@ const RELEASES = [
   }
 ];
 
-const STATUS = {
-  building: { label: "In progress", kind: "building" },
-  shipped:  { label: "Shipped",     kind: "shipped" },
-  next:     { label: "Next up",     kind: "next" }
+const STATUS_META = {
+  shipped:  { label: "Shipped", badge: "Live", kind: "f-shipped", frontTag: "Completed / Live", frontTitle: "Shipped Updates" },
+  building: { label: "In Progress", badge: "Active", kind: "f-building", frontTag: "Current Sprint", frontTitle: "In Progress" },
+  next:     { label: "Next Up", badge: "Planned", kind: "f-next", frontTag: "Up Next", frontTitle: "Roadmap" }
 };
 
-/* Three folders, one per status. Same construction as the archive cards:
-   a coloured folder body with the site's asymmetric corner, and white
-   sheets sitting inside it. */
+/* Three 3D Fan-Out & Expandable Folders */
 (function () {
   const esc = (v) => String(v).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -63,88 +61,105 @@ const STATUS = {
   const root = document.getElementById("releaseList");
   if (!root) return;
 
-  /* Chronological, not arbitrary: what already shipped, what is happening
-     right now, then what's next — so the rail below reads left to right
-     as a route, with "building" glowing as the current stop. */
   const order = ["shipped", "building", "next"];
 
-  const sheet = (r, ci, i) => `
-    <article class="rel-sheet" style="--d:${ci * 60 + i * 70}ms">
-      <div class="rel-sheet-top">
-        <span class="rel-tag">${esc(r.tag)}</span>
-        ${r.date ? `<span class="rel-date">${esc(r.date)}</span>` : ""}
+  const sheetCard = (r, ci, i) => `
+    <article class="ab-sheet-card" style="--i:${i}">
+      <div class="ab-sheet-meta">
+        <span class="ab-sheet-tag">${esc(r.tag)}</span>
+        ${r.date ? `<span class="ab-sheet-date">${esc(r.date)}</span>` : ""}
       </div>
-      <h3 class="rel-title">${esc(r.title)}</h3>
-      <p class="rel-text">${esc(r.body)}</p>
+      <h4 class="ab-sheet-title">${esc(r.title)}</h4>
+      <p class="ab-sheet-desc">${esc(r.body)}</p>
       ${r.items && r.items.length
-        ? `<ul class="rel-items">${r.items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`
+        ? `<ul class="ab-sheet-items">${r.items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`
         : ""}
     </article>`;
 
+  const miniCard = (r, idx, total) => {
+    let posClass = "cm-single";
+    if (total === 2) {
+      posClass = idx === 0 ? "cm-left" : "cm-right";
+    } else if (total >= 3) {
+      if (idx === 0) posClass = "cm-left";
+      else if (idx === 1) posClass = "cm-center";
+      else posClass = "cm-right";
+    }
+    return `
+      <div class="ab-card-mini ${posClass}">
+        <div class="ab-card-mini-head">
+          <span class="ab-card-mini-tag">${esc(r.tag)}</span>
+          ${r.date ? `<span class="ab-card-mini-date">${esc(r.date)}</span>` : ""}
+        </div>
+        <h4 class="ab-card-mini-title">${esc(r.title)}</h4>
+        <div class="ab-card-mini-lines">
+          <div class="ab-mini-line w-full"></div>
+          <div class="ab-mini-line w-3-4"></div>
+        </div>
+      </div>`;
+  };
+
   root.innerHTML = order.map((status, ci) => {
-    const meta = STATUS[status];
+    const meta = STATUS_META[status];
     const rows = RELEASES.filter((r) => r.status === status);
 
-    let body;
-    if (!rows.length) {
-      body = `<div class="rel-empty">Nothing here yet.</div>`;
-    } else if (rows.length === 1) {
-      /* Nothing to tuck away for a single update — show it straight,
-         same as the archive folders do for a one-file course. */
-      body = `<div class="rel-sheets">${sheet(rows[0], ci, 0)}</div>`;
-    } else {
-      /* Closed: the exact three-layer folder from the archive cards —
-         .rel-back (the folder body), a real sheet peeking out behind
-         (the newest update's tag + title, same as .fc-sheet shows a
-         filename), a solid flap on top. Hovering springs the sheet up
-         and sinks the flap; a click opens the full list below, since
-         these updates carry a paragraph each and can't all live in
-         the peek the way one filename can. */
-      body = `
-        <button type="button" class="rel-cover" aria-expanded="false">
-          ${rows[2] ? `<div class="rel-peek s3"></div>` : ""}
-          ${rows[1] ? `<div class="rel-peek s2"></div>` : ""}
-          <div class="rel-peek s1">
-            <div class="rel-peek-top"><i></i><small>${esc(rows[0].date || "")}</small></div>
-            <b>${esc(rows[0].title)}</b>
-          </div>
-          <div class="rel-flap">
-            <span>View updates <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-            <div class="rel-flap-stat">${rows.length}<small>updates</small></div>
-          </div>
-        </button>
-        <div class="rel-spread">
-          <div class="rel-spread-inner">
-            <div class="rel-sheets">${rows.map((r, i) => sheet(r, ci, i)).join("")}</div>
-            <button type="button" class="rel-restack">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
-              <span>Close</span>
-            </button>
-          </div>
-        </div>`;
-    }
-
-    /* The circle carries the count, not a step number — the label sits
-       centred beneath it, on the paper, so the rail can run unbroken
-       behind both instead of hiding behind the folder. */
     return `
-      <div class="rel-track s-${meta.kind}" style="--d:${ci * 90}ms">
-        <header class="rel-head">
-          <span class="rel-num">${rows.length}</span>
-          <span class="rel-label">${esc(meta.label)}</span>
-        </header>
-        <section class="rel-col">${body}</section>
+      <div class="ab-folder-col ${meta.kind}" id="col-${status}">
+        <div class="ab-stage-head">
+          <div class="ab-stage-title-wrap">
+            <span class="ab-stage-dot"></span>
+            <span class="ab-stage-title">${esc(meta.label)}</span>
+          </div>
+          <span class="ab-stage-pill">${rows.length} ${esc(meta.badge)}</span>
+        </div>
+
+        <div class="ab-folder">
+          <!-- Closed Folder (Interactive Hover Fan) -->
+          <div class="ab-folder-closed" role="button" aria-expanded="false" tabindex="0">
+            ${rows.slice(0, 3).map((r, idx) => miniCard(r, idx, Math.min(rows.length, 3))).join("")}
+
+            <!-- Front Pocket Cover -->
+            <div class="ab-folder-front">
+              <div>
+                <span class="ab-front-tag">${esc(meta.frontTag)}</span>
+                <h3 class="ab-front-title">${esc(meta.frontTitle)}</h3>
+              </div>
+              <div class="ab-front-bottom">
+                <div class="ab-front-count-wrap">
+                  <span class="ab-front-count">${rows.length}</span>
+                  <span class="ab-front-label">${rows.length === 1 ? 'Feature' : 'Features'}</span>
+                </div>
+                <div class="ab-front-btn" title="Open folder">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Open Folder (Full Readable Cards) -->
+          <div class="ab-folder-spread">
+            <div class="ab-spread-inner">
+              <div class="ab-sheets-list">
+                ${rows.map((r, i) => sheetCard(r, ci, i)).join("")}
+                <button class="ab-restack-btn" type="button">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m18 15-6-6-6 6"/></svg>
+                  <span>Restack folder</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>`;
   }).join("");
 
-  // The whole folder is the open trigger; the tab at the bottom of the
-  // spread closes it back up.
-  root.querySelectorAll(".rel-cover, .rel-restack").forEach((btn) => {
+  root.querySelectorAll(".ab-folder-closed, .ab-restack-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const col = btn.closest(".rel-col");
-      const open = col.classList.toggle("is-open");
-      const cover = col.querySelector(".rel-cover");
-      if (cover) cover.setAttribute("aria-expanded", String(open));
+      const col = btn.closest(".ab-folder-col");
+      if (!col) return;
+      const isOpen = col.classList.toggle("is-open");
+      const closedTrigger = col.querySelector(".ab-folder-closed");
+      if (closedTrigger) closedTrigger.setAttribute("aria-expanded", String(isOpen));
     });
   });
 
@@ -157,7 +172,7 @@ const STATUS = {
       if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
     });
   }, { rootMargin: "0px 0px -8% 0px" });
-  root.querySelectorAll(".rel-track").forEach((el) => io.observe(el));
+  root.querySelectorAll(".ab-folder-col").forEach((el) => io.observe(el));
 })();
 
 
@@ -353,6 +368,9 @@ function renderTimeline() {
       });
     }, { rootMargin: "0px 0px -8% 0px" });
     items.forEach((el) => io.observe(el));
+    /* safety net: if the observer never fires for any reason, don't leave
+       the whole section stuck invisible */
+    setTimeout(() => items.forEach((el) => el.classList.add("in")), 2500);
   }
 
   updateRailFill();

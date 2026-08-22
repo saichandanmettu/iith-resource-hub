@@ -119,6 +119,7 @@ function openShareModal() {
   shareModal.offsetHeight;
   shareModal.classList.add("open");
   document.body.style.overflow = "hidden";
+  window.__pauseLenis?.();
 }
 
 function closeShareModal() {
@@ -128,6 +129,7 @@ function closeShareModal() {
   setTimeout(() => {
     shareModal.hidden = true;
     document.body.style.overflow = "";
+    window.__resumeLenis?.();
   }, 260);
 }
 

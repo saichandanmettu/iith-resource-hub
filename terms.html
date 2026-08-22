@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=37">
+<link rel="stylesheet" href="styles.css?v=68">
 </head>
 <body>
 <div class="shell">
 
   <header class="top">
     <div class="wrap top-in">
-      <a class="logo" href="#"><img src="assets/abhyas-mark.png" alt="" width="42" height="42"> Abhyas</a>
+      <a class="logo" href="index.html"><img src="assets/abhyas-mark.png" alt="" width="42" height="42"> Abhyas</a>
       <nav>
         <a href="index.html">Browse</a>
         <a href="library.html">Library</a>
@@ -29,59 +29,75 @@
     <div class="wrap">
       <h1>
         <span class="h-muted">A few things to know</span>
-        <span class="h-solid">Before you use the archive</span>
+        <span class="h-solid">As you get started</span>
       </h1>
-      <p class="hero-sub">A student-built archive for finding, sharing, and passing on course material at IITH.</p>
     </div>
   </section>
 
-  <main class="wrap">
-    <article class="ts-sheet">
-      <header class="ts-head">
-        <span class="ts-kicker">Abhyas</span>
+  <main class="wrap ts-wrap">
+    <header class="ts-section-head">
+      <div class="ts-subhead">
+        <span class="ts-kicker-pill">Abhyas terms of use</span>
         <span class="ts-meta">Last updated Aug 2026</span>
-      </header>
-      <ol class="ts">
-        <li class="ts-row">
-          <span class="ts-n">01</span>
-          <div class="ts-body">
-            <h2>Not official</h2>
-            <p>No connection to IIT Hyderabad&rsquo;s administration or its official portals. Nobody from the institute reviews what goes up here.</p>
-            
-          </div>
-        </li>
-        <li class="ts-row">
-          <span class="ts-n">02</span>
-          <div class="ts-body">
-            <h2>Study aid, not a shortcut</h2>
-            <p>Use it to revise and to check your own understanding. Submitting any of it as your work is misconduct.</p>
-            
-          </div>
-        </li>
-        <li class="ts-row">
-          <span class="ts-n">03</span>
-          <div class="ts-body">
-            <h2>Expect gaps</h2>
-            <p>Nothing here is verified. Where a grade depends on it, check against what your instructor gave you.</p>
-            
-          </div>
-        </li>
-        <li class="ts-row">
-          <span class="ts-n">04</span>
-          <div class="ts-body">
-            <h2>Tell us</h2>
-            <div class="ts-contact">
-              <p>Corrections, missing papers, and takedown requests go to one inbox.</p>
-              <a class="cta-solid ts-mail" href="mailto:ms24btech11021@iith.ac.in?subject=Abhyas" aria-label="Email Abhyas at ms24btech11021@iith.ac.in">Email us<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg></a>
-            </div>
-          </div>
-        </li>
-      </ol>
-    </article>
+      </div>
+    </header>
+
+    <div class="ts-grid">
+      <article class="ts-card ts-card-red">
+        <div class="ts-card-top">
+          <span class="ts-card-badge">
+            <svg class="ts-card-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            01
+          </span>
+        </div>
+        <h2>No official affiliation</h2>
+        <p>Abhyas is run and managed by students for students. There is no direct connection with the administration or course instructors.</p>
+      </article>
+
+      <article class="ts-card ts-card-amber">
+        <div class="ts-card-top">
+          <span class="ts-card-badge">
+            <svg class="ts-card-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5"/></svg>
+            02
+          </span>
+        </div>
+        <h2>Study aid, not a shortcut</h2>
+        <p>Use it to revise and to check your own understanding. Submitting any of it as your work is misconduct.</p>
+      </article>
+
+      <article class="ts-card ts-card-purple">
+        <div class="ts-card-top">
+          <span class="ts-card-badge">
+            <svg class="ts-card-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            03
+          </span>
+        </div>
+        <h2>Use sensibly</h2>
+        <p>Resources uploaded here are shared by students without official verification. Use them to practice, but don’t assume past questions or patterns will repeat.</p>
+      </article>
+
+      <article class="ts-card ts-card-green">
+        <div class="ts-card-top">
+          <span class="ts-card-badge">
+            <svg class="ts-card-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            04
+          </span>
+        </div>
+        <h2>Tell us</h2>
+        <p>Corrections, missing papers, and takedown requests go to one inbox.</p>
+        <div class="ts-card-foot">
+          <span class="ts-card-foot-label">Direct Takedown &amp; Feedback</span>
+          <a class="ts-card-btn" href="mailto:ms24btech11021@iith.ac.in?subject=Abhyas" aria-label="Email Abhyas at ms24btech11021@iith.ac.in">
+            Email us
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+      </article>
+    </div>
 
     <section class="faq">
       <div class="faq-intro">
-        <h2>Questions worth asking</h2>
+        <h2>Let’s clear a few things up</h2>
       </div>
       <ul class="faq-list">
         <li class="faq-item">
@@ -141,6 +157,82 @@
         </li>
       </ul>
     </section>
+
+    <!-- Global Pre-Footer CTA -->
+    <section class="global-cta">
+      <div class="cta-folder-card">
+        
+        <!-- Left Text Column -->
+        <div class="cf-left">
+          <h2 class="cf-title">
+            <span class="h-solid">Got past papers or notes?</span>
+          </h2>
+
+          <p class="cf-desc">
+            Share your course files and let’s build the best resource hub <span class="cf-nowrap">for <b>IITH</b> together.</span>
+          </p>
+
+          <div class="cf-actions">
+            <a class="cta-solid cf-btn" href="contribute.html">
+              Contribute a file
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Folder Artifact (Interactive Physics) -->
+        <div class="cf-right">
+          <div class="cf-stage" aria-hidden="true">
+            <div class="cf-folder">
+              
+              <!-- Yellow Sticky Note -->
+              <div class="cf-sticky">15 Depts</div>
+
+              <!-- Folder Back Panel -->
+              <div class="cf-fback"></div>
+              
+              <!-- Sheet 3: Terracotta (Assignments) -->
+              <div class="cf-sheet cf-s3">
+                <div class="cf-sheet-header">
+                  <div class="cf-sheet-tag"><i></i> EE1200 Lab Manual</div>
+                  <span class="cf-sheet-badge">Labs</span>
+                </div>
+                <div class="cf-sheet-lines"><span></span><span></span></div>
+              </div>
+
+              <!-- Sheet 2: Olive (Notes & Slides) -->
+              <div class="cf-sheet cf-s2">
+                <div class="cf-sheet-header">
+                  <div class="cf-sheet-tag"><i></i> MA1110 Lecture Deck</div>
+                  <span class="cf-sheet-badge">Slides</span>
+                </div>
+                <div class="cf-sheet-lines"><span></span><span></span></div>
+              </div>
+
+              <!-- Sheet 1: Amber (Past Exam Paper) -->
+              <div class="cf-sheet cf-s1">
+                <div class="cf-sheet-header">
+                  <div class="cf-sheet-tag"><i></i> CS2110 Endsem 2025</div>
+                  <span class="cf-sheet-badge">Exam</span>
+                </div>
+                <div class="cf-sheet-lines"><span></span><span></span></div>
+              </div>
+
+              <!-- Folder Front Pocket Flap -->
+              <div class="cf-ffront">
+                <div class="cf-ffront-top">
+                  <span class="cf-ffront-code">INTAKE / 2026</span>
+                  <span class="cf-ffront-pill">Drop Box</span>
+                </div>
+                <h3 class="cf-ffront-title">Contributions Hub</h3>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
   </main>
 
   <footer class="foot">
@@ -195,8 +287,10 @@
 
 </div>
 
+<script src="lenis.min.js"></script>
+<script src="smooth.js?v=4"></script>
 <script src="data.js?v=5"></script>
 <script src="books.js?v=4"></script>
-<script src="terms.js?v=1"></script>
+<script src="terms.js?v=2"></script>
 </body>
 </html>

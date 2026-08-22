@@ -235,6 +235,7 @@ function openFolderModal(courseName, presetTab) {
   folderModal.offsetHeight; // trigger reflow
   folderModal.classList.add("open");
   document.body.style.overflow = "hidden";
+  window.__pauseLenis?.();
 }
 
 function renderFolderModalFiles() {
@@ -284,6 +285,7 @@ function closeFolderModal() {
   setTimeout(() => {
     folderModal.hidden = true;
     document.body.style.overflow = "";
+    window.__resumeLenis?.();
   }, 260);
 }
 
@@ -304,6 +306,7 @@ function openShareModal(prefillCourse = "") {
   shareModal.offsetHeight;
   shareModal.classList.add("open");
   document.body.style.overflow = "hidden";
+  window.__pauseLenis?.();
 }
 
 function closeShareModal() {
@@ -313,6 +316,7 @@ function closeShareModal() {
   setTimeout(() => {
     shareModal.hidden = true;
     document.body.style.overflow = "";
+    window.__resumeLenis?.();
   }, 260);
 }
 

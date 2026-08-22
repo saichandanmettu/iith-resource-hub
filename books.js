@@ -93,6 +93,7 @@ const BookShelf = (function () {
     fill(r);
     modal.hidden = false;
     document.body.style.overflow = "hidden";
+    window.__pauseLenis?.();
 
     flip(from);
     if (sourceEl.classList.contains("book")) {
@@ -136,6 +137,7 @@ const BookShelf = (function () {
       target.style.transition = "none";
       target.style.transform = "none";
       document.body.style.overflow = "";
+      window.__resumeLenis?.();
       if (openSource) {
         openSource.style.visibility = "";
         openSource.focus({ preventScroll: true });
