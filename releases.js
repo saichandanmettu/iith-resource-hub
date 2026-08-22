@@ -179,7 +179,7 @@ const VERSIONS = [
     title: "Version 3.0",
     date: "22 Aug 2025",
     daysSince: "310 days later",
-    votes: 184,
+    votes: 0,
     announcement: [
       "Resource Hub has officially evolved into <strong>Abhyas</strong>. We've completely rebuilt the platform from scratch with a new brand identity, a redesigned file architecture, faster access, and updated course materials across all engineering departments."
     ],
