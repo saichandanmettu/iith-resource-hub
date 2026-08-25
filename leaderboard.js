@@ -92,11 +92,11 @@
 
   // Contributor Tier Calculator
   function getTier(points) {
-    if (points >= 100) return { name: 'Lead Contributor', icon: '🏆', class: 'tier-legend' };
-    if (points >= 50) return { name: 'Core Contributor', icon: '🎖️', class: 'tier-master' };
-    if (points >= 25) return { name: 'Regular Contributor', icon: '🏅', class: 'tier-scholar' };
-    if (points >= 10) return { name: 'Contributor', icon: '⭐', class: 'tier-active' };
-    return { name: 'New Contributor', icon: '🌱', class: 'tier-fresh' };
+    if (points >= 100) return { name: 'Lead Contributor', class: 'tier-legend' };
+    if (points >= 50) return { name: 'Core Contributor', class: 'tier-master' };
+    if (points >= 25) return { name: 'Regular Contributor', class: 'tier-scholar' };
+    if (points >= 10) return { name: 'Contributor', class: 'tier-active' };
+    return { name: 'New Contributor', class: 'tier-fresh' };
   }
 
   const FALLBACK_CONTRIBUTORS = [
@@ -539,6 +539,8 @@
 
     let rowsHtml = '';
 
+    const ORDINAL = { 1: '1st', 2: '2nd', 3: '3rd' };
+
     rankedList.forEach((c, idx) => {
       const rankNum = idx + 1;
       const isTop3 = rankNum <= 3;
@@ -547,12 +549,12 @@
       const deptShort = c.department ? c.department.short : c.roll;
 
       rowsHtml += `
-        <div class="lbg-row ${rankClass}" data-id="${c.id}" tabindex="0" role="button" aria-label="Rank ${rankNum}: ${c.name}, ${c.totalPoints} points">
-          
+        <div class="lbg-row ${rankClass} ${isTop3 ? 'is-podium' : ''}" data-id="${c.id}" tabindex="0" role="button" aria-label="Rank ${rankNum}: ${c.name}, ${c.totalPoints} points">
+
           <!-- Rank Column -->
           <div class="col-rank">
-            <span class="lbg-rank-num">${rankNum}</span>
-            ${rankNum === 1 ? '<span class="lbg-crown-icon" title="First Place">👑</span>' : ''}
+            <span class="lbg-rank-badge">${rankNum}</span>
+            ${isTop3 ? `<span class="lbg-rank-ordinal">${ORDINAL[rankNum]}</span>` : ''}
           </div>
 
           <!-- User Column -->
@@ -562,9 +564,6 @@
               <div class="lbg-u-name-line">
                 <span class="lbg-u-name">${c.name}</span>
                 <span class="lbg-u-roll">${c.roll}</span>
-              </div>
-              <div class="lbg-u-tier">
-                <span class="tier-pill ${c.tier.class}">${c.tier.icon} ${c.tier.name}</span>
               </div>
             </div>
           </div>
@@ -580,16 +579,7 @@
           <!-- Stacked Composition Bar Column -->
           <div class="col-composition">
             ${createStackedBar(c)}
-          </div>
-
-          <!-- Breakdown Column (Kind Counts) -->
-          <div class="col-breakdown">
-            <div class="lbg-counts-chips">
-              <span class="chip-k chip-papers" title="${c.counts.papers} Past Papers">${c.counts.papers}p</span>
-              <span class="chip-k chip-assignment" title="${c.counts.assignment} Assignments">${c.counts.assignment}a</span>
-              <span class="chip-k chip-notes" title="${c.counts.notes} Notes">${c.counts.notes}n</span>
-              <span class="chip-k chip-reference" title="${c.counts.reference} Books">${c.counts.reference}b</span>
-            </div>
+            <span class="lbg-file-count">${c.totalCount} ${c.totalCount === 1 ? 'file' : 'files'}</span>
           </div>
 
           <!-- Total Score Column -->
@@ -648,7 +638,7 @@
     if (modalRoll) modalRoll.textContent = c.roll;
     if (modalDept) modalDept.textContent = c.department ? (c.department.name || c.department.short) : c.roll;
     if (modalTier) {
-      modalTier.textContent = `${c.tier.icon} ${c.tier.name}`;
+      modalTier.textContent = c.tier.name;
       modalTier.className = `lbg-m-tier ${c.tier.class}`;
     }
     if (modalScore) modalScore.textContent = c.totalPoints;
@@ -745,7 +735,7 @@
     if (simTierBadge) {
       const tier = getTier(pts);
       simTierBadge.innerHTML = `
-        <span class="tier-icon">${tier.icon}</span>
+        <span class="tier-dot"></span>
         <span class="tier-name">${tier.name}</span>
       `;
       simTierBadge.className = `lbg-sim-tier ${tier.class}`;
