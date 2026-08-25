@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="../assets/abhyas-mark.png">
+<title>Review queue &middot; Abhyas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css?v=3">
+</head>
+<body>
+
+<!-- ============================================================
+     Login gate. The real check happens server-side; this only
+     hides the console until the session cookie exists.
+     ============================================================ -->
+<div class="ad-login-wrap" id="loginWrap">
+  <form class="ad-login" id="loginForm">
+    <span class="ad-kicker"><i></i> Abhyas · moderation</span>
+    <h1>Review queue</h1>
+    <p>Submissions wait here until you approve them. Nothing reaches the archive until you say so.</p>
+    <p class="ad-err" id="loginErr" hidden></p>
+    <label class="ad-field">
+      <span>Password</span>
+      <input type="password" id="pw" autocomplete="current-password" required>
+    </label>
+    <button class="ad-btn-primary" type="submit">Sign in</button>
+  </form>
+</div>
+
+<!-- ============================================================
+     Console
+     ============================================================ -->
+<div class="ad-shell" id="console" hidden>
+
+  <div class="ad-top">
+    <div class="ad-brand">
+      <img src="../assets/abhyas-mark.png" alt="" width="34" height="34">
+      <b>Abhyas</b>
+      <span>Review queue</span>
+    </div>
+    <div class="ad-topright">
+      <span class="ad-who" id="who"></span>
+      <button class="ad-logout" type="button" id="logout">Sign out</button>
+    </div>
+  </div>
+
+  <div class="ad-hero">
+    <span class="ad-kicker"><i></i> Moderation queue</span>
+    <h1 id="adHeadline"><span class="muted">Nothing is public</span><br>until you approve it</h1>
+    <p id="adSub">Check the file, correct anything the contributor got wrong, then publish.</p>
+  </div>
+
+  <div class="ad-stats">
+    <div class="ad-stat is-live"><b id="sPending">0</b><span>Waiting</span></div>
+    <div class="ad-stat"><b id="sPublished">0</b><span>Published</span></div>
+    <div class="ad-stat"><b id="sRejected">0</b><span>Rejected</span></div>
+    <div class="ad-stat"><b id="sContrib">0</b><span>Contributors</span></div>
+  </div>
+
+  <div class="ad-tabs" id="tabs" role="group" aria-label="Queue filter">
+    <button class="ad-tab on" type="button" data-tab="pending">Waiting <i id="cPending">0</i></button>
+    <button class="ad-tab" type="button" data-tab="published">Published <i id="cPublished">0</i></button>
+    <button class="ad-tab" type="button" data-tab="rejected">Rejected <i id="cRejected">0</i></button>
+  </div>
+
+  <div class="ad-queue" id="queue"></div>
+</div>
+
+<!-- ============================================================
+     Review — PDF on the left, editable metadata on the right.
+     Editable because a student will get the course code wrong,
+     and rejecting a good paper over bad metadata helps nobody.
+     ============================================================ -->
+<div class="ad-review" id="review" role="dialog" aria-modal="true" aria-labelledby="revTitle">
+  <div class="ad-review-back" id="reviewBack"></div>
+  <div class="ad-review-panel">
+
+    <div class="ad-pdf" id="pdfPane"></div>
+
+    <div class="ad-side">
+      <div class="ad-side-head">
+        <h2 id="revTitle">Check and file</h2>
+        <button class="ad-close" type="button" id="revClose" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="ad-side-body">
+        <p class="ad-warn" id="dupeWarn" hidden></p>
+
+        <label class="ad-field">
+          <span>Course code</span>
+          <input type="text" id="fCode" list="codeList" placeholder="CS2110">
+        </label>
+        <datalist id="codeList"></datalist>
+        <p class="ad-hint" id="codeHint" hidden></p>
+
+        <label class="ad-field">
+          <span>Course name</span>
+          <input type="text" id="fCourse">
+        </label>
+
+        <div class="ad-row2">
+          <label class="ad-field">
+            <span>Branch</span>
+            <select id="fDept"></select>
+          </label>
+          <label class="ad-field">
+            <span>Semester</span>
+            <input type="number" id="fSem" min="1" max="10">
+          </label>
+        </div>
+
+        <div class="ad-row2">
+          <label class="ad-field">
+            <span>Type</span>
+            <select id="fType">
+              <option value="papers">Past paper / quiz</option>
+              <option value="notes">Notes / slides</option>
+              <option value="assignment">Assignment / lab</option>
+              <option value="reference">Reference book</option>
+            </select>
+          </label>
+          <label class="ad-field">
+            <span>Year</span>
+            <input type="number" id="fYear" min="2000" max="2100">
+          </label>
+        </div>
+
+        <label class="ad-field">
+          <span>Exam type</span>
+          <select id="fExam">
+            <option value="">&mdash;</option>
+            <option>Mid-Sem</option>
+            <option>End-Sem</option>
+            <option>Quiz</option>
+            <option>Makeup</option>
+          </select>
+        </label>
+
+        <!-- Reference books carry the payload library.html renders. Without it
+             the Library filters the record out and the shelf shows nothing. -->
+        <div id="bookFields" hidden>
+          <div class="ad-row2">
+            <label class="ad-field"><span>Book author</span><input type="text" id="fBookAuthor"></label>
+            <label class="ad-field"><span>Publisher</span><input type="text" id="fBookPublisher"></label>
+          </div>
+          <label class="ad-field">
+            <span>Cover</span>
+            <select id="fBookCover">
+              <option value="ink">Ink</option><option value="amber">Amber</option>
+              <option value="crimson">Crimson</option><option value="mint">Mint</option>
+              <option value="violet">Violet</option><option value="sky">Sky</option>
+            </select>
+          </label>
+          <label class="ad-field"><span>One-line gist</span><textarea id="fBookGist" rows="2"></textarea></label>
+        </div>
+
+        <label class="ad-field">
+          <span>Professor</span>
+          <input type="text" id="fProf" placeholder="Comma-separated if more than one">
+        </label>
+
+        <div class="ad-row2">
+          <label class="ad-field">
+            <span>Contributor</span>
+            <input type="text" id="fContrib" placeholder="Leave blank for no credit">
+          </label>
+          <label class="ad-field">
+            <span>Batch</span>
+            <input type="text" id="fRoll" placeholder="CS23">
+          </label>
+        </div>
+      </div>
+
+      <div class="ad-side-foot">
+        <button class="ad-reject" type="button" id="btnReject">Reject</button>
+        <button class="ad-approve" type="button" id="btnApprove">Approve &amp; publish</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../data.js?v=9"></script>
+<script src="admin.js?v=4"></script>
+</body>
+</html>

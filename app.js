@@ -186,8 +186,10 @@ function bind() {
   }
 
   // Header "Share a file" buttons
-  document.querySelectorAll(".btn-add, nav a[href='#archive']:not(.on)").forEach((btn) => {
-    if (btn.classList.contains("btn-add") || btn.textContent.trim() === "Contribute") {
+  /* The header CTA is a plain link to contribute.html now — leave it alone
+     so it actually navigates. */
+  document.querySelectorAll("nav a[href='#archive']:not(.on)").forEach((btn) => {
+    if (btn.textContent.trim() === "Contribute") {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         openShareModal();

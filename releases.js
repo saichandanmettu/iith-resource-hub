@@ -9,6 +9,14 @@
 const RELEASES = [
   {
     status: "building",
+    tag: "Leaderboard",
+    title: "Contributor points",
+    date: "August 2026",
+    body: "Every file is worth points to whoever shared it, so the people keeping the archive alive are visible instead of anonymous. Seeded by hand while uploads are still manual.",
+    items: ["Points per resource kind", "This semester and all time", "Credit stays optional"]
+  },
+  {
+    status: "building",
     tag: "Releases",
     title: "This page",
     date: "August 2026",

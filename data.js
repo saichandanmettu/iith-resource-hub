@@ -1,13 +1,23 @@
 /**
- * Dummy resource data — mirrors the shape the real WordPress/ACF taxonomy.
- * NOTE: `code` values here are PLACEHOLDERS in the right shape, used to build
- * and judge the card design. Replace them with the real course codes from
- * WordPress — nothing but this file needs to change.
- * mirrors the shape the real WordPress/ACF taxonomy
- * will eventually provide. Swap `fetchResources()` for a real API call
- * once the taxonomy/endpoint is available; the rest of the app only
- * depends on this array's shape.
+ * Abhyas — configuration and the data loader.
+ *
+ * CONTENT lives in JSON, not here:
+ *   resources.json     every resource in the archive
+ *   contributors.json  who shared what
+ *   courses.json       course-code registry (admin console only)
+ *
+ * That split is deliberate. A missing comma in a .js file blanks Browse,
+ * Library and the Leaderboard at once; a malformed .json file fails to parse
+ * and can be reported instead. JSON is also what the review console writes,
+ * and it can be validated before it replaces the live copy.
+ *
+ * What stays here is CONFIGURATION — things a human edits by hand and that
+ * change perhaps once a year.
+ *
+ * NOTE: fetch() does not work over file://. Serve the folder to view it
+ * locally:  python3 -m http.server 8000
  */
+
 
 /* The BTech programmes IITH offers, alphabetical, as published by the
    institute. This is the single source of truth: the Library shelves, the
@@ -41,6 +51,28 @@ const DEPARTMENTS = [
   { code: "ME",   name: "Mechanical and Aerospace Engineering", accent: "#85321D", short: "Mechanical & Aerospace" },
 ];
 
+
+/* What a contribution is worth, keyed by the SAME four ids that carry the
+   colour (papers / notes / assignment / reference). One taxonomy for score
+   and colour: if you add a kind, it needs an entry here, a `--kind` colour
+   in :root, and a row in DESIGN.md — all three, or they drift.
+
+   The weighting tracks effort and scarcity. A reference book is a title we
+   shelve, not a file we host, so it sits lowest. */
+const POINTS = {
+  papers: 10,
+  assignment: 8,
+  notes: 5,
+  reference: 2,
+};
+
+/* Where the current semester begins. The board offers "this semester" as
+   well as all-time so an early contributor cannot freeze the top of the
+   list — a board nobody new can climb stops recruiting the people it is
+   meant to recruit. Roll this forward each semester. */
+const SEMESTER_START = "2026-07-01";
+const SEMESTER_LABEL = "Monsoon 2026";
+
 const RESOURCE_TYPES = [
   { id: "papers", label: "Quizzes / Past Papers", color: "var(--type-papers)" },
   { id: "notes", label: "Notes / Slides", color: "var(--type-notes)" },
@@ -48,159 +80,88 @@ const RESOURCE_TYPES = [
   { id: "reference", label: "Reference Books", color: "var(--type-reference)" },
 ];
 
-const RESOURCES = [
-  {
-    id: 1, title: "Modern Physics — Mid-Sem Paper", department: "EP", semester: 3,
-    course: "Modern Physics", code: "PH2110", type: "papers", professor: "—", year: 2024,
-    fileType: "pdf", pages: 6, downloads: 214,
-  },
-  {
-    id: 2, title: "Materials Chemistry — Quiz 2", department: "MSME", semester: 2,
-    course: "Materials Chemistry", code: "CY1120", type: "papers", professor: "Atul Deshpande", year: 2024,
-    fileType: "pdf", pages: 3, downloads: 132,
-  },
-  {
-    id: 3, title: "Materials Chemistry — Quiz 1", department: "MSME", semester: 2,
-    course: "Materials Chemistry", code: "CY1120", type: "papers", professor: "Atul Deshpande", year: 2024,
-    fileType: "pdf", pages: 2, downloads: 121,
-  },
-  {
-    id: 4, title: "Differential Equations — Quiz", department: "MSME", semester: 2,
-    course: "Differential Equations", code: "MA1310", type: "papers", professor: "Dhriti Sundar Patra", year: 2024,
-    fileType: "pdf", pages: 4, downloads: 98,
-  },
-  {
-    id: 5, title: "Elementary Linear Algebra — Notes", department: "CS", semester: 1,
-    course: "Elementary Linear Algebra", code: "MA1010", type: "notes", professor: "Amit Tripathi", year: 2024,
-    fileType: "pdf", pages: 42, downloads: 301,
-  },
-  {
-    id: 6, title: "Mechanics of Solids — Quiz 4", department: "ME", semester: 3,
-    course: "Mechanics of Solids", code: "ME2110", type: "papers", professor: "Prabhat Kumar", year: 2024,
-    fileType: "pdf", pages: 3, downloads: 87,
-  },
-  {
-    id: 7, title: "Introduction to Climate Change — Notes", department: "ES", semester: 1,
-    course: "Introduction to Climate Change", code: "ES1110", type: "notes", professor: "Pritha Chatterjee, Deepu J Babu", year: 2024,
-    fileType: "pdf", pages: 28, downloads: 156,
-  },
-  {
-    id: 8, title: "Communication Skills — Quiz 2", department: "IC", semester: 1,
-    course: "Communication Skills", code: "LA1010", type: "papers", professor: "Srirupa Chatterjee", year: 2024,
-    fileType: "pdf", pages: 2, downloads: 64,
-  },
-  {
-    id: 9, title: "Calculus-I — Question Paper", department: "CS", semester: 1,
-    course: "Calculus-I", code: "MA1110", type: "papers", professor: "Jyotirmoy Rana, Vikas Krishnamurthy", year: 2024,
-    fileType: "pdf", pages: 5, downloads: 245,
-  },
-  {
-    id: 10, title: "Maths for Physics — End-Sem Paper", department: "EP", semester: 2,
-    course: "Maths for Physics", code: "PH1210", type: "papers", professor: "Alok Pan", year: 2024,
-    fileType: "pdf", pages: 7, downloads: 112,
-  },
-  {
-    id: 11, title: "Calculus-II — Question Paper & Solutions", department: "CS", semester: 2,
-    course: "Calculus-II", code: "MA1210", type: "papers", professor: "Rajesh Kannan, Sukumar", year: 2024,
-    fileType: "pdf", pages: 9, downloads: 289,
-  },
-  {
-    id: 12, title: "Intro to Materials Science — Question Paper", department: "MSME", semester: 2,
-    course: "Introduction to Materials Science and Engineering", code: "MS1110", type: "papers", professor: "Ranjith Ramadurai", year: 2023,
-    fileType: "pdf", pages: 6, downloads: 77,
-  },
-  {
-    id: 13, title: "Environmental Chemistry — End-Sem Paper", department: "CM", semester: 4,
-    course: "Environmental Chemistry", code: "CY2140", type: "papers", professor: "Sudharshanam", year: 2023,
-    fileType: "pdf", pages: 5, downloads: 59,
-  },
-  {
-    id: 14, title: "Complex Analysis — Notes", department: "EP", semester: 3,
-    course: "Complex Analysis", code: "MA2210", type: "notes", professor: "Alok Pan", year: 2024,
-    fileType: "pdf", pages: 51, downloads: 198,
-  },
-  {
-    id: 15, title: "Calculus-II — Assignment", department: "CS", semester: 2,
-    course: "Calculus-II", code: "MA1210", type: "assignment", professor: "Sukumar, Rajesh Kannan", year: 2024,
-    fileType: "pdf", pages: 3, downloads: 143,
-  },
-  {
-    id: 16, title: "Vector Calculus — Notes", department: "EP", semester: 2,
-    course: "Vector Calculus", code: "MA2110", type: "notes", professor: "Alok Pan", year: 2024,
-    fileType: "pdf", pages: 33, downloads: 176,
-  },
-  {
-    id: 18, title: "Digital Circuits — Lab Assignment Set", department: "EE", semester: 3,
-    course: "Digital Circuits", code: "EE2140", type: "assignment", professor: "—", year: 2024,
-    fileType: "zip", pages: null, downloads: 91,
-  },
-  {
-    id: 19, title: "Operating Systems — Notes Bundle", department: "CS", semester: 5,
-    course: "Operating Systems", code: "CS3110", type: "notes", professor: "—", year: 2024,
-    fileType: "pdf", pages: 88, downloads: 264,
-  },
-  {
-    id: 17, title: "Database Management Systems — Reference Guide", department: "CS", semester: 5,
-    course: "Database Management Systems", code: "CS2130", type: "reference", professor: "—", year: 2024,
-    fileType: "pdf", pages: 210, downloads: 312,
-    book: {
-      author: "Silberschatz, Korth & Sudarshan", publisher: "McGraw-Hill", cover: "ink",
-      gist: "The standard database text. Start at the relational model and normalisation — that is where most of the marks live.",
-    },
-  },
-  {
-    id: 20, title: "Optimization Techniques — Reference Book", department: "CO", semester: 6,
-    course: "Optimization Techniques", code: "MA3110", type: "reference", professor: "—", year: 2023,
-    fileType: "pdf", pages: 340, downloads: 145,
-    book: {
-      author: "Hamdy A. Taha", publisher: "Pearson", cover: "amber",
-      gist: "Operations research from the ground up. The worked simplex examples are the fastest way into linear programming.",
-    },
-  },
-  {
-    id: 21, title: "Introduction to Algorithms — Reference Book", department: "CS", semester: 4,
-    course: "Design and Analysis of Algorithms", code: "CS2110", type: "reference", professor: "—", year: 2024,
-    fileType: "pdf", pages: 1312, downloads: 402,
-    book: {
-      author: "Cormen, Leiserson, Rivest & Stein", publisher: "MIT Press", cover: "crimson",
-      gist: "Dense, complete, and the reference everyone eventually returns to. Read the chapter you need, not the book.",
-    },
-  },
-  {
-    id: 22, title: "Linear Algebra and Its Applications — Reference Book", department: "CS", semester: 1,
-    course: "Elementary Linear Algebra", code: "MA1010", type: "reference", professor: "—", year: 2023,
-    fileType: "pdf", pages: 576, downloads: 268,
-    book: {
-      author: "Gilbert Strang", publisher: "Cengage", cover: "mint",
-      gist: "Geometry first, proofs second. The clearest explanation of what a matrix is actually doing to space.",
-    },
-  },
-  {
-    id: 23, title: "Materials Science and Engineering — Reference Book", department: "MSME", semester: 2,
-    course: "Introduction to Materials Science and Engineering", code: "MS1110", type: "reference", professor: "—", year: 2023,
-    fileType: "pdf", pages: 992, downloads: 176,
-    book: {
-      author: "William D. Callister", publisher: "Wiley", cover: "violet",
-      gist: "Structure, properties, processing, performance. The four-way link the whole first-year syllabus is built on.",
-    },
-  },
-  {
-    id: 24, title: "Fluid Mechanics — Reference Book", department: "ME", semester: 4,
-    course: "Fluid Mechanics", code: "ME2210", type: "reference", professor: "—", year: 2024,
-    fileType: "pdf", pages: 780, downloads: 154,
-    book: {
-      author: "Frank M. White", publisher: "McGraw-Hill", cover: "sky",
-      gist: "Heavy on worked problems. Control volume analysis is the chapter to get right before anything else.",
-    },
-  },
-];
+/* ============================================================
+   Data loading
+
+   `ABHYAS_READY` resolves once the archive is in memory, and also sets the
+   globals `RESOURCES` and `CONTRIBUTORS` so pages written against them keep
+   working unchanged. `fetchResources()` stays the seam it always was.
+   ============================================================ */
+globalThis.RESOURCES = [];
+globalThis.CONTRIBUTORS = [];
+
+/* Resolve against data.js's own URL, not the page's. The review console
+   lives in /admin/, and a bare "resources.json" would resolve to
+   /admin/resources.json and 404. */
+const ABHYAS_BASE = (function () {
+  const src = document.currentScript && document.currentScript.src;
+  return src ? new URL(".", src).href : "./";
+})();
+
+globalThis.ABHYAS_READY = (async function loadArchive() {
+  try {
+    const [resources, contributors] = await Promise.all([
+      fetch(ABHYAS_BASE + "resources.json", { cache: "no-cache" }).then((r) => {
+        if (!r.ok) throw new Error(`resources.json ${r.status}`);
+        return r.json();
+      }),
+      /* A failed contributors.json used to be swallowed with `: {}`. The
+         leaderboard then matched no contributor ids at all and rendered
+         "No contributions yet" — a confident, wrong answer with nothing in
+         the console. Loud is better than empty. */
+      fetch(ABHYAS_BASE + "contributors.json", { cache: "no-cache" }).then((r) => {
+        if (!r.ok) throw new Error(`contributors.json ${r.status}`);
+        return r.json();
+      }),
+    ]);
+
+    globalThis.RESOURCES = Array.isArray(resources) ? resources : [];
+    /* stored keyed by id; the pages want a list carrying the id */
+    globalThis.CONTRIBUTORS = Object.entries(contributors || {})
+      .map(([id, c]) => ({ id, ...c }));
+
+    /* Cross-check: resources referencing contributors that did not load is
+       the exact shape of a stale cache, and it is invisible otherwise. */
+    const known = new Set(globalThis.CONTRIBUTORS.map((c) => c.id));
+    const orphaned = globalThis.RESOURCES.filter(
+      (r) => r.contributor && !known.has(r.contributor)).length;
+    if (orphaned) {
+      console.warn(`[Abhyas] ${orphaned} resources name a contributor that is not in ` +
+        `contributors.json. Usually a stale cache — hard-reload the page.`);
+    }
+
+    return globalThis.RESOURCES;
+  } catch (err) {
+    console.error("[Abhyas] could not load the archive:", err);
+    showLoadFailure(err);
+    return [];
+  }
+})();
+
+/* A blank page invites a reload and teaches nobody anything. Say what broke. */
+function showLoadFailure(err) {
+  const onFile = location.protocol === "file:";
+  document.addEventListener("DOMContentLoaded", () => {
+    const main = document.querySelector("main") || document.body;
+    const box = document.createElement("div");
+    box.setAttribute("role", "alert");
+    box.style.cssText =
+      "margin:40px auto;max-width:640px;padding:26px 28px;border-radius:16px;" +
+      "background:var(--surface,#FFFDF5);border:1px solid var(--hair,#EBE0CA);" +
+      "font-family:var(--font-body,system-ui);color:var(--ink,#282129);line-height:1.6";
+    box.innerHTML = onFile
+      ? "<b>The archive could not load.</b><br>This page is open as a file, and browsers block " +
+        "data loading over <code>file://</code>. Serve the folder instead:<br>" +
+        "<code style=\"display:inline-block;margin-top:10px\">python3 -m http.server 8000</code>"
+      : "<b>The archive could not load.</b><br>resources.json is missing or unreadable. " +
+        "Everything else on the site still works.";
+    main.prepend(box);
+  });
+}
 
 /**
- * Stand-in for the future live data call.
- * Later: replace body with `fetch(API_ENDPOINT).then(r => r.json())`
- * once the WordPress taxonomy/REST scheme is provided — the rest of
- * the app (rendering, filtering, sorting) doesn't need to change.
+ * The single seam between the site and its data. Every page uses this.
  */
 async function fetchResources() {
-  return Promise.resolve(RESOURCES);
+  return globalThis.ABHYAS_READY;
 }

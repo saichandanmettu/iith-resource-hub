@@ -29,6 +29,8 @@ nesting a card inside the sheet, a second raised surface — weakens it.
 | `library.html` | The Library — textbooks on shelves |
 | `releases.html` | Releases — what shipped / is building / is next |
 | `terms.html` | Terms — four statements plus the FAQ |
+| `contribute.html` | Contribute — how intake works, and the ask |
+| `leaderboard.html` | Leaderboard — who shared what, and what it scored |
 | `styles.css` | **All** styling. One stylesheet, no per-page CSS. |
 | `data.js` | `RESOURCES` + `DEPARTMENTS`. Single source of truth. |
 | `app.js` | Browse page: folder cards, filters, modals |
@@ -36,6 +38,8 @@ nesting a card inside the sheet, a second raised surface — weakens it.
 | `library.js` | Library page: shelves, branch filter |
 | `releases.js` | `RELEASES` + `VERSIONS` data and renders |
 | `terms.js` | FAQ accordion toggle |
+| `contribute.js` | Contribute page: gap board, reveals, copy button |
+| `leaderboard.js` | Leaderboard: scoring, podium, scope toggle |
 | `_archive/` | Nothing here is loaded. Safe to delete. |
 
 Cache-busting is manual: every `<link>`/`<script>` carries `?v=N`.
@@ -414,6 +418,60 @@ corner, `--col-back` gradient, white `14px` sheets inside, `--pop` hover.
 Status maps to existing kind colours — In progress = amber, Shipped = olive,
 Next up = mauve.
 
+### Gap board (`.ctr-gaps`) — Contribute
+
+Fifteen rows, one per branch, counted from `RESOURCES` at render time and
+sorted **thinnest first**. It exists because a general "please contribute"
+is easy to scroll past and "your branch has nothing in it" is not.
+
+Nothing on it is a written-in figure. When `fetchResources()` becomes the
+real WordPress call the board follows automatically, so it can never claim
+a shelf is stocked when it is empty.
+
+Two rules it keeps:
+
+- the branch accent is the **dot only**. The bar is `--wash-strong` on
+  `--wash`, because a bar filled with the branch colour would read as
+  though branch colour meant something (§2).
+- an empty branch gets a dashed rule instead of a bar, so "no files" is a
+  different shape, not just a shorter bar.
+
+Below 620px the bar is dropped entirely — it is reinforcement, the count is
+the information, and keeping it squeezed branch names into ellipsis.
+
+### Leaderboard (`.lb-*`)
+
+Gamification, so it has two ways to go wrong and both are guarded.
+
+**No medals.** Gold/silver/bronze would drop three new hues into a palette
+built on exactly four warm families. Rank is carried by **DM Mono and space**
+instead — a rank is a count, and §3 gives counts to mono. The top three are
+folders in a staircase (`align-items: end`, descending `min-height`), and
+first place is lifted with the **CTA amber**, the palette's own anchor,
+rather than a colour invented for the occasion.
+
+**The stacked kind bar is the centrepiece.** Every score bar is segmented in
+the four kind colours, sized by points from each kind, so a row shows not
+just how much somebody gave but *what*: a past-papers contributor reads
+amber, a note-taker reads olive. It is the fifth page where semantic colour
+does real work, and it lets the board double as a portrait of the archive.
+The bar takes the row's slack — the name column is capped — because a long
+bar shows composition and a short one does not.
+
+Nothing is a stored total. Scores are computed from `RESOURCES` at render
+time, the same derivation as the gap board, which buys two things: a score
+cannot drift from the shelves, and **a takedown removes its points
+automatically**. Terms promises a file can come down on request; a board
+still paying for a withdrawn file would quietly break that.
+
+The four point values render **from `POINTS`**, never typed into the page, so
+the published rules cannot disagree with the scoring. Same reason the closing
+card shows the live gap instead of repeating the points table.
+
+**Scope: this semester / all time.** All-time alone freezes early
+contributors at the top and stops recruiting exactly the people the board is
+meant to recruit. `SEMESTER_START` in `data.js` moves each semester.
+
 ### Pills
 
 Two variants:
@@ -461,6 +519,19 @@ nine.
 - `name` — full official title; Contribute form, tooltips
 - `short` — shelf headings; "Engineering" dropped where redundant
 - `accent` — the decorative dot (§2)
+
+`CONTRIBUTORS` holds who shared what, joined by the `contributor` field on
+each resource. `roll` is the **branch+entry-year token only** (`CS23`,
+`MS24`) — never the full roll number, which identifies exactly one student on
+a public page. `contributor: null` means shared without credit: it still
+counts toward the archive, but nobody is listed. Credit is opt-in on the
+Contribute page, so the board inherits that choice rather than overriding it.
+
+`POINTS` maps the four kind ids to what a contribution is worth
+(`papers 10 · assignment 8 · notes 5 · reference 2`). It is keyed by the
+**same ids that carry the colour**: one taxonomy for score and colour. Adding
+a kind means adding a `POINTS` entry, a `--kind` colour, and a row here — all
+three, or they drift.
 
 A resource's `type` is one of `papers | notes | assignment | reference` and
 drives its colour. `dominantKind()` picks a folder's colour from the most

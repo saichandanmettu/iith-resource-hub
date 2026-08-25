@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="assets/abhyas-mark.png">
+<title>Leaderboard — Abhyas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght,SOFT,WONK@1,9..144,400;1,9..144,500&family=Newsreader:ital,opsz,wght@1,6..72,300;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=109">
+</head>
+<body>
+<div class="shell">
+
+  <!-- Header / Navigation -->
+  <header class="top">
+    <div class="wrap top-in">
+      <a class="logo" href="index.html"><img src="assets/abhyas-mark.png" alt="" width="42" height="42"> Abhyas</a>
+      <nav>
+        <a href="index.html">Browse</a>
+        <a href="library.html">Library</a>
+        <a class="on" href="leaderboard.html">Leaderboard</a>
+      </nav>
+      <a class="btn-add" href="contribute.html">Contribute</a>
+    </div>
+  </header>
+
+  <!-- Leaderboard Hero -->
+  <section class="hero lbg-hero">
+    <div class="wrap">
+      <h1>
+        <span class="h-muted">Who passed</span>
+        <span class="h-serif">it <span class="h-underline">forward<svg class="h-underline-svg no-split" viewBox="0 0 160 14" fill="none" preserveAspectRatio="none"><path d="M3 10C45 4 115 3 157 8" stroke="var(--papers)" stroke-width="4.5" stroke-linecap="round"/></svg></span></span>
+      </h1>
+      <p class="hero-sub">Ranked by what they&rsquo;ve shared. Past papers count for most.</p>
+
+      <!-- Scope Switcher: Semester vs All-time -->
+      <div class="lbg-scope-bar">
+        <div class="lbg-scope-toggle" role="tablist" aria-label="Leaderboard scope">
+          <button class="lbg-scope-btn on" id="scopeSemesterBtn" role="tab" aria-selected="true" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="scopeSemesterLabel">This semester</span>
+          </button>
+          <button class="lbg-scope-btn" id="scopeAllTimeBtn" role="tab" aria-selected="false" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <span>All time</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Area -->
+  <main class="wrap lbg-main">
+
+    <!-- 1. The Podium Showcase (Top 3 staircase) -->
+    <section class="lbg-podium-sec" id="lbgPodiumSec" aria-label="Top 3 Contributors">
+      <div class="lbg-sec-head">
+        <div>
+          <h2>Top contributors</h2>
+          <p>Students with the most uploads this semester.</p>
+        </div>
+      </div>
+      <div class="lbg-podium" id="lbgPodium">
+        <!-- Rendered dynamically by leaderboard.js -->
+      </div>
+    </section>
+
+    <!-- 2. Controls: Search, Branch Pills, and Sort Switcher -->
+    <section class="lbg-board-sec">
+      <div class="lbg-controls-bar">
+        
+        <!-- Search Input -->
+        <div class="lbg-search-box">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="lbgSearch" placeholder="Search by name or branch (e.g. CS23, Aarav)…" autocomplete="off">
+        </div>
+
+        <!-- Sort Select / Options -->
+        <div class="lbg-sort-wrap">
+          <label for="lbgSortSelect">Sort by:</label>
+          <select id="lbgSortSelect" class="lbg-sort-select">
+            <option value="points">Total points</option>
+            <option value="papers">Past papers (+10 pts)</option>
+            <option value="assignment">Assignments (+8 pts)</option>
+            <option value="notes">Notes &amp; slides (+5 pts)</option>
+            <option value="reference">Books (+2 pts)</option>
+            <option value="count">Total files</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Department Filter Pills -->
+      <div class="lbg-dept-pills" id="lbgDeptPills">
+        <!-- Rendered dynamically with dot accents -->
+      </div>
+
+      <!-- Live Count / Filter Status -->
+      <div class="lbg-table-meta">
+        <span class="lbg-filter-count" id="lbgFilterCount">Showing all contributors</span>
+        <div class="lbg-legend">
+          <span class="lbg-legend-item"><i style="background:var(--papers)"></i> Papers (10)</span>
+          <span class="lbg-legend-item"><i style="background:var(--assignment)"></i> Assignments (8)</span>
+          <span class="lbg-legend-item"><i style="background:var(--notes)"></i> Notes (5)</span>
+          <span class="lbg-legend-item"><i style="background:var(--reference)"></i> Books (2)</span>
+        </div>
+      </div>
+
+      <!-- The Contributor Ranking Table / Cards List -->
+      <div class="lbg-table-container">
+        <div class="lbg-table-header">
+          <span class="col-rank">Rank</span>
+          <span class="col-user">Contributor</span>
+          <span class="col-branch">Branch</span>
+          <span class="col-composition">Contribution breakdown</span>
+          <span class="col-breakdown">Files</span>
+          <span class="col-score">Points</span>
+        </div>
+
+        <div class="lbg-table-body" id="lbgTableBody">
+          <!-- Dynamically populated rows -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Gamification Rulebook & Interactive Score Simulator -->
+    <section class="lbg-rules-sec">
+      <div class="lbg-rules-grid">
+
+        <!-- Left: How Points Work Cards -->
+        <div class="lbg-rules-card">
+          <h3>How points work</h3>
+          <p>Points match replacement effort. Past exam papers are the hardest to find, so they carry the highest score.</p>
+
+          <div class="lbg-points-grid">
+            <div class="lbg-point-item k-papers">
+              <div class="lbg-point-score">+10<span>pts</span></div>
+              <div class="lbg-point-info">
+                <b>Past Papers &amp; Quizzes</b>
+                <span>Mid-sem, end-sem, and quiz question papers.</span>
+              </div>
+            </div>
+
+            <div class="lbg-point-item k-assignment">
+              <div class="lbg-point-score">+8<span>pts</span></div>
+              <div class="lbg-point-info">
+                <b>Assignments &amp; Labs</b>
+                <span>Tutorial sheets, lab manuals, and problem sets.</span>
+              </div>
+            </div>
+
+            <div class="lbg-point-item k-notes">
+              <div class="lbg-point-score">+5<span>pts</span></div>
+              <div class="lbg-point-info">
+                <b>Lecture Notes &amp; Slides</b>
+                <span>Student notes, summaries, and professor slides.</span>
+              </div>
+            </div>
+
+            <div class="lbg-point-item k-reference">
+              <div class="lbg-point-score">+2<span>pts</span></div>
+              <div class="lbg-point-info">
+                <b>Reference Books</b>
+                <span>Prescribed textbooks and edition details.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lbg-rules-note">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>Points credit once files are verified. Anonymous uploads still build the archive without listing your name on the board.</span>
+          </div>
+        </div>
+
+        <!-- Right: Interactive Point Calculator Simulator -->
+        <div class="lbg-sim-card">
+          <h3>Points calculator</h3>
+          <p>Estimate how many points you'll earn with your next upload.</p>
+
+          <form class="lbg-sim-form" id="lbgSimForm" onsubmit="event.preventDefault();">
+            <div class="lbg-sim-inputs">
+              
+              <div class="lbg-sim-row">
+                <div class="lbg-sim-row-label">
+                  <i style="background:var(--papers)"></i>
+                  <span>Past papers</span>
+                  <small>10 pts each</small>
+                </div>
+                <div class="lbg-sim-stepper">
+                  <button type="button" class="lbg-step-btn" data-field="papers" data-dir="-1">&minus;</button>
+                  <input type="number" id="simPapers" min="0" max="50" value="2">
+                  <button type="button" class="lbg-step-btn" data-field="papers" data-dir="1">&plus;</button>
+                </div>
+              </div>
+
+              <div class="lbg-sim-row">
+                <div class="lbg-sim-row-label">
+                  <i style="background:var(--assignment)"></i>
+                  <span>Assignments / Labs</span>
+                  <small>8 pts each</small>
+                </div>
+                <div class="lbg-sim-stepper">
+                  <button type="button" class="lbg-step-btn" data-field="assignment" data-dir="-1">&minus;</button>
+                  <input type="number" id="simAssignment" min="0" max="50" value="1">
+                  <button type="button" class="lbg-step-btn" data-field="assignment" data-dir="1">&plus;</button>
+                </div>
+              </div>
+
+              <div class="lbg-sim-row">
+                <div class="lbg-sim-row-label">
+                  <i style="background:var(--notes)"></i>
+                  <span>Notes &amp; Slides</span>
+                  <small>5 pts each</small>
+                </div>
+                <div class="lbg-sim-stepper">
+                  <button type="button" class="lbg-step-btn" data-field="notes" data-dir="-1">&minus;</button>
+                  <input type="number" id="simNotes" min="0" max="50" value="3">
+                  <button type="button" class="lbg-step-btn" data-field="notes" data-dir="1">&plus;</button>
+                </div>
+              </div>
+
+              <div class="lbg-sim-row">
+                <div class="lbg-sim-row-label">
+                  <i style="background:var(--reference)"></i>
+                  <span>Reference books</span>
+                  <small>2 pts each</small>
+                </div>
+                <div class="lbg-sim-stepper">
+                  <button type="button" class="lbg-step-btn" data-field="reference" data-dir="-1">&minus;</button>
+                  <input type="number" id="simReference" min="0" max="50" value="1">
+                  <button type="button" class="lbg-step-btn" data-field="reference" data-dir="1">&plus;</button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Estimated Calculation Result -->
+            <div class="lbg-sim-result">
+              <div class="lbg-sim-total">
+                <span class="lbg-sim-val" id="simTotalScore">45</span>
+                <span class="lbg-sim-tag">Estimated points</span>
+              </div>
+              <div class="lbg-sim-tier" id="simTierBadge">
+                <span class="tier-icon">🏅</span>
+                <span class="tier-name">Regular Contributor</span>
+              </div>
+            </div>
+
+            <a class="cta-solid lbg-sim-cta" href="contribute.html">
+              Contribute files
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Global Pre-Footer CTA -->
+    <section class="global-cta">
+      <div class="cta-folder-card">
+        
+        <!-- Left Text Column -->
+        <div class="cf-left">
+          <h2 class="cf-title">
+            <span class="h-solid">Put your name on the board</span>
+          </h2>
+
+          <p class="cf-desc">
+            Got past papers or class notes? Pass them forward to your batchmates and juniors.
+          </p>
+
+          <div class="cf-actions">
+            <a class="cta-solid cf-btn" href="contribute.html">
+              Share a file
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Folder Artifact (Interactive Physics) -->
+        <div class="cf-right">
+          <div class="cf-stage" aria-hidden="true">
+            <div class="cf-folder">
+              
+              <!-- Yellow Sticky Note -->
+              <div class="cf-sticky">15 Depts</div>
+
+              <!-- Folder Back Panel -->
+              <div class="cf-fback"></div>
+              
+              <!-- Sheet 3: Terracotta (Assignments) -->
+              <div class="cf-sheet cf-s3">
+                <div class="cf-sheet-header">
+                  <div class="cf-sheet-tag"><i></i> EE1200 Lab Manual</div>
+                  <span class="cf-sheet-badge">Labs</span>
+                </div>
+                <div class="cf-sheet-lines"><span></span><span></span></div>
+              </div>
+
+              <!-- Sheet 2: Olive (Notes & Slides) -->
+              <div class="cf-sheet cf-s2">
+                <div class="cf-sheet-header">
+                  <div class="cf-sheet-tag"><i></i> MA1110 Lecture Deck</div>
+                  <span class="cf-sheet-badge">Slides</span>
+                </div>
+                <div class="cf-sheet-lines"><span></span><span></span></div>
+              </div>
+
+              <!-- Sheet 1: Amber (Past Exam Paper) -->
+              <div class="cf-sheet cf-s1">
+                <div class="cf-sheet-header">
+                  <div class="cf-sheet-tag"><i></i> CS2110 Endsem 2025</div>
+                  <span class="cf-sheet-badge">Exam</span>
+                </div>
+                <div class="cf-sheet-lines"><span></span><span></span></div>
+              </div>
+
+              <!-- Folder Front Pocket Flap -->
+              <div class="cf-ffront">
+                <div class="cf-ffront-top">
+                  <span class="cf-ffront-code">INTAKE / 2026</span>
+                  <span class="cf-ffront-pill">Drop Box</span>
+                </div>
+                <h3 class="cf-ffront-title">Contributions Hub</h3>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-top">
+
+        <div class="foot-brand">
+          <a class="foot-mark" href="index.html"><img src="assets/abhyas-mark.png" alt="" width="42" height="42"> Abhyas</a>
+          <p class="foot-blurb">Sharing is caring.</p>
+          <div class="foot-fine">
+            <span class="foot-by">Built with <span class="foot-heart">🧡</span> by <a class="foot-person" href="https://github.com/saichandanmettu" target="_blank" rel="noopener noreferrer"><img src="assets/chandan.png" alt="" width="22" height="22" onerror="this.remove()"><b>Saichandan</b></a></span>
+            <span>&copy; 2026 Abhyas &middot; Shared for educational use</span>
+          </div>
+        </div>
+
+        <div class="foot-col">
+          <h3>Support</h3>
+          <ul>
+            <li><a href="terms.html">Terms</a></li>
+            <li><a href="mailto:ms24btech11021@iith.ac.in?subject=Feature%20Request">Request a feature</a></li>
+          </ul>
+        </div>
+
+        <div class="foot-col">
+          <h3>Explore</h3>
+          <ul>
+            <li><a href="index.html">Browse archive</a></li>
+            <li><a href="library.html">The library</a></li>
+            <li><a href="releases.html">Releases &amp; updates</a></li>
+            <li><a class="on" href="leaderboard.html">Leaderboard</a></li>
+            <li><a href="contribute.html">Contribute a file</a></li>
+          </ul>
+        </div>
+
+        <div class="foot-col">
+          <h3>More for IITH</h3>
+          <ul>
+            <li><a href="https://sanchari.iith.online">Sanchari &middot; campus transit</a></li>
+            <li><a href="https://ruchi.iith.online">Ruchi &middot; mess menu</a></li>
+            <li><a href="https://nivas.iith.online">Nivas &middot; hostels</a></li>
+            <li><a href="https://iith.online">Garage &middot; all our projects</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="wrap foot-word-wrap">
+      <div class="foot-word" aria-hidden="true">Abhyas</div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- Contributor Profile Inspection Drawer / Modal -->
+<div class="modal" id="lbgProfileModal" role="dialog" aria-modal="true" aria-labelledby="lbgModalTitle" hidden>
+  <div class="modal-back" id="lbgModalBack"></div>
+  <div class="lbg-modal-card">
+    <button class="modal-close" id="lbgModalClose" type="button" aria-label="Close">&times;</button>
+    
+    <div class="lbg-m-header">
+      <div class="lbg-m-avatar" id="lbgModalAvatar">AM</div>
+      <div class="lbg-m-title-block">
+        <div class="lbg-m-tier" id="lbgModalTier">Academic Legend</div>
+        <h2 class="lbg-m-name" id="lbgModalName">Aarav Menon</h2>
+        <div class="lbg-m-sub">
+          <span class="lbg-m-roll" id="lbgModalRoll">CS23</span>
+          <span class="lbg-m-dept" id="lbgModalDept">Computer Science</span>
+        </div>
+      </div>
+      <div class="lbg-m-score-box">
+        <span class="lbg-m-score-num" id="lbgModalScore">0</span>
+        <span class="lbg-m-score-lbl">Total Score</span>
+      </div>
+    </div>
+
+    <!-- Modal Breakdown Chart & Kind stats -->
+    <div class="lbg-m-breakdown-sec">
+      <h4>Resource Contribution Breakdown</h4>
+      <div class="lbg-m-bar" id="lbgModalBar"></div>
+      <div class="lbg-m-stats-grid" id="lbgModalStatsGrid">
+        <!-- Dynamically injected -->
+      </div>
+    </div>
+
+    <!-- Uploaded Resources List -->
+    <div class="lbg-m-files-sec">
+      <div class="lbg-m-files-head">
+        <h4>Shared Resources (<span id="lbgModalFileCount">0</span>)</h4>
+        <span class="lbg-m-files-hint">Verified in archive</span>
+      </div>
+      <div class="lbg-m-files-list" id="lbgModalFilesList">
+        <!-- Dynamically injected rows -->
+      </div>
+    </div>
+
+    <div class="lbg-m-footer">
+      <a class="cta-solid lbg-m-contribute-btn" href="contribute.html">
+        Share another file &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Toast Notification -->
+<div class="toast" id="toast" aria-live="polite" hidden></div>
+
+<!-- Scripts -->
+<script src="lenis.min.js"></script>
+<script src="smooth.js?v=4"></script>
+<script src="data.js?v=9"></script>
+<script src="leaderboard.js?v=11"></script>
+</body>
+</html>

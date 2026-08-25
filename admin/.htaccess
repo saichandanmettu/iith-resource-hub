@@ -1,0 +1,12 @@
+# Second, independent layer over the console. The JavaScript that hides the
+# UI is convenience, not security; this is enforced by the server.
+#
+# To enable, create a password file OUTSIDE public_html:
+#   htpasswd -c /home/<user>/abhyas-private/.htpasswd yourname
+# then uncomment the four lines below and set the correct path.
+#
+# AuthType Basic
+# AuthName "Abhyas review queue"
+# AuthUserFile /home/<user>/abhyas-private/.htpasswd
+# Require valid-user
+Options -Indexes

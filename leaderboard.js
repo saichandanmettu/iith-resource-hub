@@ -1,0 +1,860 @@
+/**
+ * Leaderboard-Gemini — Gamified Contributor Recognition
+ * Abhyas Course Resource Hub (IIT Hyderabad)
+ *
+ * Computes live scores and metrics dynamically from `data.js` (RESOURCES, CONTRIBUTORS, POINTS, DEPARTMENTS).
+ * Pure JavaScript, accessible, responsive, and performance-optimized.
+ */
+
+(function () {
+  'use strict';
+
+  // --- State ---
+  let currentScope = 'semester'; // 'semester' | 'all'
+  let currentDept = 'all';       // 'all' | 'CS' | 'EE' | ...
+  let currentSort = 'points';    // 'points' | 'papers' | 'assignment' | 'notes' | 'reference' | 'count'
+  let searchQuery = '';
+
+  // DOM Elements
+  const scopeSemesterBtn = document.getElementById('scopeSemesterBtn');
+  const scopeAllTimeBtn = document.getElementById('scopeAllTimeBtn');
+  const scopeSemesterLabel = document.getElementById('scopeSemesterLabel');
+  const lbgStatsStrip = document.getElementById('lbgStatsStrip');
+  const lbgPodium = document.getElementById('lbgPodium');
+  const lbgDeptPills = document.getElementById('lbgDeptPills');
+  const lbgTableBody = document.getElementById('lbgTableBody');
+  const lbgFilterCount = document.getElementById('lbgFilterCount');
+  const lbgSearch = document.getElementById('lbgSearch');
+  const lbgSortSelect = document.getElementById('lbgSortSelect');
+
+  // Modal Elements
+  const modal = document.getElementById('lbgProfileModal');
+  const modalBack = document.getElementById('lbgModalBack');
+  const modalClose = document.getElementById('lbgModalClose');
+  const modalAvatar = document.getElementById('lbgModalAvatar');
+  const modalName = document.getElementById('lbgModalName');
+  const modalRoll = document.getElementById('lbgModalRoll');
+  const modalDept = document.getElementById('lbgModalDept');
+  const modalTier = document.getElementById('lbgModalTier');
+  const modalScore = document.getElementById('lbgModalScore');
+  const modalBar = document.getElementById('lbgModalBar');
+  const modalStatsGrid = document.getElementById('lbgModalStatsGrid');
+  const modalFilesList = document.getElementById('lbgModalFilesList');
+  const modalFileCount = document.getElementById('lbgModalFileCount');
+
+  // Simulator Elements
+  const simPapers = document.getElementById('simPapers');
+  const simAssignment = document.getElementById('simAssignment');
+  const simNotes = document.getElementById('simNotes');
+  const simReference = document.getElementById('simReference');
+  const simTotalScore = document.getElementById('simTotalScore');
+  const simTierBadge = document.getElementById('simTierBadge');
+
+  // Points values from data.js or system defaults
+  const SCORE_RULES = typeof POINTS !== 'undefined' ? POINTS : {
+    papers: 10,
+    assignment: 8,
+    notes: 5,
+    reference: 2,
+  };
+
+  const KIND_CONFIG = {
+    papers: { label: 'Past Papers', color: 'var(--papers)', tint: 'var(--papers-tint)', ink: 'var(--papers-ink)' },
+    assignment: { label: 'Assignments', color: 'var(--assignment)', tint: 'var(--assignment-tint)', ink: 'var(--assignment-ink)' },
+    notes: { label: 'Notes & Slides', color: 'var(--notes)', tint: 'var(--notes-tint)', ink: 'var(--notes-ink)' },
+    reference: { label: 'Reference Books', color: 'var(--reference)', tint: 'var(--reference-tint)', ink: 'var(--reference-ink)' },
+  };
+
+  // Helper: Extract Department from Roll (e.g. "CS23" -> "CS", "MS24" -> "MSME" or matching code)
+  function getDeptFromRoll(roll) {
+    if (!roll) return null;
+    const match = roll.match(/^[A-Za-z]+/);
+    if (!match) return null;
+    const code = match[0].toUpperCase();
+    
+    // Exact match in DEPARTMENTS
+    if (typeof DEPARTMENTS !== 'undefined') {
+      const found = DEPARTMENTS.find(d => d.code.toUpperCase() === code);
+      if (found) return found;
+      // Handle prefix aliases like MS -> MSME
+      if (code === 'MS') {
+        const msme = DEPARTMENTS.find(d => d.code === 'MSME');
+        if (msme) return msme;
+      }
+      if (code === 'MC') {
+        const mnc = DEPARTMENTS.find(d => d.code === 'MNC');
+        if (mnc) return mnc;
+      }
+    }
+    return { code: code, name: code, short: code, accent: '#F28700' };
+  }
+
+  // Contributor Tier Calculator
+  function getTier(points) {
+    if (points >= 100) return { name: 'Lead Contributor', icon: '🏆', class: 'tier-legend' };
+    if (points >= 50) return { name: 'Core Contributor', icon: '🎖️', class: 'tier-master' };
+    if (points >= 25) return { name: 'Regular Contributor', icon: '🏅', class: 'tier-scholar' };
+    if (points >= 10) return { name: 'Contributor', icon: '⭐', class: 'tier-active' };
+    return { name: 'New Contributor', icon: '🌱', class: 'tier-fresh' };
+  }
+
+  const FALLBACK_CONTRIBUTORS = [
+    { id: "c1", name: "Aarav Menon", roll: "CS23" },
+    { id: "c2", name: "Ishita Rao", roll: "EP23" },
+    { id: "c3", name: "Rohan Iyer", roll: "MS24" },
+    { id: "c4", name: "Neha Kulkarni", roll: "ME23" },
+    { id: "c5", name: "Kabir Sheth", roll: "EE24" },
+    { id: "c6", name: "Ananya Bose", roll: "CM22" },
+    { id: "c7", name: "Vikram Nair", roll: "CS24" },
+    { id: "c8", name: "Meera Joshi", roll: "ES24" },
+    { id: "c9", name: "Devika Nambiar", roll: "CS23" },
+    { id: "c10", name: "Arjun Pillai", roll: "ME24" },
+    { id: "c11", name: "Sneha Reddy", roll: "CM23" },
+    { id: "c12", name: "Karthik Varma", roll: "EE23" },
+    { id: "c13", name: "Priya Menon", roll: "MNC24" },
+    { id: "c14", name: "Rahul Bhat", roll: "EP24" },
+    { id: "c15", name: "Aisha Qureshi", roll: "BT23" },
+  ];
+
+  const FALLBACK_RESOURCES = [
+    { id: 1, title: "Data Structures End-Sem 2024", contributor: "c1", type: "papers", added: "2026-08-10", code: "CS2110", course: "Data Structures", semester: 3 },
+    { id: 2, title: "Algorithms Quiz 2 Solutions", contributor: "c1", type: "papers", added: "2026-08-12", code: "CS3110", course: "Algorithms", semester: 5 },
+    { id: 3, title: "Operating Systems Lecture Notes", contributor: "c1", type: "notes", added: "2026-08-15", code: "CS3010", course: "Operating Systems", semester: 5 },
+    { id: 4, title: "DBMS Lab Manual", contributor: "c1", type: "assignment", added: "2026-08-18", code: "CS3200", course: "Database Systems", semester: 5 },
+    { id: 5, title: "Modern Physics Mid-Sem Paper", contributor: "c2", type: "papers", added: "2026-07-30", code: "PH2110", course: "Modern Physics", semester: 3 },
+    { id: 6, title: "Quantum Mechanics Problem Sets", contributor: "c2", type: "assignment", added: "2026-08-05", code: "PH3120", course: "Quantum Mechanics", semester: 5 },
+    { id: 7, title: "Electrodynamics Lecture Slides", contributor: "c2", type: "notes", added: "2026-08-14", code: "PH2130", course: "Electrodynamics", semester: 3 },
+    { id: 8, title: "Griffiths Introduction to Electrodynamics", contributor: "c2", type: "reference", added: "2026-08-20", code: "PH2130", course: "Electrodynamics", semester: 3 },
+    { id: 9, title: "Materials Chemistry Quiz 1", contributor: "c3", type: "papers", added: "2026-07-22", code: "CY1120", course: "Materials Chemistry", semester: 2 },
+    { id: 10, title: "Thermodynamics of Materials Notes", contributor: "c3", type: "notes", added: "2026-08-01", code: "MS2100", course: "Thermodynamics of Materials", semester: 3 },
+    { id: 11, title: "Physical Metallurgy Assignment 3", contributor: "c3", type: "assignment", added: "2026-08-16", code: "MS3100", course: "Physical Metallurgy", semester: 5 },
+    { id: 12, title: "Fluid Mechanics End-Sem 2024", contributor: "c4", type: "papers", added: "2026-08-08", code: "ME2110", course: "Fluid Mechanics", semester: 3 },
+    { id: 13, title: "Solid Mechanics Tutorial Sheet", contributor: "c4", type: "assignment", added: "2026-08-11", code: "ME2120", course: "Solid Mechanics", semester: 3 },
+    { id: 14, title: "Signals and Systems Mid-Sem Paper", contributor: "c5", type: "papers", added: "2026-08-02", code: "EE2110", course: "Signals and Systems", semester: 3 },
+    { id: 15, title: "Digital Signal Processing Slides", contributor: "c5", type: "notes", added: "2026-08-19", code: "EE3120", course: "DSP", semester: 5 },
+    { id: 16, title: "Chemical Reaction Engg Notes", contributor: "c6", type: "notes", added: "2026-08-03", code: "CH3110", course: "CRE", semester: 5 },
+    { id: 17, title: "Computer Networks Lab Assignment", contributor: "c7", type: "assignment", added: "2026-08-17", code: "CS3120", course: "Computer Networks", semester: 5 },
+    { id: 18, title: "Linear Algebra Lecture Notes", contributor: "c13", type: "notes", added: "2026-08-06", code: "MA2110", course: "Linear Algebra", semester: 3 },
+    { id: 19, title: "Genetics Lab Manual", contributor: "c15", type: "assignment", added: "2026-08-21", code: "BT2110", course: "Genetics", semester: 3 },
+  ];
+
+  // --- Compute Contributor Scores ---
+  function computeContributors(scope) {
+    const rawContributors = (typeof CONTRIBUTORS !== 'undefined' && CONTRIBUTORS.length > 0)
+      ? CONTRIBUTORS
+      : (typeof globalThis.CONTRIBUTORS !== 'undefined' && globalThis.CONTRIBUTORS.length > 0)
+        ? globalThis.CONTRIBUTORS
+        : FALLBACK_CONTRIBUTORS;
+
+    const rawResources = (typeof RESOURCES !== 'undefined' && RESOURCES.length > 0)
+      ? RESOURCES
+      : (typeof globalThis.RESOURCES !== 'undefined' && globalThis.RESOURCES.length > 0)
+        ? globalThis.RESOURCES
+        : FALLBACK_RESOURCES;
+
+    const semStart = typeof SEMESTER_START !== 'undefined' ? SEMESTER_START : '2026-07-01';
+
+    return rawContributors.map(c => {
+      const userResources = rawResources.filter(r => {
+        if (r.contributor !== c.id) return false;
+        if (scope === 'semester' && r.added && r.added < semStart) return false;
+        return true;
+      });
+
+      const counts = {
+        papers: 0,
+        assignment: 0,
+        notes: 0,
+        reference: 0,
+      };
+
+      userResources.forEach(r => {
+        const t = r.type || 'papers';
+        if (counts[t] !== undefined) {
+          counts[t]++;
+        } else {
+          counts.papers++;
+        }
+      });
+
+      const pointsBreakdown = {
+        papers: counts.papers * (SCORE_RULES.papers || 10),
+        assignment: counts.assignment * (SCORE_RULES.assignment || 8),
+        notes: counts.notes * (SCORE_RULES.notes || 5),
+        reference: counts.reference * (SCORE_RULES.reference || 2),
+      };
+
+      const totalPoints = pointsBreakdown.papers + pointsBreakdown.assignment + pointsBreakdown.notes + pointsBreakdown.reference;
+      const totalCount = userResources.length;
+      const dept = getDeptFromRoll(c.roll);
+      const tier = getTier(totalPoints);
+
+      return {
+        ...c,
+        department: dept,
+        resources: userResources,
+        counts,
+        pointsBreakdown,
+        totalPoints,
+        totalCount,
+        tier,
+      };
+    });
+  }
+
+  // --- Render Top Summary Stats ---
+  function renderStats(contributors) {
+    const totalPoints = contributors.reduce((sum, c) => sum + c.totalPoints, 0);
+    const activeContributors = contributors.filter(c => c.totalCount > 0).length;
+    const totalFiles = contributors.reduce((sum, c) => sum + c.totalCount, 0);
+
+    // Calculate Top Department
+    const deptScores = {};
+    contributors.forEach(c => {
+      if (c.department && c.department.code) {
+        deptScores[c.department.code] = (deptScores[c.department.code] || 0) + c.totalPoints;
+      }
+    });
+
+    let topDeptCode = '—';
+    let maxScore = -1;
+    Object.entries(deptScores).forEach(([code, sc]) => {
+      if (sc > maxScore && sc > 0) {
+        maxScore = sc;
+        topDeptCode = code;
+      }
+    });
+
+    const elPoints = document.getElementById('statTotalPoints');
+    const elContrib = document.getElementById('statContributors');
+    const elFiles = document.getElementById('statFilesShared');
+    const elTopDept = document.getElementById('statTopDept');
+
+    if (elPoints) elPoints.textContent = totalPoints.toLocaleString();
+    if (elContrib) elContrib.textContent = activeContributors.toLocaleString();
+    if (elFiles) elFiles.textContent = totalFiles.toLocaleString();
+    if (elTopDept) elTopDept.textContent = topDeptCode;
+  }
+
+  // --- Render Stacked Kind Bar Helper ---
+  function createStackedBar(c) {
+    const total = c.totalPoints || 1;
+    const pPapers = ((c.pointsBreakdown.papers / total) * 100).toFixed(1);
+    const pAsg = ((c.pointsBreakdown.assignment / total) * 100).toFixed(1);
+    const pNotes = ((c.pointsBreakdown.notes / total) * 100).toFixed(1);
+    const pRef = ((c.pointsBreakdown.reference / total) * 100).toFixed(1);
+
+    return `
+      <div class="lbg-stacked-bar" title="Papers: ${c.counts.papers} (${c.pointsBreakdown.papers}pts) | Assignments: ${c.counts.assignment} (${c.pointsBreakdown.assignment}pts) | Notes: ${c.counts.notes} (${c.pointsBreakdown.notes}pts) | Books: ${c.counts.reference} (${c.pointsBreakdown.reference}pts)">
+        ${c.pointsBreakdown.papers > 0 ? `<div class="bar-seg seg-papers" style="width:${pPapers}%"></div>` : ''}
+        ${c.pointsBreakdown.assignment > 0 ? `<div class="bar-seg seg-assignment" style="width:${pAsg}%"></div>` : ''}
+        ${c.pointsBreakdown.notes > 0 ? `<div class="bar-seg seg-notes" style="width:${pNotes}%"></div>` : ''}
+        ${c.pointsBreakdown.reference > 0 ? `<div class="bar-seg seg-reference" style="width:${pRef}%"></div>` : ''}
+      </div>
+    `;
+  }
+
+  const LAUREL_SVG = `
+    <svg class="laurel-svg" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M10 24 C8 18, 10 10, 18 6" stroke-linecap="round"/>
+      <path d="M26 24 C28 18, 26 10, 18 6" stroke-linecap="round"/>
+      <circle cx="8.5" cy="18" r="1.5" fill="currentColor"/>
+      <circle cx="10" cy="12" r="1.5" fill="currentColor"/>
+      <circle cx="14" cy="8" r="1.5" fill="currentColor"/>
+      <circle cx="27.5" cy="18" r="1.5" fill="currentColor"/>
+      <circle cx="26" cy="12" r="1.5" fill="currentColor"/>
+      <circle cx="22" cy="8" r="1.5" fill="currentColor"/>
+    </svg>
+  `;
+
+  function createDonutSvg(c) {
+    const totalPts = c.totalPoints || 1;
+    const pPts = (c.pointsByKind?.papers || 0);
+    const aPts = (c.pointsByKind?.assignment || 0);
+    const nPts = (c.pointsByKind?.notes || 0);
+    const rPts = (c.pointsByKind?.reference || 0);
+
+    let pPct = Math.round((pPts / totalPts) * 100);
+    let aPct = Math.round((aPts / totalPts) * 100);
+    let nPct = Math.round((nPts / totalPts) * 100);
+    let rPct = Math.round((rPts / totalPts) * 100);
+
+    if (pPct === 0 && aPct === 0 && nPct === 0 && rPct === 0) {
+      pPct = c.counts?.papers ? 45 : 0;
+      aPct = c.counts?.assignment ? 30 : 0;
+      nPct = c.counts?.notes ? 25 : 0;
+    }
+
+    let offset = 0;
+    const paths = [];
+
+    if (pPct > 0) {
+      paths.push(`<path class="donut-seg seg-pap" stroke-dasharray="${pPct}, 100" stroke-dashoffset="${offset}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>`);
+      offset -= pPct;
+    }
+    if (aPct > 0) {
+      paths.push(`<path class="donut-seg seg-asg" stroke-dasharray="${aPct}, 100" stroke-dashoffset="${offset}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>`);
+      offset -= aPct;
+    }
+    if (nPct > 0) {
+      paths.push(`<path class="donut-seg seg-not" stroke-dasharray="${nPct}, 100" stroke-dashoffset="${offset}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>`);
+      offset -= nPct;
+    }
+    if (rPct > 0) {
+      paths.push(`<path class="donut-seg seg-ref" stroke-dasharray="${rPct}, 100" stroke-dashoffset="${offset}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>`);
+    }
+
+    return `
+      <svg class="pod-donut-svg" viewBox="0 0 36 36">
+        <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        ${paths.join('')}
+      </svg>
+    `;
+  }
+
+  function createSpecimenGrid(c) {
+    const pap = c.counts?.papers || 0;
+    const asg = c.counts?.assignment || 0;
+    const not = c.counts?.notes || 0;
+
+    return `
+      <div class="pod-specimen-grid">
+        <div class="specimen-card sc-papers">
+          <span class="specimen-num">${pap}</span>
+          <span class="specimen-lbl">${pap === 1 ? 'Paper' : 'Papers'}</span>
+        </div>
+        <div class="specimen-card sc-asg">
+          <span class="specimen-num">${asg}</span>
+          <span class="specimen-lbl">Lab</span>
+        </div>
+        <div class="specimen-card sc-notes">
+          <span class="specimen-num">${not}</span>
+          <span class="specimen-lbl">${not === 1 ? 'Note' : 'Notes'}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // --- Render Podium Showcase (Top 3 in 3D Olympic Staircase) ---
+  /* ------------------------------------------------------------
+     Podium — version B.
+
+     Rank is colour: amber, olive, mauve. Three of the four families
+     the archive already owns, descending in prominence. Not gold /
+     silver / bronze — "silver" is cold and this palette is tuned
+     warm, so a cold grey is the one thing it cannot absorb.
+
+     Each sheet inside a folder is one KIND that person actually
+     shared, tinted accordingly, with the count hidden low on the
+     sheet until hover springs the stack apart. Rank and kind
+     therefore live in different registers — saturation for place,
+     pale tint for kind — and the white ring on each sheet is what
+     keeps an olive notes sheet off the olive second-place folder.
+     ------------------------------------------------------------ */
+  const PODIUM_KIND_LABEL = {
+    papers: 'Past papers',
+    assignment: 'Assignments',
+    notes: 'Notes',
+    reference: 'Reference',
+  };
+
+  function podiumSheets(c) {
+    // biggest contribution sits at the front, where it is most visible
+    const kinds = Object.keys(PODIUM_KIND_LABEL)
+      .filter(k => (c.counts && c.counts[k]) > 0)
+      .sort((a, b) => c.counts[b] - c.counts[a])
+      .slice(0, 3);
+    if (!kinds.length) return '';
+    // rendered back-to-front: s3, s2, s1
+    const slots = ['s1', 's2', 's3'];
+    return kinds.map((k, i) => ({ k, slot: slots[i] }))
+      .reverse()
+      .map(({ k, slot }) => `
+        <div class="pbsh ${slot} k-${k}">
+          <div class="pbsh-top">
+            <span class="pbsh-name">${PODIUM_KIND_LABEL[k]}</span>
+            <span class="dot"></span>
+          </div>
+          <div class="pbsh-count">${c.counts[k]}<span>shared</span></div>
+        </div>`).join('');
+  }
+
+  function podiumCard(c, rank) {
+    const place = ['First', 'Second', 'Third'][rank - 1];
+    return `
+      <div class="pbcol r${rank}" data-id="${c.id}">
+        <div class="pbfolder" tabindex="0" role="button" aria-label="Rank ${rank}: ${c.name}, ${c.totalPoints} points">
+          <div class="pbback"></div>
+          ${podiumSheets(c)}
+          <div class="pbfront">
+            <div class="pbtop">
+              <p class="pbname">${c.name}</p>
+              <span class="pbroll">${c.roll || ''}</span>
+            </div>
+            <div class="pbbot">
+              <span class="pbscore"><b>${c.totalPoints}</b><span>pts</span></span>
+              <span class="pbfiles">${c.totalCount} ${c.totalCount === 1 ? 'file' : 'files'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="pbplate">${place}</div>
+      </div>`;
+  }
+
+  function renderPodium(rankedList) {
+    if (!lbgPodium) return;
+
+    if (!rankedList.length) {
+      lbgPodium.innerHTML = `<div class="lbg-empty-msg">No contributors in this window yet.</div>`;
+      return;
+    }
+
+    lbgPodium.className = 'pbstage';
+    lbgPodium.innerHTML = rankedList.slice(0, 3)
+      .map((c, i) => podiumCard(c, i + 1)).join('');
+
+    /* the folder opens the same contributor panel the table rows do */
+    lbgPodium.querySelectorAll('.pbcol').forEach(col => {
+      const open = () => openContributorModal(col.dataset.id);
+      col.querySelector('.pbfolder').addEventListener('click', open);
+      col.querySelector('.pbfolder').addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      });
+    });
+  }
+
+  function secondDepartmentName(dept) {
+    if (!dept) return '';
+    return dept.short || dept.name || dept.code;
+  }
+
+  function getInitials(name) {
+    if (!name) return '??';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  // --- Render Department Filter Pills ---
+  function renderDeptPills() {
+    if (!lbgDeptPills || typeof DEPARTMENTS === 'undefined') return;
+
+    let html = `
+      <button class="lbg-dept-pill ${currentDept === 'all' ? 'on' : ''}" data-dept="all" type="button">
+        <i></i> All Branches
+      </button>
+    `;
+
+    DEPARTMENTS.forEach(dept => {
+      const active = currentDept === dept.code ? 'on' : '';
+      html += `
+        <button class="lbg-dept-pill ${active}" data-dept="${dept.code}" type="button">
+          <i style="background:${dept.accent}"></i> ${dept.code}
+        </button>
+      `;
+    });
+
+    lbgDeptPills.innerHTML = html;
+
+    lbgDeptPills.querySelectorAll('.lbg-dept-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const dept = btn.getAttribute('data-dept');
+        currentDept = dept;
+        lbgDeptPills.querySelectorAll('.lbg-dept-pill').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+        refreshView();
+      });
+    });
+  }
+
+  // --- Filter and Sort List ---
+  function getFilteredAndSortedList(allContributors) {
+    let list = [...allContributors];
+
+    // 1. Department Filter
+    if (currentDept !== 'all') {
+      list = list.filter(c => {
+        if (!c.department) return false;
+        return c.department.code === currentDept;
+      });
+    }
+
+    // 2. Search Query Filter (name or roll)
+    if (searchQuery.trim() !== '') {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter(c => {
+        const nameMatch = c.name && c.name.toLowerCase().includes(q);
+        const rollMatch = c.roll && c.roll.toLowerCase().includes(q);
+        const deptMatch = c.department && (c.department.code.toLowerCase().includes(q) || c.department.name.toLowerCase().includes(q));
+        return nameMatch || rollMatch || deptMatch;
+      });
+    }
+
+    // 3. Sorting
+    list.sort((a, b) => {
+      if (currentSort === 'points') {
+        if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+        return b.totalCount - a.totalCount;
+      }
+      if (currentSort === 'papers') {
+        return b.counts.papers - a.counts.papers || b.totalPoints - a.totalPoints;
+      }
+      if (currentSort === 'assignment') {
+        return b.counts.assignment - a.counts.assignment || b.totalPoints - a.totalPoints;
+      }
+      if (currentSort === 'notes') {
+        return b.counts.notes - a.counts.notes || b.totalPoints - a.totalPoints;
+      }
+      if (currentSort === 'reference') {
+        return b.counts.reference - a.counts.reference || b.totalPoints - a.totalPoints;
+      }
+      if (currentSort === 'count') {
+        return b.totalCount - a.totalCount || b.totalPoints - a.totalPoints;
+      }
+      return 0;
+    });
+
+    return list;
+  }
+
+  // --- Render Ranking Table Body ---
+  function renderTable(rankedList) {
+    if (!lbgTableBody) return;
+
+    if (rankedList.length === 0) {
+      lbgTableBody.innerHTML = `
+        <div class="lbg-empty-row">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <p>No contributors found matching your criteria.</p>
+        </div>
+      `;
+      if (lbgFilterCount) lbgFilterCount.textContent = '0 contributors found';
+      return;
+    }
+
+    if (lbgFilterCount) {
+      lbgFilterCount.textContent = `Showing ${rankedList.length} contributor${rankedList.length === 1 ? '' : 's'}`;
+    }
+
+    let rowsHtml = '';
+
+    rankedList.forEach((c, idx) => {
+      const rankNum = idx + 1;
+      const isTop3 = rankNum <= 3;
+      const rankClass = rankNum === 1 ? 'rank-1' : rankNum === 2 ? 'rank-2' : rankNum === 3 ? 'rank-3' : '';
+      const deptAccent = c.department ? c.department.accent : '#F28700';
+      const deptShort = c.department ? c.department.short : c.roll;
+
+      rowsHtml += `
+        <div class="lbg-row ${rankClass}" data-id="${c.id}" tabindex="0" role="button" aria-label="Rank ${rankNum}: ${c.name}, ${c.totalPoints} points">
+          
+          <!-- Rank Column -->
+          <div class="col-rank">
+            <span class="lbg-rank-num">${rankNum}</span>
+            ${rankNum === 1 ? '<span class="lbg-crown-icon" title="First Place">👑</span>' : ''}
+          </div>
+
+          <!-- User Column -->
+          <div class="col-user">
+            <div class="lbg-u-avatar">${getInitials(c.name)}</div>
+            <div class="lbg-u-info">
+              <div class="lbg-u-name-line">
+                <span class="lbg-u-name">${c.name}</span>
+                <span class="lbg-u-roll">${c.roll}</span>
+              </div>
+              <div class="lbg-u-tier">
+                <span class="tier-pill ${c.tier.class}">${c.tier.icon} ${c.tier.name}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Branch Column -->
+          <div class="col-branch">
+            <div class="lbg-branch-tag">
+              <span class="lbg-branch-dot" style="background:${deptAccent}"></span>
+              <span class="lbg-branch-name">${deptShort}</span>
+            </div>
+          </div>
+
+          <!-- Stacked Composition Bar Column -->
+          <div class="col-composition">
+            ${createStackedBar(c)}
+          </div>
+
+          <!-- Breakdown Column (Kind Counts) -->
+          <div class="col-breakdown">
+            <div class="lbg-counts-chips">
+              <span class="chip-k chip-papers" title="${c.counts.papers} Past Papers">${c.counts.papers}p</span>
+              <span class="chip-k chip-assignment" title="${c.counts.assignment} Assignments">${c.counts.assignment}a</span>
+              <span class="chip-k chip-notes" title="${c.counts.notes} Notes">${c.counts.notes}n</span>
+              <span class="chip-k chip-reference" title="${c.counts.reference} Books">${c.counts.reference}b</span>
+            </div>
+          </div>
+
+          <!-- Total Score Column -->
+          <div class="col-score">
+            <div class="lbg-score-badge">
+              <span class="score-val">${c.totalPoints}</span>
+              <span class="score-pts">pts</span>
+            </div>
+          </div>
+
+        </div>
+      `;
+    });
+
+    lbgTableBody.innerHTML = rowsHtml;
+
+    // Attach click listeners to rows
+    lbgTableBody.querySelectorAll('.lbg-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const id = row.getAttribute('data-id');
+        openContributorModal(id);
+      });
+      row.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const id = row.getAttribute('data-id');
+          openContributorModal(id);
+        }
+      });
+    });
+  }
+
+  // --- Full Refresh Function ---
+  let computedList = [];
+
+  function refreshView() {
+    computedList = computeContributors(currentScope);
+    
+    // Sort all contributors by points for podium & stats
+    const allRanked = [...computedList].sort((a, b) => b.totalPoints - a.totalPoints || b.totalCount - a.totalCount);
+
+    renderStats(allRanked);
+    renderPodium(allRanked);
+
+    const filtered = getFilteredAndSortedList(computedList);
+    renderTable(filtered);
+  }
+
+  // --- Contributor Profile Inspection Modal ---
+  function openContributorModal(contributorId) {
+    const c = computedList.find(item => item.id === contributorId);
+    if (!c || !modal) return;
+
+    if (modalAvatar) modalAvatar.textContent = getInitials(c.name);
+    if (modalName) modalName.textContent = c.name;
+    if (modalRoll) modalRoll.textContent = c.roll;
+    if (modalDept) modalDept.textContent = c.department ? (c.department.name || c.department.short) : c.roll;
+    if (modalTier) {
+      modalTier.textContent = `${c.tier.icon} ${c.tier.name}`;
+      modalTier.className = `lbg-m-tier ${c.tier.class}`;
+    }
+    if (modalScore) modalScore.textContent = c.totalPoints;
+    if (modalBar) modalBar.innerHTML = createStackedBar(c);
+    if (modalFileCount) modalFileCount.textContent = c.resources.length;
+
+    // Stats Grid
+    if (modalStatsGrid) {
+      modalStatsGrid.innerHTML = `
+        <div class="m-stat-item k-papers">
+          <span class="m-stat-count">${c.counts.papers}</span>
+          <span class="m-stat-lbl">Papers (+${c.pointsBreakdown.papers} pts)</span>
+        </div>
+        <div class="m-stat-item k-assignment">
+          <span class="m-stat-count">${c.counts.assignment}</span>
+          <span class="m-stat-lbl">Assignments (+${c.pointsBreakdown.assignment} pts)</span>
+        </div>
+        <div class="m-stat-item k-notes">
+          <span class="m-stat-count">${c.counts.notes}</span>
+          <span class="m-stat-lbl">Notes (+${c.pointsBreakdown.notes} pts)</span>
+        </div>
+        <div class="m-stat-item k-reference">
+          <span class="m-stat-count">${c.counts.reference}</span>
+          <span class="m-stat-lbl">Books (+${c.pointsBreakdown.reference} pts)</span>
+        </div>
+      `;
+    }
+
+    // Resource rows list
+    if (modalFilesList) {
+      if (c.resources.length === 0) {
+        modalFilesList.innerHTML = `<div class="m-files-empty">No resources recorded for this period.</div>`;
+      } else {
+        let filesHtml = '';
+        c.resources.forEach(r => {
+          const kindConf = KIND_CONFIG[r.type] || KIND_CONFIG.papers;
+          const scoreForThis = SCORE_RULES[r.type] || 10;
+          filesHtml += `
+            <div class="m-file-card">
+              <div class="m-file-l">
+                <span class="m-file-kind" style="background:${kindConf.tint}; color:${kindConf.ink}">${r.type}</span>
+                <div class="m-file-info">
+                  <div class="m-file-title">${r.title || r.course}</div>
+                  <div class="m-file-meta">
+                    <span class="m-file-code">${r.code || ''}</span>
+                    <span>&middot;</span>
+                    <span>Sem ${r.semester || 1}</span>
+                    <span>&middot;</span>
+                    <span>${r.year || 2024}</span>
+                    ${r.pages ? `<span>&middot; ${r.pages} pgs</span>` : ''}
+                  </div>
+                </div>
+              </div>
+              <div class="m-file-r">
+                <span class="m-file-score">+${scoreForThis} pts</span>
+              </div>
+            </div>
+          `;
+        });
+        modalFilesList.innerHTML = filesHtml;
+      }
+    }
+
+    modal.hidden = false;
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    setTimeout(() => {
+      modal.hidden = true;
+      document.body.style.overflow = '';
+    }, 200);
+  }
+
+  // --- Interactive Score Simulator ---
+  function updateSimulator() {
+    const numPapers = Math.max(0, parseInt(simPapers.value, 10) || 0);
+    const numAsg = Math.max(0, parseInt(simAssignment.value, 10) || 0);
+    const numNotes = Math.max(0, parseInt(simNotes.value, 10) || 0);
+    const numRef = Math.max(0, parseInt(simReference.value, 10) || 0);
+
+    const pts = (numPapers * (SCORE_RULES.papers || 10)) +
+                (numAsg * (SCORE_RULES.assignment || 8)) +
+                (numNotes * (SCORE_RULES.notes || 5)) +
+                (numRef * (SCORE_RULES.reference || 2));
+
+    if (simTotalScore) {
+      simTotalScore.textContent = pts;
+    }
+
+    if (simTierBadge) {
+      const tier = getTier(pts);
+      simTierBadge.innerHTML = `
+        <span class="tier-icon">${tier.icon}</span>
+        <span class="tier-name">${tier.name}</span>
+      `;
+      simTierBadge.className = `lbg-sim-tier ${tier.class}`;
+    }
+  }
+
+  // --- Init Event Handlers ---
+  function initEvents() {
+    // Semester label
+    if (scopeSemesterLabel && typeof SEMESTER_LABEL !== 'undefined') {
+      scopeSemesterLabel.textContent = SEMESTER_LABEL;
+    }
+
+    // Scope Toggle
+    if (scopeSemesterBtn && scopeAllTimeBtn) {
+      scopeSemesterBtn.addEventListener('click', () => {
+        if (currentScope === 'semester') return;
+        currentScope = 'semester';
+        scopeSemesterBtn.classList.add('on');
+        scopeSemesterBtn.setAttribute('aria-selected', 'true');
+        scopeAllTimeBtn.classList.remove('on');
+        scopeAllTimeBtn.setAttribute('aria-selected', 'false');
+        refreshView();
+      });
+
+      scopeAllTimeBtn.addEventListener('click', () => {
+        if (currentScope === 'all') return;
+        currentScope = 'all';
+        scopeAllTimeBtn.classList.add('on');
+        scopeAllTimeBtn.setAttribute('aria-selected', 'true');
+        scopeSemesterBtn.classList.remove('on');
+        scopeSemesterBtn.setAttribute('aria-selected', 'false');
+        refreshView();
+      });
+    }
+
+    // Search Input
+    if (lbgSearch) {
+      lbgSearch.addEventListener('input', e => {
+        searchQuery = e.target.value;
+        const filtered = getFilteredAndSortedList(computedList);
+        renderTable(filtered);
+      });
+    }
+
+    // Sort Dropdown
+    if (lbgSortSelect) {
+      lbgSortSelect.addEventListener('change', e => {
+        currentSort = e.target.value;
+        const filtered = getFilteredAndSortedList(computedList);
+        renderTable(filtered);
+      });
+    }
+
+    // Modal close events
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+    if (modalBack) modalBack.addEventListener('click', closeModal);
+    document.addEventListener('keydown', e => {
+      if (e && e.key === 'Escape' && modal && !modal.hidden) {
+        closeModal();
+      }
+    });
+
+    // Simulator Stepper Buttons
+    document.querySelectorAll('.lbg-step-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const field = btn.getAttribute('data-field');
+        const dir = parseInt(btn.getAttribute('data-dir'), 10) || 1;
+        let input;
+        if (field === 'papers') input = simPapers;
+        else if (field === 'assignment') input = simAssignment;
+        else if (field === 'notes') input = simNotes;
+        else if (field === 'reference') input = simReference;
+
+        if (input) {
+          let val = (parseInt(input.value, 10) || 0) + dir;
+          if (val < 0) val = 0;
+          if (val > 99) val = 99;
+          input.value = val;
+          updateSimulator();
+        }
+      });
+    });
+
+    [simPapers, simAssignment, simNotes, simReference].forEach(input => {
+      if (input) {
+        input.addEventListener('input', updateSimulator);
+      }
+    });
+  }
+
+  // --- Main Boot ---
+  async function boot() {
+    if (globalThis.ABHYAS_READY) {
+      try {
+        await globalThis.ABHYAS_READY;
+      } catch (err) {
+        console.warn('[Leaderboard] ABHYAS_READY error, falling back to mock dataset:', err);
+      }
+    }
+    initEvents();
+    renderDeptPills();
+    refreshView();
+    updateSimulator();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+})();

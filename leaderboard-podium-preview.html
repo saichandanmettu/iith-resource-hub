@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="assets/abhyas-mark.png">
+<title>Claude Winning Podium — Abhyas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500;700;800&family=Fraunces:ital,opsz,wght,SOFT,WONK@1,9..144,400;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=109">
+<style>
+  body {
+    background: #FFF8E6;
+    color: #282129;
+    font-family: var(--font-body, "Plus Jakarta Sans", sans-serif);
+    margin: 0;
+    padding: 60px 20px 120px;
+    background-image: 
+      radial-gradient(#F5E4C3 1px, transparent 1px),
+      radial-gradient(#F5E4C3 1px, #FFF8E6 1px);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+  }
+  .preview-wrap {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  .preview-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .preview-header h1 {
+    font-family: var(--font-display, "Bricolage Grotesque", sans-serif);
+    font-size: clamp(2.2rem, 5vw, 3rem);
+    font-weight: 800;
+    margin: 0 0 10px;
+    letter-spacing: -0.03em;
+  }
+  .preview-header p {
+    color: #61545E;
+    font-size: 1.05rem;
+    max-width: 58ch;
+    margin: 0 auto;
+  }
+
+  /* =============================================================
+     CLAUDE WINNING OLYMPIC PODIUM (Pixel-Perfect)
+     ============================================================= */
+  .podium-stage-wrap {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    align-items: end;
+    margin: 0 auto;
+  }
+
+  .pod-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    transition: transform .35s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .pod-column:hover {
+    transform: translateY(-6px);
+  }
+
+  .pod-column.is-first  { order: 2; z-index: 3; }
+  .pod-column.is-second { order: 1; z-index: 2; }
+  .pod-column.is-third  { order: 3; z-index: 1; }
+
+  /* Floating White Card Body */
+  .pod-card-body {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1px solid rgba(235, 224, 202, 0.9);
+    border-radius: 26px;
+    padding: 26px 18px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 10px 30px -10px rgba(40, 33, 41, 0.08), 0 2px 6px rgba(40, 33, 41, 0.03);
+    z-index: 2;
+  }
+  .pod-column.is-first .pod-card-body {
+    padding: 34px 20px 28px;
+    box-shadow: 0 16px 40px -12px rgba(242, 135, 0, 0.22), 0 4px 14px rgba(40, 33, 41, 0.06);
+    border-color: rgba(242, 135, 0, 0.35);
+  }
+
+  /* Pinned Yellow Sticky Tag with Wire Paperclip */
+  .pod-pinned-chip {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    z-index: 6;
+    background: linear-gradient(180deg, #FFF176 0%, #FFD54F 100%);
+    padding: 5px 11px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px -2px rgba(80, 60, 0, 0.35);
+    font: 800 0.78rem var(--font-mono, "DM Mono", monospace);
+    color: #4D3A00;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  /* Silver Wire Paperclip Loop */
+  .pod-pinned-chip::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 10px;
+    border: 1.6px solid #8E959E;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background: transparent;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
+  }
+  .pod-column:hover .pod-pinned-chip {
+    transform: translateY(-2px) scale(1.08);
+  }
+
+  /* Donut Progress Ring with Points Total */
+  .pod-donut-wrap {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    margin: 4px auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pod-column.is-first .pod-donut-wrap {
+    width: 112px;
+    height: 112px;
+    margin-top: 6px;
+  }
+
+  .pod-donut-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .donut-bg {
+    fill: none;
+    stroke: rgba(40, 33, 41, 0.06);
+    stroke-width: 4.6;
+  }
+  .donut-seg {
+    fill: none;
+    stroke-width: 4.6;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .seg-pap { stroke: #F27A18 !important; }
+  .seg-asg { stroke: #E64A19 !important; }
+  .seg-not { stroke: #689F38 !important; }
+  .seg-ref { stroke: #8C6597 !important; }
+
+  /* Center Points Total Disc */
+  .pod-donut-center {
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1.5px rgba(235, 224, 202, 0.8), 0 3px 10px rgba(40, 33, 41, 0.04);
+    z-index: 2;
+  }
+  .pod-column.is-first .pod-donut-center {
+    width: 86px;
+    height: 86px;
+    box-shadow: inset 0 0 0 2px rgba(242, 135, 0, 0.35), 0 4px 14px rgba(242, 135, 0, 0.15);
+  }
+
+  .donut-pts-val {
+    font: 800 2.05rem var(--font-mono, "DM Mono", monospace);
+    color: #221C24;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .pod-column.is-first .donut-pts-val {
+    font-size: 2.5rem;
+  }
+  .donut-pts-unit {
+    font: 800 0.65rem var(--font-mono, "DM Mono", monospace);
+    color: #928287;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+
+  /* Student Name */
+  .pod-student-name {
+    font-family: var(--font-course, "Archivo", sans-serif);
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: #282129;
+    line-height: 1.2;
+    margin: 0 0 16px;
+  }
+  .pod-column.is-first .pod-student-name {
+    font-size: 1.42rem;
+    margin-bottom: 18px;
+  }
+
+  /* 3-Cell Resource Specimen Grid */
+  .pod-specimen-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+  .specimen-card {
+    padding: 8px 4px 7px;
+    border-radius: 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease;
+  }
+  .pod-column:hover .specimen-card {
+    transform: translateY(-2px);
+  }
+
+  .specimen-card.sc-papers {
+    background: #FFF1D6;
+    border-color: rgba(242, 135, 0, 0.3);
+  }
+  .specimen-card.sc-papers .specimen-num { color: #A65B00; }
+  .specimen-card.sc-papers .specimen-lbl { color: #8B5000; }
+
+  .specimen-card.sc-asg {
+    background: #FEEAE2;
+    border-color: rgba(208, 71, 36, 0.3);
+  }
+  .specimen-card.sc-asg .specimen-num { color: #BA3C1C; }
+  .specimen-card.sc-asg .specimen-lbl { color: #8D2D14; }
+
+  .specimen-card.sc-notes {
+    background: #EFF4D8;
+    border-color: rgba(105, 139, 57, 0.3);
+  }
+  .specimen-card.sc-notes .specimen-num { color: #4D6323; }
+  .specimen-card.sc-notes .specimen-lbl { color: #495A23; }
+
+  .specimen-num {
+    font: 800 1.05rem var(--font-mono, "DM Mono", monospace);
+    line-height: 1;
+  }
+  .specimen-lbl {
+    font: 800 0.62rem var(--font-mono, "DM Mono", monospace);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.9;
+  }
+
+  /* =============================================================
+     3D STEPPED OLYMPIC PEDESTALS & SPHERICAL ORB MEDAL SEALS
+     ============================================================= */
+  .pod-pedestal {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    margin-top: -20px;
+    z-index: 3;
+  }
+
+  /* Spherical 3D Orb Medal Seal Badge */
+  .pod-medal-stamp {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: -18px;
+    z-index: 6;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .pod-column.is-first .pod-medal-stamp {
+    width: 62px;
+    height: 62px;
+    margin-bottom: -22px;
+  }
+
+  .pod-medal-stamp.m-gold {
+    background: radial-gradient(circle at 35% 30%, #FFE066 0%, #F5B014 50%, #D88E00 100%);
+    border: 2px solid #E0A000;
+    box-shadow: 0 8px 20px -4px rgba(176, 105, 0, 0.5), inset 0 2px 3px rgba(255, 255, 255, 0.8), inset 0 -2px 3px rgba(120, 65, 0, 0.4);
+    color: #5C3800;
+  }
+  .pod-medal-stamp.m-silver {
+    background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #DCE2E6 50%, #B0B8C0 100%);
+    border: 2px solid #B8C0CC;
+    box-shadow: 0 8px 20px -4px rgba(90, 105, 125, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.9), inset 0 -2px 3px rgba(60, 75, 90, 0.3);
+    color: #374151;
+  }
+  .pod-medal-stamp.m-bronze {
+    background: radial-gradient(circle at 35% 30%, #FFD2BC 0%, #D6825B 50%, #A85328 100%);
+    border: 2px solid #C46234;
+    box-shadow: 0 8px 20px -4px rgba(134, 48, 12, 0.45), inset 0 2px 3px rgba(255, 255, 255, 0.75), inset 0 -2px 3px rgba(70, 20, 5, 0.4);
+    color: #4A1E08;
+  }
+
+  .laurel-svg {
+    position: absolute;
+    inset: 4px;
+    width: calc(100% - 8px);
+    height: calc(100% - 8px);
+  }
+  .medal-rank-num {
+    font-family: var(--font-display, "Bricolage Grotesque", sans-serif);
+    font-weight: 800;
+    font-size: 1.42rem;
+    line-height: 1;
+    z-index: 2;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+  }
+  .pod-column.is-first .medal-rank-num { font-size: 1.65rem; }
+
+  /* 3D Tiered Stack Pedestal Slabs */
+  .pod-tiers-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* 1st Place (Gold Stack) */
+  .ped-gold .tier-1 {
+    width: 88%;
+    height: 12px;
+    background: linear-gradient(180deg, #FFE4A0 0%, #FFD570 100%);
+    border-radius: 6px 6px 0 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  .ped-gold .tier-2 {
+    width: 94%;
+    height: 14px;
+    background: linear-gradient(180deg, #FFC845 0%, #F5B014 100%);
+    border-radius: 6px 6px 0 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+  .ped-gold .tier-3 {
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(180deg, #F7B828 0%, #EAA000 100%);
+    border-radius: 8px 8px 18px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font: 800 0.88rem var(--font-mono, "DM Mono", monospace);
+    color: #614000;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: 0 12px 28px -6px rgba(245, 166, 0, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.65);
+  }
+
+  /* 2nd Place (Silver Stack) */
+  .ped-silver .tier-1 {
+    width: 92%;
+    height: 12px;
+    background: linear-gradient(180deg, #E8ECEF 0%, #DFE3E6 100%);
+    border-radius: 6px 6px 0 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  .ped-silver .tier-2 {
+    width: 96%;
+    height: 12px;
+    background: linear-gradient(180deg, #D5DADC 0%, #CBD0D3 100%);
+    border-radius: 6px 6px 0 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  .ped-silver .tier-3 {
+    width: 100%;
+    height: 38px;
+    background: linear-gradient(180deg, #C0C5C8 0%, #B4B9BC 100%);
+    border-radius: 8px 8px 16px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font: 800 0.78rem var(--font-mono, "DM Mono", monospace);
+    color: #47505E;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 24px -6px rgba(100, 115, 130, 0.25), inset 0 2px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  /* 3rd Place (Bronze Stack) */
+  .ped-bronze .tier-1 {
+    width: 92%;
+    height: 10px;
+    background: linear-gradient(180deg, #F8D5C2 0%, #F0BFA6 100%);
+    border-radius: 6px 6px 0 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  .ped-bronze .tier-2 {
+    width: 96%;
+    height: 12px;
+    background: linear-gradient(180deg, #E5A585 0%, #D68B66 100%);
+    border-radius: 6px 6px 0 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  .ped-bronze .tier-3 {
+    width: 100%;
+    height: 34px;
+    background: linear-gradient(180deg, #C6744E 0%, #B8633D 100%);
+    border-radius: 8px 8px 16px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font: 800 0.76rem var(--font-mono, "DM Mono", monospace);
+    color: #4A1A06;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+    box-shadow: 0 10px 24px -6px rgba(198, 116, 78, 0.32), inset 0 2px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  @media (max-width: 768px) {
+    .podium-stage-wrap {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+    .pod-column.is-first  { order: 1; }
+    .pod-column.is-second { order: 2; }
+    .pod-column.is-third  { order: 3; }
+  }
+</style>
+</head>
+<body>
+
+<div class="preview-wrap">
+  <div class="preview-header">
+    <h1>Claude's Stepped Olympic Podium</h1>
+    <p>Pixel-perfect reproduction of Claude's approved design from <code>media_1787659918001.png</code>.</p>
+  </div>
+
+  <div class="podium-stage-wrap">
+
+    <!-- 2nd Place (Silver - Left) -->
+    <div class="pod-column is-second">
+      <div class="pod-card-body">
+        <div class="pod-pinned-chip">EP23</div>
+        <div class="pod-donut-wrap">
+          <svg class="pod-donut-svg" viewBox="0 0 36 36">
+            <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="donut-seg seg-pap" stroke-dasharray="43, 100" stroke-dashoffset="0" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="donut-seg seg-asg" stroke-dasharray="34, 100" stroke-dashoffset="-43" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="donut-seg seg-not" stroke-dasharray="23, 100" stroke-dashoffset="-77" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          </svg>
+          <div class="pod-donut-center">
+            <span class="donut-pts-val">35</span>
+            <span class="donut-pts-unit">pts</span>
+          </div>
+        </div>
+        <h3 class="pod-student-name">Ishita Rao</h3>
+        <div class="pod-specimen-grid">
+          <div class="specimen-card sc-papers">
+            <span class="specimen-num">1</span>
+            <span class="specimen-lbl">Paper</span>
+          </div>
+          <div class="specimen-card sc-asg">
+            <span class="specimen-num">1</span>
+            <span class="specimen-lbl">Lab</span>
+          </div>
+          <div class="specimen-card sc-notes">
+            <span class="specimen-num">2</span>
+            <span class="specimen-lbl">Notes</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pod-pedestal ped-silver">
+        <div class="pod-medal-stamp m-silver">
+          <svg class="laurel-svg" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M10 24 C8 17, 10 9, 18 6" stroke-linecap="round"/>
+            <path d="M26 24 C28 17, 26 9, 18 6" stroke-linecap="round"/>
+            <circle cx="8" cy="18" r="1.6" fill="currentColor"/>
+            <circle cx="9.5" cy="12" r="1.6" fill="currentColor"/>
+            <circle cx="13.5" cy="7.5" r="1.6" fill="currentColor"/>
+            <circle cx="28" cy="18" r="1.6" fill="currentColor"/>
+            <circle cx="26.5" cy="12" r="1.6" fill="currentColor"/>
+            <circle cx="22.5" cy="7.5" r="1.6" fill="currentColor"/>
+          </svg>
+          <span class="medal-rank-num">2</span>
+        </div>
+        <div class="pod-tiers-block">
+          <div class="tier-1"></div>
+          <div class="tier-2"></div>
+          <div class="tier-3">2nd Place</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1st Place (Gold Champion - Center Elevated) -->
+    <div class="pod-column is-first">
+      <div class="pod-card-body">
+        <div class="pod-pinned-chip">CS23</div>
+        <div class="pod-donut-wrap">
+          <svg class="pod-donut-svg" viewBox="0 0 36 36">
+            <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="donut-seg seg-pap" stroke-dasharray="46, 100" stroke-dashoffset="0" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="donut-seg seg-asg" stroke-dasharray="19, 100" stroke-dashoffset="-46" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="donut-seg seg-not" stroke-dasharray="35, 100" stroke-dashoffset="-65" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          </svg>
+          <div class="pod-donut-center">
+            <span class="donut-pts-val">43</span>
+            <span class="donut-pts-unit">pts</span>
+          </div>
+        </div>
+        <h3 class="pod-student-name">Aarav Menon</h3>
+        <div class="pod-specimen-grid">
+          <div class="specimen-card sc-papers">
+            <span class="specimen-num">2</span>
+            <span class="specimen-lbl">Papers</span>
+          </div>
+          <div class="specimen-card sc-asg">
+            <span class="specimen-num">1</span>
+            <span class="specimen-lbl">Lab</span>
+          </div>
+          <div class="specimen-card sc-notes">
+            <span class="specimen-num">3</span>
+            <span class="specimen-lbl">Notes</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pod-pedestal ped-gold">
+        <div class="pod-medal-stamp m-gold">
+          <svg class="laurel-svg" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M10 24 C8 17, 10 9, 18 6" stroke-linecap="round"/>
+            <path d="M26 24 C28 17, 26 9, 18 6" stroke-linecap="round"/>
+            <circle cx="8" cy="18" r="1.6" fill="currentColor"/>
+            <circle cx="9.5" cy="12" r="1.6" fill="currentColor"/>
+            <circle cx="13.5" cy="7.5" r="1.6" fill="currentColor"/>
+            <circle cx="28" cy="18" r="1.6" fill="currentColor"/>
+            <circle cx="26.5" cy="12" r="1.6" fill="currentColor"/>
+            <circle cx="22.5" cy="7.5" r="1.6" fill="currentColor"/>
+          </svg>
+          <span class="medal-rank-num">1</span>
+        </div>
+        <div class="pod-tiers-block">
+          <div class="tier-1"></div>
+          <div class="tier-2"></div>
+          <div class="tier-3">Champion</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3rd Place (Bronze - Right) -->
+    <div class="pod-column is-third">
+      <div class="pod-card-body">
+        <div class="pod-pinned-chip">MS24</div>
+        <div class="pod-donut-wrap">
+          <svg class="pod-donut-svg" viewBox="0 0 36 36">
+            <path class="donut-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="donut-seg seg-pap" stroke-dasharray="43, 100" stroke-dashoffset="0" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="donut-seg seg-asg" stroke-dasharray="35, 100" stroke-dashoffset="-43" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            <path class="donut-seg seg-not" stroke-dasharray="22, 100" stroke-dashoffset="-78" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          </svg>
+          <div class="pod-donut-center">
+            <span class="donut-pts-val">23</span>
+            <span class="donut-pts-unit">pts</span>
+          </div>
+        </div>
+        <h3 class="pod-student-name">Rohan Iyer</h3>
+        <div class="pod-specimen-grid">
+          <div class="specimen-card sc-papers">
+            <span class="specimen-num">1</span>
+            <span class="specimen-lbl">Paper</span>
+          </div>
+          <div class="specimen-card sc-asg">
+            <span class="specimen-num">1</span>
+            <span class="specimen-lbl">Lab</span>
+          </div>
+          <div class="specimen-card sc-notes">
+            <span class="specimen-num">1</span>
+            <span class="specimen-lbl">Note</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pod-pedestal ped-bronze">
+        <div class="pod-medal-stamp m-bronze">
+          <svg class="laurel-svg" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M10 24 C8 17, 10 9, 18 6" stroke-linecap="round"/>
+            <path d="M26 24 C28 17, 26 9, 18 6" stroke-linecap="round"/>
+            <circle cx="8" cy="18" r="1.6" fill="currentColor"/>
+            <circle cx="9.5" cy="12" r="1.6" fill="currentColor"/>
+            <circle cx="13.5" cy="7.5" r="1.6" fill="currentColor"/>
+            <circle cx="28" cy="18" r="1.6" fill="currentColor"/>
+            <circle cx="26.5" cy="12" r="1.6" fill="currentColor"/>
+            <circle cx="22.5" cy="7.5" r="1.6" fill="currentColor"/>
+          </svg>
+          <span class="medal-rank-num">3</span>
+        </div>
+        <div class="pod-tiers-block">
+          <div class="tier-1"></div>
+          <div class="tier-2"></div>
+          <div class="tier-3">3rd Place</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

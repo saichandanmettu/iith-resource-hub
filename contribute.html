@@ -7,8 +7,8 @@
 <title>Contribute &middot; Abhyas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=71">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght,SOFT,WONK@1,9..144,400;1,9..144,500&family=Newsreader:ital,opsz,wght@1,6..72,300;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=109">
 </head>
 <body>
 <div class="shell">
@@ -19,97 +19,587 @@
       <nav>
         <a href="index.html">Browse</a>
         <a href="library.html">Library</a>
-        <a class="on" href="contribute.html">Contribute</a>
+        <a href="leaderboard.html">Leaderboard</a>
       </nav>
-      <button class="btn-add" type="button">Share a file</button>
+      <a class="btn-add" href="contribute.html">Contribute</a>
     </div>
   </header>
 
-  <section class="hero rel-hero">
+  <section class="hero ctr-hero">
     <div class="wrap">
       <h1>
-        <span class="h-muted">Open uploads</span>
-        <span class="h-solid">are on the way</span>
+        <span class="h-muted">Fill the campus archive</span>
+        <span class="h-serif">Sharing is <span class="h-underline">caring<svg class="h-underline-svg no-split" viewBox="0 0 160 14" fill="none" preserveAspectRatio="none"><path d="M3 10C45 4 115 3 157 8" stroke="var(--papers)" stroke-width="4.5" stroke-linecap="round"/></svg></span></span>
       </h1>
-      <p class="hero-sub">A proper upload form is next up on the <a href="releases.html">releases page</a>. Until it ships, send us what you have and we'll add it by hand.</p>
+      <p class="hero-sub">Upload past exam papers, lecture slides, and assignments to help thousands of IITH students study smarter.</p>
+
+      <div class="cta-row" style="margin-top: 24px;">
+        <a class="cta-solid" href="#intakeStudio">
+          Drop a File
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        </a>
+        <a class="cta-ghost" href="#howItWorks">
+          See How It Works
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
     </div>
   </section>
 
   <main class="wrap">
-    <section class="global-cta">
-      <div class="cta-folder-card">
-        
-        <!-- Left Text Column -->
-        <div class="cf-left">
-          <h2 class="cf-title">
-            <span class="h-solid">Email us a file directly</span>
-          </h2>
 
-          <p class="cf-desc">
-            Attach notes, past papers, or assignments with the course code and we’ll index them <span class="cf-nowrap">for <b>IITH</b> together.</span>
-          </p>
+    <!-- ============================================================
+         How it works — Three Steps
+         ============================================================ -->
+    <section class="cg-sec" id="howItWorks">
+      <div class="reveal">
+        <h2 class="cg-sec-title">Three steps, start to shelf</h2>
 
-          <div class="cf-actions">
-            <a class="cta-solid cf-btn" href="mailto:ms24btech11021@iith.ac.in?subject=Contribution%20for%20Abhyas">
-              Email a file
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </a>
+        <div class="cg-pipeline">
+
+          <!-- Step 01 -->
+          <article class="cg-pipe-docket">
+            <div class="cg-pipe-head">
+              <div class="cg-pipe-badge">
+                <span class="cg-pipe-step">Step 01</span>
+              </div>
+              <div class="cg-pipe-icon-wrap">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+            </div>
+
+            <div class="cg-pipe-body">
+              <h3>Drop &amp; Index</h3>
+              <p>Upload past papers, notes, or lab sheets with the course code and semester.</p>
+            </div>
+
+            <div class="cg-pipe-foot">
+              <div class="cg-pipe-chip">
+                <span class="cg-pipe-chip-dot"></span>
+                <span>PDF &middot; Photos &middot; Drive link</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Step 02 -->
+          <article class="cg-pipe-docket">
+            <div class="cg-pipe-head">
+              <div class="cg-pipe-badge">
+                <span class="cg-pipe-step">Step 02</span>
+              </div>
+              <div class="cg-pipe-icon-wrap">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              </div>
+            </div>
+
+            <div class="cg-pipe-body">
+              <h3>Review &amp; Verify</h3>
+              <p>We check file legibility, verify the course code match, and organize it cleanly.</p>
+            </div>
+
+            <div class="cg-pipe-foot">
+              <div class="cg-pipe-chip">
+                <span class="cg-pipe-chip-dot dot-green"></span>
+                <span>Checked by students</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Step 03 -->
+          <article class="cg-pipe-docket">
+            <div class="cg-pipe-head">
+              <div class="cg-pipe-badge">
+                <span class="cg-pipe-step">Step 03</span>
+              </div>
+              <div class="cg-pipe-icon-wrap">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+            </div>
+
+            <div class="cg-pipe-body">
+              <h3>Shelf &amp; Credit</h3>
+              <p>The document goes live in the course archive, and points credit your leaderboard token.</p>
+            </div>
+
+            <div class="cg-pipe-foot">
+              <div class="cg-pipe-chip">
+                <span class="cg-pipe-chip-dot dot-amber"></span>
+                <span>Live on Shelf &middot; +Points</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         What we take — 12-Column Bento Specimen Showcase
+         ============================================================ -->
+    <section class="cg-sec">
+      <div class="reveal">
+        <h2 class="cg-sec-title">Anything from your course</h2>
+
+        <div class="cg-bento">
+
+          <!-- Specimen 1: Past Papers (Amber - span 7) -->
+          <article class="cg-bento-card cg-bento-amber">
+            <div class="cg-bento-head">
+              <span class="cg-bento-badge">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Past Papers
+              </span>
+              <span class="cg-bento-pts-badge">+10 PTS</span>
+            </div>
+            <h3>Past Exam Papers &amp; Quizzes</h3>
+            <p>End-sems, mid-sems, surprise quizzes, and makeup exams from any year or branch.</p>
+            <div class="cg-bento-tags">
+              <span>End-Sem</span>
+              <span>Mid-Sem</span>
+              <span>Quiz 1 &amp; 2</span>
+              <span>Makeups</span>
+              <span>Surprise Tests</span>
+            </div>
+          </article>
+
+          <!-- Specimen 2: Notes & Slides (Green - span 5) -->
+          <article class="cg-bento-card cg-bento-green">
+            <div class="cg-bento-head">
+              <span class="cg-bento-badge">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Notes &amp; Slides
+              </span>
+              <span class="cg-bento-pts-badge">+5 PTS</span>
+            </div>
+            <h3>Lecture Decks &amp; Notes</h3>
+            <p>Instructor slide decks, whiteboard exports, and clear handwritten revision summaries.</p>
+            <div class="cg-bento-tags">
+              <span>Lecture Slides</span>
+              <span>Handwritten</span>
+              <span>Cheatsheets</span>
+              <span>Summaries</span>
+            </div>
+          </article>
+
+          <!-- Specimen 3: Assignments & Labs (Red - span 5) -->
+          <article class="cg-bento-card cg-bento-red">
+            <div class="cg-bento-head">
+              <span class="cg-bento-badge">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                Assignments &amp; Labs
+              </span>
+              <span class="cg-bento-pts-badge">+8 PTS</span>
+            </div>
+            <h3>Assignments &amp; Lab Manuals</h3>
+            <p>Archived past problem sheets, lab experiment manuals, and tutorial sets.</p>
+            <div class="cg-bento-tags">
+              <span>Problem Sets</span>
+              <span>Lab Manuals</span>
+              <span>Tutorial Sheets</span>
+              <span>Viva Prep</span>
+            </div>
+          </article>
+
+          <!-- Specimen 4: Reference Books (Purple - span 7) -->
+          <article class="cg-bento-card cg-bento-purple">
+            <div class="cg-bento-head">
+              <span class="cg-bento-badge">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                Reference
+              </span>
+              <span class="cg-bento-pts-badge">+2 PTS</span>
+            </div>
+            <h3>Prescribed Textbooks &amp; Syllabi</h3>
+            <p>Official course reading lists, prescribed textbook details, and syllabus curriculum guides.</p>
+            <div class="cg-bento-tags">
+              <span>Prescribed Text</span>
+              <span>Course Syllabus</span>
+              <span>Reading Lists</span>
+              <span>Handbooks</span>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Intake studio — the primary section.
+         ============================================================ -->
+    <section class="cg-sec" id="intakeStudio">
+      <div class="cg-studio reveal">
+
+        <div class="cg-studio-header">
+          <div class="cg-studio-title">
+            <h2>Archive Intake Studio</h2>
+            <p>Upload files directly, paste cloud links, or send them by email.</p>
+          </div>
+
+          <div class="cg-modes" role="tablist">
+            <button class="cg-mode-btn on" type="button" data-mode="files" role="tab" aria-selected="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Direct File Drop
+            </button>
+            <button class="cg-mode-btn" type="button" data-mode="link" role="tab" aria-selected="false">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Drive / Cloud Link
+            </button>
+            <button class="cg-mode-btn" type="button" data-mode="mail" role="tab" aria-selected="false">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              Email Dispatch
+            </button>
           </div>
         </div>
 
-        <!-- Right Folder Artifact (Interactive Physics) -->
-        <div class="cf-right">
-          <div class="cf-stage" aria-hidden="true">
-            <div class="cf-folder">
-              
-              <!-- Yellow Sticky Note -->
-              <div class="cf-sticky">15 Depts</div>
+        <!-- Panel 1 — direct upload -->
+        <div class="cg-panel on" id="cgPanel-files" role="tabpanel">
 
-              <!-- Folder Back Panel -->
-              <div class="cf-fback"></div>
-              
-              <!-- Sheet 3: Terracotta (Assignments) -->
-              <div class="cf-sheet cf-s3">
-                <div class="cf-sheet-header">
-                  <div class="cf-sheet-tag"><i></i> EE1200 Lab Manual</div>
-                  <span class="cf-sheet-badge">Labs</span>
+          <div class="cg-intake-split">
+
+            <div class="cg-intake-kinds">
+              <label class="cg-label">
+                <span>Resource Kind</span>
+              </label>
+              <div class="cg-kind-selector" id="cgKindSelector"></div>
+            </div>
+
+            <div class="cg-intake-drop">
+              <div class="cg-dropzone" id="cgDropzone">
+                <input type="file" id="cgFileInput" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+                <div class="cg-dropzone-icon">
+                  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 </div>
-                <div class="cf-sheet-lines"><span></span><span></span></div>
+                <h3>Drop your files here, or browse</h3>
+                <p>PDF or a clear photo of the paper &middot; up to 25 MB each</p>
+                <span class="cg-dropzone-btn">Select Files from Device</span>
               </div>
+              <div class="cg-file-list" id="cgFileList"></div>
+            </div>
 
-              <!-- Sheet 2: Olive (Notes & Slides) -->
-              <div class="cf-sheet cf-s2">
-                <div class="cf-sheet-header">
-                  <div class="cf-sheet-tag"><i></i> MA1110 Lecture Deck</div>
-                  <span class="cf-sheet-badge">Slides</span>
+          </div>
+
+          <div class="cg-form-grid">
+            <div class="cg-field">
+              <label class="cg-label" for="cgCourseCode">Course Code *</label>
+              <input class="cg-input" id="cgCourseCode" type="text" list="cgCodeList" placeholder="e.g. CS2110, EE1100, MA1010" autocomplete="off">
+              <datalist id="cgCodeList"></datalist>
+              <span class="cg-label-hint" id="cgCodeHint" hidden></span>
+            </div>
+
+            <div class="cg-field">
+              <label class="cg-label" for="cgCourseName">Course / Subject Name</label>
+              <input class="cg-input" id="cgCourseName" type="text" placeholder="e.g. Operating Systems, Modern Physics" autocomplete="off">
+            </div>
+
+            <div class="cg-field">
+              <label class="cg-label" for="cgProfessor">Instructor / Professor <span class="cg-label-hint">(Optional)</span></label>
+              <input class="cg-input" id="cgProfessor" type="text" placeholder="e.g. Prof. Subrahmanyam, Dr. C. Krishna Mohan" autocomplete="off">
+            </div>
+
+            <div class="cg-field">
+              <label class="cg-label" for="cgSemesterYear">Semester &amp; Year <span class="cg-label-hint">(Optional)</span></label>
+              <input class="cg-input" id="cgSemesterYear" type="text" list="cgSemList" placeholder="e.g. Sem 1 2024, Sem 3 2025" autocomplete="off">
+              <datalist id="cgSemList">
+                <option value="Sem 1 2025">
+                <option value="Sem 2 2025">
+                <option value="Sem 3 2025">
+                <option value="Sem 4 2025">
+                <option value="Sem 1 2024">
+                <option value="Sem 2 2024">
+                <option value="Sem 3 2024">
+                <option value="Sem 4 2024">
+              </datalist>
+            </div>
+
+            <div class="cg-field cg-field-full">
+              <label class="cg-label" for="cgExamType">Resource Title / Specifics <span class="cg-label-hint">(Optional)</span></label>
+              <input class="cg-input" id="cgExamType" type="text" list="cgExamList" placeholder="e.g. End-Sem Exam, Quiz 2, Complete Semester Notes, Lab Manual" autocomplete="off">
+              <datalist id="cgExamList">
+                <option value="End-Semester Exam">
+                <option value="Mid-Semester Exam">
+                <option value="Quiz 1">
+                <option value="Quiz 2">
+                <option value="Complete Semester Notes">
+                <option value="Lab Manual / Assignment">
+                <option value="Cheatsheet / Summary">
+                <option value="Reference Material">
+              </datalist>
+            </div>
+          </div>
+
+          <div class="cg-attr-box">
+            <div class="cg-attr-toggle-row">
+              <div class="cg-attr-toggle-info">
+                <h4>Credit &amp; Leaderboard Recognition</h4>
+                <p>Opt in to show your name and batch token on the Leaderboard. Turn it off and the file still counts &mdash; you just will not be listed.</p>
+              </div>
+              <div class="cg-switch on" id="cgAttrSwitch" role="switch" aria-checked="true" tabindex="0">
+                <div class="cg-switch-knob"></div>
+              </div>
+            </div>
+
+            <div class="cg-attr-fields" id="cgAttrFields">
+              <div class="cg-field">
+                <label class="cg-label" for="cgContribName">Your Full Name</label>
+                <input class="cg-input" id="cgContribName" type="text" placeholder="e.g. Aarav Menon">
+              </div>
+              <div class="cg-field">
+                <label class="cg-label" for="cgContribRoll">Batch / Roll Token <span class="cg-label-hint">(e.g. CS23)</span></label>
+                <input class="cg-input" id="cgContribRoll" type="text" placeholder="CS24" maxlength="6">
+              </div>
+              <div class="cg-field">
+                <label class="cg-label">Live Preview on Board</label>
+                <div class="cg-live-preview-chip">
+                  <div class="cg-live-preview-avatar" id="cgPrevAvatar">YOU</div>
+                  <div class="cg-live-preview-text">
+                    <b id="cgPrevName">Your Name</b>
+                    <span id="cgPrevRoll">BATCH CODE</span>
+                  </div>
                 </div>
-                <div class="cf-sheet-lines"><span></span><span></span></div>
               </div>
+            </div>
+          </div>
 
-              <!-- Sheet 1: Amber (Past Exam Paper) -->
-              <div class="cf-sheet cf-s1">
-                <div class="cf-sheet-header">
-                  <div class="cf-sheet-tag"><i></i> CS2110 Endsem 2025</div>
-                  <span class="cf-sheet-badge">Exam</span>
-                </div>
-                <div class="cf-sheet-lines"><span></span><span></span></div>
+          <div class="cg-submit-bar">
+            <p class="cg-submit-terms">
+              By submitting, you confirm you accept the <a href="terms.html">academic integrity policy</a>.
+            </p>
+            <button class="cg-submit-btn" id="cgSubmitBtn" type="button">
+              Submit to Archive
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel 2 — cloud link -->
+        <div class="cg-panel" id="cgPanel-link" role="tabpanel">
+          <div class="cg-cloud-box">
+            <div class="cg-callout">
+              Got a whole folder of notes and papers on Drive or OneDrive? Paste the link and we will pull the files across by hand. Please make sure the link is set so anyone with it can view.
+            </div>
+
+            <div class="cg-form-grid">
+              <div class="cg-field cg-field-full">
+                <label class="cg-label" for="cgLinkUrl">Cloud Drive / Folder URL *</label>
+                <input class="cg-input" id="cgLinkUrl" type="url" placeholder="https://drive.google.com/drive/folders/&hellip;">
               </div>
-
-              <!-- Folder Front Pocket Flap -->
-              <div class="cf-ffront">
-                <div class="cf-ffront-top">
-                  <span class="cf-ffront-code">INTAKE / 2026</span>
-                  <span class="cf-ffront-pill">Drop Box</span>
-                </div>
-                <h3 class="cf-ffront-title">Contributions Hub</h3>
+              <div class="cg-field cg-field-full">
+                <label class="cg-label" for="cgLinkSemester">Semester &amp; Year Range</label>
+                <input class="cg-input" id="cgLinkSemester" type="text" placeholder="e.g. Sem 3 &amp; 4 2025, Sem 1 2024">
               </div>
+              <div class="cg-field cg-field-full">
+                <label class="cg-label" for="cgLinkNotes">Folder Description / Included Courses &amp; Instructors</label>
+                <textarea class="cg-textarea" id="cgLinkNotes" placeholder="List the course codes, professors, or anything special in the folder&hellip;"></textarea>
+              </div>
+            </div>
 
+            <div class="cg-submit-bar">
+              <p class="cg-submit-terms">
+                Folders are reviewed in accordance with our <a href="terms.html">terms</a>.
+              </p>
+              <button class="cg-submit-btn" id="cgLinkSubmitBtn" type="button">
+                Submit Cloud Folder
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3 — email -->
+        <div class="cg-panel" id="cgPanel-mail" role="tabpanel">
+          <div class="cg-email-box">
+            <div class="cg-callout">
+              Prefer sending straight from your institute email? Copy the address, or open a pre-filled draft.
+            </div>
+
+            <div class="ctr-drop-mail" style="margin:0">
+              <span class="ctr-drop-addr" id="ctrAddr">ms24btech11021@iith.ac.in</span>
+              <button class="ctr-copy" id="ctrCopy" type="button">Copy</button>
+            </div>
+
+            <div class="cg-mail-preview-sheet">
+              <div class="ctr-note-head"><span class="ctr-note-dot"></span> Pre-composed email</div>
+              <ul class="ctr-note-lines">
+                <li><b>To</b><span>ms24btech11021@iith.ac.in</span></li>
+                <li><b>Subject</b><span>Abhyas contribution</span></li>
+                <li><b>Body</b><span>Course code, professor, semester &amp; year, credit</span></li>
+                <li><b>Attach</b><span>Your PDF or scan</span></li>
+              </ul>
+            </div>
+
+            <div class="cg-submit-bar">
+              <p class="cg-submit-terms">
+                Emails are processed in accordance with our <a href="terms.html">terms</a>.
+              </p>
+              <a class="cta-solid" href="mailto:ms24btech11021@iith.ac.in?subject=Abhyas%20contribution&body=Course%20name%20%26%20code%3A%0AInstructor%20%2F%20Professor%3A%0ASemester%20%26%20Year%20%28e.g.%20Sem%201%202024%29%3A%0AType%20%28past%20paper%20/%20notes%20/%20assignment%20/%20reference%20book%29%3A%0ACredit%20me%20as%20%28or%20write%3A%20anonymous%29%3A%0A%0AAttach%20the%20file%28s%29%20before%20you%20send.">
+                Open Email Client
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </a>
             </div>
           </div>
         </div>
 
       </div>
     </section>
+
+    <!-- ============================================================
+         Before you send — Guidelines (Do's & Don'ts)
+         ============================================================ -->
+    <section class="cg-sec">
+      <div class="reveal">
+        <div class="cg-sec-head-row">
+          <h2 class="cg-sec-title" style="margin-bottom:0">Before you send</h2>
+          <a class="cg-sec-link" href="terms.html">
+            Check all terms here
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+
+        <div class="ctr-rules">
+          <!-- Do Send -->
+          <div class="ctr-rulecol ctr-yes">
+            <div class="ctr-rulecol-head">
+              <div class="ctr-rulecol-title">
+                <span class="ctr-rulecol-dot"></span>
+                <h3>Do send</h3>
+              </div>
+              <span class="ctr-rulecol-badge">4 items</span>
+            </div>
+            <ul>
+              <li class="ctr-rule-row">
+                <span class="ctr-rule-mark">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <span class="ctr-rule-text"><b>Course code.</b> Helps file and index everything instantly.</span>
+              </li>
+              <li class="ctr-rule-row">
+                <span class="ctr-rule-mark">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <span class="ctr-rule-text"><b>Semester &amp; year.</b> e.g. Sem 1 2024, Sem 3 2025.</span>
+              </li>
+              <li class="ctr-rule-row">
+                <span class="ctr-rule-mark">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <span class="ctr-rule-text"><b>Clear scan.</b> Flat phone photos in good lighting are fine.</span>
+              </li>
+              <li class="ctr-rule-row">
+                <span class="ctr-rule-mark">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <span class="ctr-rule-text"><b>Semester batches.</b> Sharing a batch zip helps everyone.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Please Don't -->
+          <div class="ctr-rulecol ctr-no">
+            <div class="ctr-rulecol-head">
+              <div class="ctr-rulecol-title">
+                <span class="ctr-rulecol-dot"></span>
+                <h3>Please don&rsquo;t</h3>
+              </div>
+              <span class="ctr-rulecol-badge">4 items</span>
+            </div>
+            <ul>
+              <li class="ctr-rule-row">
+                <span class="ctr-rule-mark">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </span>
+                <span class="ctr-rule-text"><b>Live assignments.</b> Don&rsquo;t post ongoing or active coursework.</span>
+              </li>
+              <li class="ctr-rule-row">
+                <span class="ctr-rule-mark">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </span>
+                <span class="ctr-rule-text"><b>Pirated books.</b> Send titles &mdash; Library links legal copies.</span>
+              </li>
+              <li class="ctr-rule-row">
+                <span class="ctr-rule-mark">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </span>
+                <span class="ctr-rule-text"><b>Confidential notes.</b> Avoid restricted instructor handouts.</span>
+              </li>
+              <li class="ctr-rule-row">
+                <span class="ctr-rule-mark">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </span>
+                <span class="ctr-rule-text"><b>Personal files.</b> Don&rsquo;t post private documents or grades.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         Closing CTA — Leaderboard Podium Banner
+         ============================================================ -->
+    <section class="cg-sec">
+      <div class="ctr-drop reveal">
+
+        <div class="ctr-drop-l">
+          <h2>Look who&rsquo;s leading</h2>
+          <p>Check the points earned by students with the resources they&rsquo;ve shared across campus.</p>
+
+          <div class="ctr-drop-actions">
+            <a class="cta-solid" href="leaderboard.html">
+              Explore Leaderboard
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="ctr-drop-r">
+          <div class="ctr-podium-artifact">
+            
+            <!-- Podium 2nd Place -->
+            <div class="ctr-pod-col ctr-pod-2">
+              <div class="ctr-pod-cap cap-silver">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="6"/>
+                  <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>
+                </svg>
+              </div>
+              <div class="ctr-pod-pillar">
+                <span class="ctr-pod-num">2</span>
+                <span class="ctr-pod-tag">+50 PTS</span>
+              </div>
+            </div>
+
+            <!-- Podium 1st Place (Hero) -->
+            <div class="ctr-pod-col ctr-pod-1">
+              <div class="ctr-pod-cap cap-gold">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+                </svg>
+              </div>
+              <div class="ctr-pod-pillar">
+                <span class="ctr-pod-num">1</span>
+                <span class="ctr-pod-tag">+100 PTS</span>
+              </div>
+            </div>
+
+            <!-- Podium 3rd Place -->
+            <div class="ctr-pod-col ctr-pod-3">
+              <div class="ctr-pod-cap cap-bronze">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </div>
+              <div class="ctr-pod-pillar">
+                <span class="ctr-pod-num">3</span>
+                <span class="ctr-pod-tag">+25 PTS</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
   <footer class="foot">
@@ -139,6 +629,7 @@
             <li><a href="index.html">Browse archive</a></li>
             <li><a href="library.html">The library</a></li>
             <li><a href="releases.html">Releases &amp; updates</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
             <li><a class="on" href="contribute.html">Contribute a file</a></li>
           </ul>
         </div>
@@ -164,7 +655,12 @@
 
 </div>
 
+<!-- Floating Toast Notification -->
+<div class="toast" id="toast" aria-live="polite" hidden></div>
+
 <script src="lenis.min.js"></script>
 <script src="smooth.js?v=4"></script>
+<script src="data.js?v=9"></script>
+<script src="contribute.js?v=9"></script>
 </body>
 </html>

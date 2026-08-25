@@ -7,3 +7,9 @@ _local/
 *.log
 node_modules/
 .claude/
+
+# backend — never commit secrets or user uploads
+api/config.php
+*.lock
+.tmp-*
+decisions.json
