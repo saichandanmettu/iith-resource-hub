@@ -71,7 +71,7 @@ const POINTS = {
    list — a board nobody new can climb stops recruiting the people it is
    meant to recruit. Roll this forward each semester. */
 const SEMESTER_START = "2026-07-01";
-const SEMESTER_LABEL = "Monsoon 2026";
+const SEMESTER_LABEL = "This Semester";
 
 const RESOURCE_TYPES = [
   { id: "papers", label: "Quizzes / Past Papers", color: "var(--type-papers)" },

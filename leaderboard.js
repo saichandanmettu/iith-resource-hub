@@ -21,6 +21,7 @@
   const scopeSemesterLabel = document.getElementById('scopeSemesterLabel');
   const lbgStatsStrip = document.getElementById('lbgStatsStrip');
   const lbgPodium = document.getElementById('lbgPodium');
+  const lbgPodiumSub = document.getElementById('lbgPodiumSub');
   const lbgDeptPills = document.getElementById('lbgDeptPills');
   const lbgTableBody = document.getElementById('lbgTableBody');
   const lbgFilterCount = document.getElementById('lbgFilterCount');
@@ -758,27 +759,49 @@
       scopeSemesterLabel.textContent = SEMESTER_LABEL;
     }
 
-    // Scope Toggle
-    if (scopeSemesterBtn && scopeAllTimeBtn) {
-      scopeSemesterBtn.addEventListener('click', () => {
-        if (currentScope === 'semester') return;
-        currentScope = 'semester';
+    // Scope Toggle with Thanos Snap Transition
+    function switchScopeWithSnap(newScope) {
+      if (currentScope === newScope) return;
+      currentScope = newScope;
+
+      if (newScope === 'semester') {
         scopeSemesterBtn.classList.add('on');
         scopeSemesterBtn.setAttribute('aria-selected', 'true');
         scopeAllTimeBtn.classList.remove('on');
         scopeAllTimeBtn.setAttribute('aria-selected', 'false');
-        refreshView();
-      });
-
-      scopeAllTimeBtn.addEventListener('click', () => {
-        if (currentScope === 'all') return;
-        currentScope = 'all';
+      } else {
         scopeAllTimeBtn.classList.add('on');
         scopeAllTimeBtn.setAttribute('aria-selected', 'true');
         scopeSemesterBtn.classList.remove('on');
         scopeSemesterBtn.setAttribute('aria-selected', 'false');
-        refreshView();
+      }
+
+      const snapTargets = [lbgPodium, lbgTableBody, lbgStatsStrip].filter(Boolean);
+      snapTargets.forEach(el => {
+        el.classList.remove('is-snapping-in');
+        el.classList.add('is-snapping-out');
       });
+
+      setTimeout(() => {
+        if (lbgPodiumSub) {
+          lbgPodiumSub.textContent = newScope === 'semester'
+            ? 'The most generous study partners across IIT Hyderabad this term.'
+            : 'The most generous study partners across all batches and terms.';
+        }
+        refreshView();
+        snapTargets.forEach(el => {
+          el.classList.remove('is-snapping-out');
+          el.classList.add('is-snapping-in');
+        });
+        setTimeout(() => {
+          snapTargets.forEach(el => el.classList.remove('is-snapping-in'));
+        }, 380);
+      }, 160);
+    }
+
+    if (scopeSemesterBtn && scopeAllTimeBtn) {
+      scopeSemesterBtn.addEventListener('click', () => switchScopeWithSnap('semester'));
+      scopeAllTimeBtn.addEventListener('click', () => switchScopeWithSnap('all'));
     }
 
     // Search Input
