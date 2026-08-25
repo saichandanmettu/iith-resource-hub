@@ -187,5 +187,61 @@
     "branches": [
       "ME"
     ]
+  },
+  "AI1010": {
+    "name": "Introduction to AI",
+    "sem": 3,
+    "professors": [],
+    "branches": [
+      "AI"
+    ]
+  },
+  "BM2110": {
+    "name": "Biomedical Instrumentation",
+    "sem": 3,
+    "professors": [],
+    "branches": [
+      "BM"
+    ]
+  },
+  "BT2010": {
+    "name": "Molecular Biology & Genetics",
+    "sem": 3,
+    "professors": [],
+    "branches": [
+      "BT"
+    ]
+  },
+  "CH2110": {
+    "name": "Chemical Engineering Thermodynamics",
+    "sem": 3,
+    "professors": [],
+    "branches": [
+      "CM"
+    ]
+  },
+  "CE2110": {
+    "name": "Structural Analysis",
+    "sem": 4,
+    "professors": [],
+    "branches": [
+      "CE"
+    ]
+  },
+  "IC2110": {
+    "name": "CMOS VLSI Design",
+    "sem": 4,
+    "professors": [],
+    "branches": [
+      "ICT"
+    ]
+  },
+  "MA2120": {
+    "name": "Discrete Mathematics & Graph Theory",
+    "sem": 3,
+    "professors": [],
+    "branches": [
+      "MNC"
+    ]
   }
 }

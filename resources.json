@@ -1434,5 +1434,203 @@
     "fileType": "pdf",
     "pages": 25,
     "file": "ME/ME2210/me2210-lab-manual-2025.pdf"
+  },
+  {
+    "id": 1058,
+    "title": "Artificial Intelligence: A Modern Approach — Reference Book",
+    "department": "AI",
+    "semester": 3,
+    "contributor": "c1",
+    "added": "2026-07-15",
+    "course": "Introduction to AI",
+    "code": "AI1010",
+    "type": "reference",
+    "professor": "—",
+    "year": 2024,
+    "fileType": "pdf",
+    "pages": 1152,
+    "book": {
+      "author": "Stuart Russell & Peter Norvig",
+      "publisher": "Pearson",
+      "cover": "ink",
+      "gist": "The definitive AI standard. Master search agents, knowledge representation, and probabilistic learning."
+    },
+    "file": "AI/AI1010/ai1010-reference-2024.pdf"
+  },
+  {
+    "id": 1059,
+    "title": "Introduction to Biomedical Engineering — Reference Book",
+    "department": "BM",
+    "semester": 3,
+    "contributor": "c3",
+    "added": "2026-06-20",
+    "course": "Biomedical Instrumentation",
+    "code": "BM2110",
+    "type": "reference",
+    "professor": "—",
+    "year": 2023,
+    "fileType": "pdf",
+    "pages": 1272,
+    "book": {
+      "author": "John Enderle & Joseph Bronzino",
+      "publisher": "Academic Press",
+      "cover": "mint",
+      "gist": "Essential cross-disciplinary foundation spanning bioelectric phenomena, biomechanics, and physiological sensors."
+    },
+    "file": "BM/BM2110/bm2110-reference-2023.pdf"
+  },
+  {
+    "id": 1060,
+    "title": "Molecular Biology of the Cell — Reference Book",
+    "department": "BT",
+    "semester": 3,
+    "contributor": "c6",
+    "added": "2026-05-18",
+    "course": "Molecular Biology & Genetics",
+    "code": "BT2010",
+    "type": "reference",
+    "professor": "—",
+    "year": 2024,
+    "fileType": "pdf",
+    "pages": 1464,
+    "book": {
+      "author": "Bruce Alberts et al.",
+      "publisher": "Garland Science",
+      "cover": "crimson",
+      "gist": "The gold standard for cellular mechanics, genetic architecture, and metabolic regulation pathways."
+    },
+    "file": "BT/BT2010/bt2010-reference-2024.pdf"
+  },
+  {
+    "id": 1061,
+    "title": "Chemical Engineering Thermodynamics — Reference Book",
+    "department": "CM",
+    "semester": 3,
+    "contributor": "c11",
+    "added": "2026-04-12",
+    "course": "Chemical Engineering Thermodynamics",
+    "code": "CH2110",
+    "type": "reference",
+    "professor": "—",
+    "year": 2023,
+    "fileType": "pdf",
+    "pages": 794,
+    "book": {
+      "author": "J.M. Smith, H.C. Van Ness & M.M. Abbott",
+      "publisher": "McGraw-Hill",
+      "cover": "amber",
+      "gist": "Comprehensive classical treatment of phase equilibria, fluid property estimation, and chemical reaction thermodynamics."
+    },
+    "file": "CM/CH2110/ch2110-reference-2023.pdf"
+  },
+  {
+    "id": 1062,
+    "title": "Structural Analysis — Reference Book",
+    "department": "CE",
+    "semester": 4,
+    "contributor": "c14",
+    "added": "2026-03-28",
+    "course": "Structural Analysis",
+    "code": "CE2110",
+    "type": "reference",
+    "professor": "—",
+    "year": 2024,
+    "fileType": "pdf",
+    "pages": 736,
+    "book": {
+      "author": "R.C. Hibbeler",
+      "publisher": "Pearson",
+      "cover": "violet",
+      "gist": "Clear diagrams and step-by-step methodologies for indeterminate structures, truss deflection, and moment distribution."
+    },
+    "file": "CE/CE2110/ce2110-reference-2024.pdf"
+  },
+  {
+    "id": 1063,
+    "title": "Microelectronic Circuits — Reference Book",
+    "department": "EE",
+    "semester": 3,
+    "contributor": "c5",
+    "added": "2026-07-02",
+    "course": "Digital Circuits",
+    "code": "EE2140",
+    "type": "reference",
+    "professor": "—",
+    "year": 2024,
+    "fileType": "pdf",
+    "pages": 1472,
+    "book": {
+      "author": "Adel S. Sedra & Kenneth C. Smith",
+      "publisher": "Oxford University Press",
+      "cover": "sky",
+      "gist": "The electronics bible. Essential guidance on MOSFET/BJT amplifier topologies, feedback circuits, and frequency response."
+    },
+    "file": "EE/EE2140/ee2140-reference-2024.pdf"
+  },
+  {
+    "id": 1064,
+    "title": "Concepts of Modern Physics — Reference Book",
+    "department": "EP",
+    "semester": 3,
+    "contributor": "c2",
+    "added": "2026-06-11",
+    "course": "Modern Physics",
+    "code": "PH2110",
+    "type": "reference",
+    "professor": "—",
+    "year": 2024,
+    "fileType": "pdf",
+    "pages": 640,
+    "book": {
+      "author": "Arthur Beiser",
+      "publisher": "McGraw-Hill",
+      "cover": "amber",
+      "gist": "A student-favourite introduction to quantum phenomena, special relativity, and atomic physics with intuitive explanations."
+    },
+    "file": "EP/PH2110/ph2110-reference-2024.pdf"
+  },
+  {
+    "id": 1065,
+    "title": "CMOS VLSI Design — Reference Book",
+    "department": "ICT",
+    "semester": 4,
+    "contributor": "c12",
+    "added": "2026-05-24",
+    "course": "CMOS VLSI Design",
+    "code": "IC2110",
+    "type": "reference",
+    "professor": "—",
+    "year": 2024,
+    "fileType": "pdf",
+    "pages": 864,
+    "book": {
+      "author": "Neil H.E. Weste & David Money Harris",
+      "publisher": "Addison-Wesley",
+      "cover": "ink",
+      "gist": "The definitive chip design text. Master CMOS logic gates, silicon layout rules, delay simulation, and power budgeting."
+    },
+    "file": "ICT/IC2110/ic2110-reference-2024.pdf"
+  },
+  {
+    "id": 1066,
+    "title": "Discrete Mathematics and Its Applications — Reference Book",
+    "department": "MNC",
+    "semester": 3,
+    "contributor": "c7",
+    "added": "2026-07-19",
+    "course": "Discrete Mathematics & Graph Theory",
+    "code": "MA2120",
+    "type": "reference",
+    "professor": "—",
+    "year": 2024,
+    "fileType": "pdf",
+    "pages": 1024,
+    "book": {
+      "author": "Kenneth H. Rosen",
+      "publisher": "McGraw-Hill",
+      "cover": "mint",
+      "gist": "Comprehensive foundation in mathematical logic, proofs, combinatorics, recurrence relations, and graph algorithms."
+    },
+    "file": "MNC/MA2120/ma2120-reference-2024.pdf"
   }
 ]
