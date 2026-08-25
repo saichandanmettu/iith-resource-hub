@@ -118,12 +118,14 @@
     if (!isReduced && titles.length) {
       titles.forEach((title) => {
         splitWordsInElement(title);
+        const heroParent = title.closest(".hero");
         if ("IntersectionObserver" in window) {
           const obs = new IntersectionObserver(
             (entries) => {
               entries.forEach((entry) => {
                 if (entry.isIntersecting) {
                   title.classList.add("in");
+                  if (heroParent) heroParent.classList.add("in");
                   obs.unobserve(title);
                 }
               });
@@ -131,11 +133,17 @@
             { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
           );
           obs.observe(title);
-          setTimeout(() => title.classList.add("in"), 2000);
+          setTimeout(() => {
+            title.classList.add("in");
+            if (heroParent) heroParent.classList.add("in");
+          }, 1200);
         } else {
           title.classList.add("in");
+          if (heroParent) heroParent.classList.add("in");
         }
       });
+    } else {
+      document.querySelectorAll(".hero").forEach((h) => h.classList.add("in"));
     }
   });
 })();

@@ -125,8 +125,9 @@ text to `--papers-ink`. Do not make it worse.
 
 ## 3. Type
 
-Four faces. Each has one job. **This is the rule most often broken — check
-the table before setting any `font-family`.**
+Four faces carry meaning, plus one undecorated italic accent. Each has one
+job. **This is the rule most often broken — check the table before setting
+any `font-family`.**
 
 | Token | Face | Job |
 |---|---|---|
@@ -134,6 +135,7 @@ the table before setting any `font-family`.**
 | `--font-course` | Archivo 700 | **Names the thing you are looking for.** Course names, book titles, branch headings, release titles. |
 | `--font-body` | Plus Jakarta Sans | Everything readable. Body copy, nav, buttons, form fields. |
 | `--font-mono` | DM Mono | Metadata only. Course codes, dates, counts, status labels, ⌘K keycaps. |
+| *(unnamed, `.h-serif`)* | Fraunces, italic — falls back to Newsreader | **One hero word per page, and only that.** The italic accent in "All in *one place*", "Sharing is *caring*", "it *forward*". Never given a `--font-*` token on purpose — it is not a fourth readable face, it is a single accent glyph run. |
 
 The split between display and course is the point: **Bricolage speaks for the
 brand, Archivo names the content.** A course name and a book title are the
@@ -145,13 +147,28 @@ same kind of object — a scannable item — so they share a face.
 Archivo             700
 Bricolage Grotesque 700, 800   (variable optical size 12–96)
 DM Mono             400, 500
+Fraunces             italic 400, 500  (variable optical size 9–144, SOFT/WONK axes)
+Newsreader           italic 300, 400  (variable optical size 6–72)
 Plus Jakarta Sans   400,500,600,700,800
 ```
 
 **Never set a weight that isn't loaded.** The browser fakes it by smearing the
 nearest weight, and it looks wrong. DM Mono at 600/700 was a real bug here.
-If you need a new weight, add it to the Google Fonts `<link>` in **all three**
-HTML files.
+
+**The Google Fonts `<link>` must be byte-identical across every HTML file —
+all 10 of them, not "the main three."** That file count crept up as pages
+were added and the `<link>` drifted out of sync page to page: some pages
+never picked up Fraunces/Newsreader after `.h-serif` was added to their hero,
+so that word silently fell back to the browser's default serif on those
+pages only. It reads as "the font is different on this page" because it
+literally was — a different subset of families was requested. Byte-identical
+requests also means one shared browser cache entry instead of N separate
+ones, so a slow or blocked font fetch on one page can't leave that page
+looking different from the rest.
+
+If you add a weight or a family, update the `<link>` in **every** HTML file
+in the same edit — grep for `fonts.googleapis.com/css2` across `*.html` and
+confirm every result matches before you consider the change done.
 
 ### Bricolage has an optical-size axis
 
