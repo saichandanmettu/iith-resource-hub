@@ -43,7 +43,7 @@
     })
     .catch(() => { COURSE_CATALOG = {}; });
 
-  let state = { items: [], pending: [], contributors: {}, current: null, mode: "add", tab: "pending", csrf: null, filter: "" };
+  let state = { items: [], pending: [], trash: [], contributors: {}, current: null, mode: "add", tab: "pending", csrf: null, filter: "" };
 
   function contributorName(id) {
     if (!id) return "no credit";
@@ -148,6 +148,7 @@
     }
     state.items = data.items || [];
     state.pending = data.pending || [];
+    state.trash = data.trash || [];
     state.contributors = data.contributors || {};
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     set("sPublished", data.counts.published);
@@ -155,6 +156,7 @@
     set("sPending", data.counts.pending ?? 0);
     set("cPending", data.counts.pending ?? 0);
     set("cPublished", data.counts.published);
+    set("cTrash", data.counts.trash ?? 0);
     renderList();
   }
 
@@ -162,14 +164,16 @@
     const host = document.getElementById("queue");
     const q = state.filter.trim().toLowerCase();
     const onPending = state.tab === "pending";
-    const source = onPending ? state.pending : state.items;
+    const onTrash = state.tab === "trash";
+    const source = onPending ? state.pending : onTrash ? state.trash : state.items;
     const rows = source.filter((i) => !q ||
       [i.title, i.course, i.code, i.filename, contributorName(i.contributor)].some((f) => String(f || "").toLowerCase().includes(q)));
 
     if (!rows.length) {
-      const empty = onPending ? "Nothing waiting for review" : "Nothing here yet";
+      const empty = onPending ? "Nothing waiting for review" : onTrash ? "Trash is empty" : "Nothing here yet";
       const sub = source.length ? "Try a different search." : (onPending
         ? "Submissions from the Contribute page will show up here."
+        : onTrash ? "Deleted resources sit here for 14 days before they're gone for good."
         : "Click “Add resource” to publish the first file.");
       host.innerHTML = `<div class="ad-empty"><b>${source.length ? "No matches" : empty}</b><span>${sub}</span></div>`;
       return;
@@ -195,6 +199,29 @@
         </div>`).join("");
       host.querySelectorAll(".ad-review-btn").forEach((b) => {
         b.addEventListener("click", () => openReview(b.dataset.id));
+      });
+      return;
+    }
+
+    if (onTrash) {
+      host.innerHTML = rows.map((it) => `
+        <div class="ad-card k-${esc(it.type)}">
+          <div class="ad-fileicon">PDF</div>
+          <div class="ad-cardmain">
+            <p class="ad-cardtitle">${esc(it.title || it.course || "Untitled")}</p>
+            <div class="ad-cardmeta">
+              <span class="ad-kind">${esc(labelOf(it.type))}</span>
+              <span>${esc(it.code || "no code")}</span>
+              <span>${esc(contributorName(it.contributor))}</span>
+              <span>${esc(daysLeft(it.deletedAt))} left</span>
+            </div>
+          </div>
+          <div class="ad-card-actions">
+            <button class="ad-review-btn" type="button" data-id="${esc(it.id)}">Restore</button>
+          </div>
+        </div>`).join("");
+      host.querySelectorAll(".ad-review-btn").forEach((b) => {
+        b.addEventListener("click", () => doRestore(b.dataset.id));
       });
       return;
     }
@@ -535,7 +562,7 @@
   async function doDelete(id) {
     const it = state.items.find((x) => x.id === id);
     if (!it) return;
-    if (!confirm(`Remove "${it.title}" from the archive listing?\n\nThe PDF file itself stays on disk — this only unlists it.`)) return;
+    if (!confirm(`Remove "${it.title}" from the archive listing?\n\nIt moves to Trash for 14 days (restorable there), then drops for good. The PDF file itself is never touched — it stays on disk regardless.`)) return;
     await api("delete", { id });
     loadList();
   }
@@ -553,6 +580,20 @@
   document.getElementById("btnReject").addEventListener("click", () => {
     if (state.current) { doReject(state.current.id); closePanel(); }
   });
+
+  /* No cron on shared hosting — the server purges anything past 14 days
+     the next time the console loads (see purge_trash() in publish.php),
+     not on a schedule. This is just the countdown shown here. */
+  function daysLeft(deletedAt) {
+    if (!deletedAt) return "?";
+    const elapsed = (Date.now() - new Date(deletedAt).getTime()) / 86400000;
+    return Math.max(0, Math.ceil(14 - elapsed)) + "d";
+  }
+
+  async function doRestore(id) {
+    await api("restore", { id });
+    loadList();
+  }
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => (
@@ -589,6 +630,7 @@
       year: 2026, examType: "", professor: "", contributor: "", roll: "",
       semesterHint: "Sem 4 2026", duplicateOf: null },
   ];
+  let mockTrash = [];
 
   async function mockApi(action, payload) {
     await new Promise((r) => setTimeout(r, 160));
@@ -603,11 +645,13 @@
         ok: true,
         items: mockItems,
         pending: mockPending,
+        trash: mockTrash,
         contributors: mockContributors,
         counts: {
           published: mockItems.length,
           contributors: new Set(mockItems.filter((i) => i.contributor).map((i) => i.contributor)).size,
           pending: mockPending.length,
+          trash: mockTrash.length,
         },
       };
     }
@@ -629,7 +673,15 @@
       return { ok: true };
     }
     if (action === "delete") {
+      const it = mockItems.find((x) => x.id === payload.id);
       mockItems = mockItems.filter((x) => x.id !== payload.id);
+      if (it) mockTrash.push({ ...it, deletedAt: new Date().toISOString() });
+      return { ok: true };
+    }
+    if (action === "restore") {
+      const it = mockTrash.find((x) => x.id === payload.id);
+      mockTrash = mockTrash.filter((x) => x.id !== payload.id);
+      if (it) { delete it.deletedAt; mockItems.push(it); }
       return { ok: true };
     }
     if (action === "approve") {

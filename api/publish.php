@@ -67,6 +67,8 @@ $admin = require_admin();
    every list refresh silently 403'd because admin.js never sends a
    token on a GET, correctly, since it shouldn't need one.) */
 if ($action === 'list') {
+  $trash = purge_trash($c); // opportunistic — no cron needed, see the function below
+
   $all    = read_json($c['private_dir'] . '/resources.json', []);
   $people = read_json($c['private_dir'] . '/contributors.json', []);
 
@@ -76,15 +78,18 @@ if ($action === 'list') {
     if ($r) { $r['sizeLabel'] = human_size((int) ($r['size'] ?? 0)); $pending[] = $r; }
   }
   usort($pending, fn($a, $b) => strcmp($b['submitted'] ?? '', $a['submitted'] ?? ''));
+  usort($trash, fn($a, $b) => strcmp($b['deletedAt'] ?? '', $a['deletedAt'] ?? ''));
 
   ok([
     'items'        => $all,
     'pending'      => $pending,
+    'trash'        => $trash,
     'contributors' => $people,   // {id: {name, roll}} — console resolves ids to names itself
     'counts' => [
       'published'    => count(array_filter($all, fn($r) => ($r['status'] ?? 'published') === 'published')),
       'contributors' => count($people),
       'pending'      => count($pending),
+      'trash'        => count($trash),
     ],
   ]);
 }
@@ -235,25 +240,57 @@ if ($action === 'edit') {
   ok(['id' => $id]);
 }
 
-/* ---------------- delete ---------------- */
+/* ---------------- delete (moves to trash, not gone) ---------------- */
 if ($action === 'delete') {
-  // Soft-remove from the index only. The PDF stays on disk — HANDOVER.md
-  // §4 is explicit that the uploaded files are the one thing on this
-  // project with no other copy anywhere, so a web action never deletes
-  // one. Remove the file by hand later if you're sure.
+  // The PDF itself never gets touched here — HANDOVER.md §4 is explicit
+  // that uploaded files are the one thing on this project with no other
+  // copy anywhere, so no web action deletes one, ever. This only moves
+  // the JSON record to trash.json, restorable for 14 days (purge_trash()
+  // below), then dropped from the index for good — the file stays on
+  // disk regardless, forever, unless someone removes it by hand.
   $id = (string) ($body['id'] ?? '');
   if ($id === '') fail(400, 'Missing id');
 
   $rpath = $c['private_dir'] . '/resources.json';
   $all = read_json($rpath, []);
-  $found = false;
-  $all = array_values(array_filter($all, function ($r) use ($id, &$found) {
-    if (($r['id'] ?? '') === $id) { $found = true; return false; }
+  $record = null;
+  $all = array_values(array_filter($all, function ($r) use ($id, &$record) {
+    if (($r['id'] ?? '') === $id) { $record = $r; return false; }
     return true;
   }));
-  if (!$found) fail(404, 'Resource not found');
+  if ($record === null) fail(404, 'Resource not found');
+
+  $record['deletedAt'] = date('c');
+  $record['deletedBy'] = $admin;
+  $tpath = $c['private_dir'] . '/trash.json';
+  $trash = read_json($tpath, []);
+  $trash[] = $record;
+  write_json_atomic($tpath, $trash);
 
   write_json_atomic($rpath, $all);
+  ok(['id' => $id]);
+}
+
+/* ---------------- restore from trash ---------------- */
+if ($action === 'restore') {
+  $id = (string) ($body['id'] ?? '');
+  if ($id === '') fail(400, 'Missing id');
+
+  $tpath = $c['private_dir'] . '/trash.json';
+  $trash = read_json($tpath, []);
+  $record = null;
+  $trash = array_values(array_filter($trash, function ($r) use ($id, &$record) {
+    if (($r['id'] ?? '') === $id) { $record = $r; return false; }
+    return true;
+  }));
+  if ($record === null) fail(404, 'Not in trash');
+
+  unset($record['deletedAt'], $record['deletedBy']);
+  $rpath = $c['private_dir'] . '/resources.json';
+  $all = read_json($rpath, []);
+  $all[] = $record;
+  write_json_atomic($rpath, $all);
+  write_json_atomic($tpath, $trash);
   ok(['id' => $id]);
 }
 
@@ -295,6 +332,26 @@ function dest_for(array $c, array $fields): string {
     $n++;
   }
   return $rel;
+}
+
+/**
+ * No cron on shared hosting, so instead of a scheduled job, every `list`
+ * call (i.e. every time the admin console loads) sweeps trash.json for
+ * anything older than 14 days and drops it from the index for good. The
+ * underlying PDF is never touched here or anywhere else — this only
+ * decides how long an accidental delete stays recoverable through the
+ * UI before the record itself is gone.
+ */
+function purge_trash(array $c): array {
+  $tpath = $c['private_dir'] . '/trash.json';
+  $trash = read_json($tpath, []);
+  $cutoff = time() - 14 * 86400;
+  $kept = array_values(array_filter($trash, function ($r) use ($cutoff) {
+    $t = strtotime((string) ($r['deletedAt'] ?? ''));
+    return $t === false || $t >= $cutoff; // keep anything with an unreadable date, rather than lose it
+  }));
+  if (count($kept) !== count($trash)) write_json_atomic($tpath, $kept);
+  return $kept;
 }
 
 function find_duplicate(array $existing, string $sha256): ?string {
