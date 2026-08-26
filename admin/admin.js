@@ -16,7 +16,7 @@
 (function () {
   "use strict";
 
-  const USE_MOCK = true;
+  const USE_MOCK = false;
   const API = "../api/publish.php";
 
   /* ============================================================
