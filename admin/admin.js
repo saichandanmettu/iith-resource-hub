@@ -142,7 +142,18 @@
      List
      ============================================================ */
   async function loadList() {
-    const data = await api("list");
+    /* This is called fire-and-forget from several places (after login,
+       after publish/edit/delete) without the caller awaiting or catching
+       it. A silent failure here previously meant the dashboard just sat
+       at stale numbers with zero indication anything went wrong — this
+       is what makes that impossible to miss again. */
+    let data;
+    try {
+      data = await api("list");
+    } catch (ex) {
+      alert(`Couldn't refresh the list: ${ex.message}`);
+      return;
+    }
     state.items = data.items || [];
     state.contributors = data.contributors || {};
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };

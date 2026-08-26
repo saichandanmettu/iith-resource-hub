@@ -57,9 +57,14 @@ if ($action === 'me') {
 }
 
 $admin = require_admin();
-if (!$isMultipart) require_csrf($body['csrf'] ?? null);
 
 /* ---------------- list ---------------- */
+/* Read-only — CSRF tokens protect state-changing requests, not "show
+   me the data." Checking it here was the bug: admin.js never sends a
+   token on this call (correctly, since GETs shouldn't need one), so
+   every list refresh was silently failing with a 403 that nothing
+   displayed — including right after a successful publish, which is
+   why the dashboard looked frozen at zero even when the write worked. */
 if ($action === 'list') {
   $all = read_json($c['public_dir'] . '/resources.json', []);
   $people = read_json($c['public_dir'] . '/contributors.json', []);
@@ -165,6 +170,7 @@ if ($action === 'publish') {
 
 /* ---------------- edit (metadata on an already-published resource) ---------------- */
 if ($action === 'edit') {
+  require_csrf($body['csrf'] ?? null);
   $id = (string) ($body['id'] ?? '');
   if ($id === '') fail(400, 'Missing id');
 
@@ -200,6 +206,7 @@ if ($action === 'edit') {
 
 /* ---------------- delete ---------------- */
 if ($action === 'delete') {
+  require_csrf($body['csrf'] ?? null);
   // Soft-remove from the index only. The PDF stays on disk — HANDOVER.md
   // §4 is explicit that the uploaded files are the one thing on this
   // project with no other copy anywhere, so a web action never deletes
