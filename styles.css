@@ -1024,6 +1024,23 @@ body[data-menu-open="true"] .mobile-backdrop {
   .stage { margin-top: 36px; min-height: 0; }
   .cta-row { flex-direction: column; align-items: stretch; }
   .cta-solid, .cta-ghost { justify-content: center; }
+
+  /* Folder cards only — scoped to .grid, not .wrap, so the search bar and
+     pills above (which already look right) are untouched.
+     1. More headroom above the first row: on tap/hover the paper stack
+        springs up out of the folder (.t-papers:hover .s3 rises 64px, more
+        than .grid's old 22px top padding could clear), overlapping the
+        filter pills sitting right above it. */
+  .grid { padding-top: 80px; }
+}
+
+/* Folder cards only, narrowest phones — .grid, not .wrap, so the search bar
+   and pills (which already use .wrap and already look right) stay untouched.
+   At one column wide, `1fr` stretched every card edge-to-edge against a
+   fixed 220px height, reading as an elongated bar rather than a card. Extra
+   side padding here narrows it without shrinking the flap content inside. */
+@media (max-width: 480px) {
+  .grid { padding-left: 14px; padding-right: 14px; }
 }
 
 /* ------------------------------------------------------------
@@ -7069,6 +7086,23 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   }
   .m-file-l { align-items: flex-start; }
   .m-file-r { align-self: flex-end; }
+
+  /* Full-screen on phones: the card was still a floating panel capped at
+     86vh, so a contributor with a long breakdown + a full file list scrolled
+     internally inside a small window. Going edge-to-edge gives the same
+     content the whole viewport instead. Scoped to #lbgProfileModal only —
+     .modal is shared by the book/folder/share modals, which stay centered
+     cards. z-index is already above header.top (200 vs 90) and .modal-back
+     already blurs behind it, so nothing else changes. */
+  #lbgProfileModal { padding: 0; }
+  #lbgProfileModal .lbg-modal-card {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: 0;
+  }
 }
 
 /* 8. Responsive Adjustments */
