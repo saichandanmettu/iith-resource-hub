@@ -6,12 +6,18 @@
  * (one level ABOVE public_html) and edit it there.
  *
  * Do NOT put the real config inside public_html, and do not commit it.
+ *
+ * Path note: this file's own __DIR__ is wherever IT lives once copied —
+ * abhyas-private/, not api/. Every path below is written relative to
+ * THAT location on purpose. Don't reuse api/lib.php's dirname() pattern
+ * here; it assumes a different starting point and silently points
+ * public_dir at your home folder instead of public_html if copied in.
  */
 return [
-  // Where things live. Adjust to match your hosting account.
-  'private_dir'  => dirname(__DIR__, 2) . '/abhyas-private',
-  'public_dir'   => dirname(__DIR__),          // public_html
-  'files_dir'    => dirname(__DIR__) . '/files',
+  // __DIR__ here is abhyas-private/ itself once this file is in place.
+  'private_dir'  => __DIR__,
+  'public_dir'   => dirname(__DIR__) . '/public_html',
+  'files_dir'    => dirname(__DIR__) . '/public_html/files',
 
   // Admins. Generate a hash with api/hash.php, paste it here, delete that file.
   // At least two people should have an account (see HANDOVER.md).
@@ -20,5 +26,5 @@ return [
   ],
 
   'max_upload_bytes' => 25 * 1024 * 1024,  // 25 MB per file
-  'backup_keep'      => 20,                // how many resources.json snapshots to keep
+  'backup_keep'      => 20,
 ];
