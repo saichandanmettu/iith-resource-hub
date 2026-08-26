@@ -567,6 +567,18 @@ fetchResources().then((all) => {
   render();
   markReveals();
   setupReveals();
+
+  /* "See the course folder" (books.js, the reference-book detail panel)
+     links here as ?course=...&tab=... — open straight to that folder,
+     on the right tab, instead of landing on a blank Archive the visitor
+     has to go re-find it on. Clean the URL after so a refresh or the
+     back button doesn't reopen it. */
+  const params = new URLSearchParams(window.location.search);
+  const wantCourse = params.get("course");
+  if (wantCourse) {
+    openFolderModal(wantCourse, params.get("tab"));
+    history.replaceState(null, "", window.location.pathname + window.location.hash);
+  }
 });
 
 /* Branch dropdown on the Contribute form, filled from DEPARTMENTS so the

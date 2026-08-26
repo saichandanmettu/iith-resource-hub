@@ -79,7 +79,7 @@ const BookShelf = (function () {
       </div>
       <div class="m-cta">
         ${cta}
-        <a class="cta-ghost" href="index.html#archive" data-close>See the course folder</a>
+        <a class="cta-ghost" href="index.html?course=${encodeURIComponent(r.course)}&tab=${esc(r.type)}#archive" data-close>See the course folder</a>
       </div>`;
   }
 
