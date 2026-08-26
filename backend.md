@@ -135,7 +135,7 @@ professors. This kills the drift already visible in the current data, where
 
 In this archive `department` means *"which branch's students take this"*, not
 *"which department teaches it"* — it drives the branch filter pills and the
-Library shelves. The existing data proves one code maps to different
+Bookshelf shelves. The existing data proves one code maps to different
 branches:
 
 | Code | Department in the live data |
@@ -196,7 +196,7 @@ wrong course code and leave the name blank. If approval were all-or-nothing,
 good papers would get rejected over bad metadata. Every field is editable in
 the review screen, with the registry filling in as the code is corrected.
 
-**Leaderboard points need no separate mechanism.** Points are computed from
+**Honor Roll points need no separate mechanism.** Points are computed from
 `resources.json` at render time, so approving a file grants its points and a
 takedown removes them. That is deliberate: the Terms page promises a file can
 be withdrawn on request, and a board still paying out for a withdrawn file
@@ -245,8 +245,8 @@ attacking.
 
 ### 8.4 Writing `resources.json`
 
-The whole site reads this one file. A half-written copy blanks Browse,
-Library and the Leaderboard simultaneously.
+The whole site reads this one file. A half-written copy blanks Archive,
+Bookshelf and the Honor Roll simultaneously.
 
 - `flock()` exclusive for the read-modify-write.
 - Write to a temp file, `json_decode()` it to prove it parses, then
@@ -522,11 +522,11 @@ and one blocker I think is wrong in a way that matters.
 ### 1. Conceded
 
 **BLOCKER 3 — the `book` payload. Accepted in full.** Verified independently:
-`books.js:150` builds the entire Library with `BOOKS = all.filter(r => r.book)`,
+`books.js:150` builds the entire Bookshelf with `BOOKS = all.filter(r => r.book)`,
 and `books.js:32/36/45/58/59/61` dereference `r.book.author`, `.cover`,
 `.gist`, `.publisher` with no guard. The guard at `books.js:88` protects the
 detail panel only, not the render path. Dropping `book` would empty the
-Library silently and throw on any reference record that survived. This is the
+Bookshelf silently and throw on any reference record that survived. This is the
 most valuable catch in the review — §6.1 was written from a `papers` example
 and generalised carelessly.
 

@@ -6,8 +6,8 @@
  *   contributors.json  who shared what
  *   courses.json       course-code registry (admin console only)
  *
- * That split is deliberate. A missing comma in a .js file blanks Browse,
- * Library and the Leaderboard at once; a malformed .json file fails to parse
+ * That split is deliberate. A missing comma in a .js file blanks Archive,
+ * Bookshelf and the Honor Roll at once; a malformed .json file fails to parse
  * and can be reported instead. JSON is also what the review console writes,
  * and it can be validated before it replaces the live copy.
  *
@@ -20,7 +20,7 @@
 
 
 /* The BTech programmes IITH offers, alphabetical, as published by the
-   institute. This is the single source of truth: the Library shelves, the
+   institute. This is the single source of truth: the Bookshelf's shelves, the
    department filter and the Contribute form all read from it.
 
    `accent` is decorative, not semantic: unlike the resource-kind colours

@@ -15,7 +15,7 @@ Accepted from Antigravity's review:
 
 | Change | Why |
 |---|---|
-| `book` payload kept in the schema | `books.js:150` builds the Library with `filter(r => r.book)`; dropping it empties the Library silently |
+| `book` payload kept in the schema | `books.js:150` builds the Bookshelf with `filter(r => r.book)`; dropping it empties the Bookshelf silently |
 | Cache headers on `resources.json` | Without them, returning students never see newly approved files |
 | Viewer reuses existing modal + Lenis lifecycle | A second modal pattern would fight the first |
 | Rolling backup pruning | Inode pressure is real on shared hosting |
@@ -136,7 +136,7 @@ Admin reviews ── previews via session-checked stream
               └─ Reject  → abhyas-private/rejected/, log reason
 ```
 
-Leaderboard points need no mechanism: they are computed from
+Honor Roll points need no mechanism: they are computed from
 `resources.json`, so approving grants them and a takedown removes them.
 
 ---

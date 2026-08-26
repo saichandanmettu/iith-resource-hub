@@ -67,7 +67,7 @@ function read_json(string $path, $fallback = []) {
 /**
  * Lock, write to a temp file, prove it parses, then rename over the original.
  * rename() is atomic on the same filesystem, so a reader never sees a
- * half-written index — which would blank Browse, Library and the Leaderboard
+ * half-written index — which would blank Archive, Bookshelf and the Honor Roll
  * at the same time.
  */
 function write_json_atomic(string $path, $data): void {

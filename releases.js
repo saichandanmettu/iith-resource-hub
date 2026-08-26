@@ -4,12 +4,12 @@
 
    status:  "shipped" | "building" | "next"
    date:    free text, shown as-is (omit for "next" items)
-   tag:     short label, e.g. "v1.2" or "Library"
+   tag:     short label, e.g. "v1.2" or "Bookshelf"
    ------------------------------------------------------------ */
 const RELEASES = [
   {
     status: "building",
-    tag: "Leaderboard",
+    tag: "Honor Roll",
     title: "Contributor points",
     date: "August 2026",
     body: "Every file is worth points to whoever shared it, so the people keeping the archive alive are visible instead of anonymous. Seeded by hand while uploads are still manual.",
@@ -25,7 +25,7 @@ const RELEASES = [
   },
   {
     status: "shipped",
-    tag: "Library",
+    tag: "Bookshelf",
     title: "The reference shelf",
     date: "August 2026",
     body: "Every textbook a course leans on, on one shelf. Pull a book out to see what it is good for.",

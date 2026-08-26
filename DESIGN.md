@@ -25,22 +25,35 @@ nesting a card inside the sheet, a second raised surface — weakens it.
 
 | File | Role |
 |---|---|
-| `index.html` | Browse — the course-folder archive |
-| `library.html` | The Library — textbooks on shelves |
+| `index.html` | Archive — course folders, one per resource kind |
+| `library.html` | The Bookshelf — textbooks on shelves |
 | `releases.html` | Releases — what shipped / is building / is next |
 | `terms.html` | Terms — four statements plus the FAQ |
 | `contribute.html` | Contribute — how intake works, and the ask |
-| `leaderboard.html` | Leaderboard — who shared what, and what it scored |
+| `leaderboard.html` | Honor Roll — who shared what, and what it scored |
 | `styles.css` | **All** styling. One stylesheet, no per-page CSS. |
 | `data.js` | `RESOURCES` + `DEPARTMENTS`. Single source of truth. |
-| `app.js` | Browse page: folder cards, filters, modals |
+| `app.js` | Archive page: folder cards, filters, modals |
 | `books.js` | Book covers + the book detail panel (used by both pages) |
-| `library.js` | Library page: shelves, branch filter |
+| `library.js` | Bookshelf page: shelves, branch filter |
 | `releases.js` | `RELEASES` + `VERSIONS` data and renders |
 | `terms.js` | FAQ accordion toggle |
 | `contribute.js` | Contribute page: gap board, reveals, copy button |
-| `leaderboard.js` | Leaderboard: scoring, podium, scope toggle |
+| `leaderboard.js` | Honor Roll: scoring, podium, scope toggle |
 | `_archive/` | Nothing here is loaded. Safe to delete. |
+
+**Nav names renamed 2026-08-26 — files did not move.** The visible names
+are now Archive / Bookshelf / Honor Roll (were Browse / Library /
+Leaderboard). Each name was already sitting unused in that page's own hero
+copy or `RELEASES` tag before this — "Archive" was already `releases.js`'s
+tag for the course-folder feature, "Bookshelf" matches the Library hero's
+"Every Textbook — On One Shelf," and "Honor Roll" is the Leaderboard
+hero's own headline. The nav had just never caught up to the pages' own
+voice. Filenames, JS filenames, class names (`.fcard`, `#libPills`,
+`.lbg-*`) and URLs are unchanged on purpose — renaming those would break
+bookmarks and cost a rewrite for zero user-facing benefit. Only rename
+user-facing copy (nav, footer, `<title>`, aria-labels, on-page prose) —
+never a filename or selector — to keep this in sync going forward.
 
 Cache-busting is manual: every `<link>`/`<script>` carries `?v=N`.
 **Bump the version when you edit a file**, or the browser serves a stale copy.
@@ -81,7 +94,7 @@ screen and broke the warmth. Do not "fix" it back to `#FFFFFF`.
 
 ### Resource kinds — semantic colour
 
-Colour on the Browse page **means something**. This is the most important
+Colour on the Archive page **means something**. This is the most important
 colour rule in the system:
 
 | Kind | Colour | Tint | Ink |
@@ -247,7 +260,7 @@ border-radius: 28px 48px 28px 28px;
 The oversized top-right corner is what makes a rectangle read as a **folder**.
 It is the single most recognisable shape in the system. It appears on:
 
-- `.fcard` — course folders (Browse)
+- `.fcard` — course folders (Archive)
 - `.rel-col` — the three release folders (Releases)
 
 Scale it down on small screens (`24px 38px 24px 24px`), never square it off.
@@ -380,7 +393,7 @@ JS, and verify by measuring that **content actually moves**, not that
 
 ## 7. Components
 
-### Folder card (`.fcard`) — Browse
+### Folder card (`.fcard`) — Archive
 
 Three real layers, and the layering is what sells it:
 
@@ -399,7 +412,7 @@ kind opens differently (`.t-papers` lifts a stack, `.t-notes` has a mid layer,
 - every other kind opens the modal **already on its own tab**
 - falls back to "All Files" if that tab would be empty
 
-### Book cover (`.book`) — Library
+### Book cover (`.book`) — Bookshelf
 
 Course code (mono, small, on top) → title (Archivo) → rule → author (caps).
 The **course code leads** because that is how books are indexed: a student
@@ -468,7 +481,7 @@ Two rules it keeps:
 Below 620px the bar is dropped entirely — it is reinforcement, the count is
 the information, and keeping it squeezed branch names into ellipsis.
 
-### Leaderboard (`.lb-*`)
+### Honor Roll (`.lb-*`)
 
 Gamification, so it has two ways to go wrong and both are guarded.
 
@@ -505,12 +518,12 @@ meant to recruit. `SEMESTER_START` in `data.js` moves each semester.
 
 Two variants:
 
-- **Browse (`.pills`)** — resource kinds, roomy: `gap 4px`, `padding 8px 17px`,
+- **Archive (`.pills`)** — resource kinds, roomy: `gap 4px`, `padding 8px 17px`,
   `.88rem`, 8px dot. One raised white chip marks the active one.
-- **Library (`#libPills`)** — 15 branch codes, tight: `gap 1px`,
+- **Bookshelf (`#libPills`)** — 15 branch codes, tight: `gap 1px`,
   `padding 7px 11px`, `.82rem`, 6px dot. Fits all 15 on one line.
 
-There is **no "All" pill** on the Library. Nothing selected already means
+There is **no "All" pill** on the Bookshelf. Nothing selected already means
 everything; clicking the active branch again clears the filter. Branches with
 no books render `.is-empty` — dimmed, `pointer-events: none`, `disabled` — so
 a student sees their branch listed without hitting a dead end.
@@ -534,9 +547,9 @@ It fills ~88–90%, leaving safe margin on both sides so the final "s" never ove
 ## 8. Data model
 
 `data.js` holds both `RESOURCES` and `DEPARTMENTS`. **`DEPARTMENTS` is the
-single source of truth** for branches — Library shelves, the filter pills and
+single source of truth** for branches — Bookshelf shelves, the filter pills and
 the Contribute form all read from it. Never hardcode a branch list again;
-that drift is why the Library once offered five departments and the archive
+that drift is why the Bookshelf once offered five departments and the archive
 nine.
 
 ```js

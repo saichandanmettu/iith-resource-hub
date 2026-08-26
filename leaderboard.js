@@ -1,5 +1,5 @@
 /**
- * Leaderboard-Gemini — Gamified Contributor Recognition
+ * Honor Roll — Gamified Contributor Recognition
  * Abhyas Course Resource Hub (IIT Hyderabad)
  *
  * Computes live scores and metrics dynamically from `data.js` (RESOURCES, CONTRIBUTORS, POINTS, DEPARTMENTS).
@@ -855,7 +855,7 @@
       try {
         await globalThis.ABHYAS_READY;
       } catch (err) {
-        console.warn('[Leaderboard] ABHYAS_READY error, falling back to mock dataset:', err);
+        console.warn('[Honor Roll] ABHYAS_READY error, falling back to mock dataset:', err);
       }
     }
     initEvents();

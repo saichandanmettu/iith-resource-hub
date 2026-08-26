@@ -21,9 +21,9 @@ install and nothing to migrate.
 
 | Page | File |
 |---|---|
-| Browse | `index.html` |
-| Library | `library.html` |
-| Leaderboard | `leaderboard.html` |
+| Archive | `index.html` |
+| Bookshelf | `library.html` |
+| Honor Roll | `leaderboard.html` |
 | Contribute | `contribute.html` |
 | Releases | `releases.html` |
 | Terms | `terms.html` |
@@ -198,8 +198,8 @@ especially `submit.php`.
   person types `CSE` and the next types `Computer Science`, the filters
   quietly stop working and nobody notices for months.
 - `DEPARTMENTS` in `data.js` is the single source of truth for the fifteen
-  branches. The Library shelves, the filter pills and the Contribute page all
-  read from it. Never hardcode a branch list anywhere else.
+  branches. The Bookshelf's shelves, the filter pills and the Contribute page
+  all read from it. Never hardcode a branch list anywhere else.
 - Read `DESIGN.md` before changing any CSS. It is a contract, and the
   reasoning behind each rule is written down.
 

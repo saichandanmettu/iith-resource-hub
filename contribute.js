@@ -2,7 +2,7 @@
    Abhyas — Contribute page
 
    Drives the intake studio and the gap radar. Both read the same
-   arrays Browse renders, so neither can claim a branch is stocked
+   arrays Archive renders, so neither can claim a branch is stocked
    when the shelf is empty.
 
    The upload posts to api/submit.php. Nothing it sends is trusted:
@@ -57,7 +57,7 @@
   }
 
   /* The drop area answers the kind you picked. Same four families as the
-     folders on Browse, so the colour is learned by using it. */
+     folders on Archive, so the colour is learned by using it. */
   function paintDropzone() {
     const split = document.querySelector(".cg-intake-split");
     const m = KIND_META.find((x) => x.id === currentKind);

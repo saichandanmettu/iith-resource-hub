@@ -127,7 +127,7 @@ if ($action === 'approve') {
   ];
 
   // Reference books carry the payload library.html renders. Without it the
-  // Library filters the record straight out and shows nothing.
+  // Bookshelf filters the record straight out and shows nothing.
   if ($record['type'] === 'reference') {
     $record['book'] = [
       'author'    => (string) ($body['bookAuthor'] ?? ''),

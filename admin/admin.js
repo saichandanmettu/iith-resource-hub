@@ -282,7 +282,7 @@
       record.bookCover = document.getElementById("fBookCover").value;
       record.bookGist = document.getElementById("fBookGist").value.trim();
       if (!record.bookAuthor) {
-        alert("A reference book needs an author, or the Library cannot render it.");
+        alert("A reference book needs an author, or the Bookshelf cannot render it.");
         return;
       }
     }
