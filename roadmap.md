@@ -78,14 +78,18 @@ review rounds already closed.
       this the single most important item in that whole document: the
       papers themselves are the one thing on this project with no other
       copy anywhere.
-- [ ] **Download counts and share counts** — there is no counter anywhere
-      in the data model today (checked: `contributors.json` only holds
-      `name` + `roll`). Build one small counter endpoint before displaying
-      either number anywhere. Reuse the pattern already proven on this
-      site: `releases.js` calls a small Google Apps Script for the release
-      vote count — same shape, one more instance, not a new architecture.
-      Do **not** ship a fabricated number in the meantime; a real "0" beats
-      an invented "834."
+- [x] **Download counts and share counts — frontend done, deployment is the
+      one step left.** `resource.js` calls `COUNTER_API` on every Download/
+      Share click and shows the real count next to each button once it
+      answers — same pattern `releases.js` already uses for the vote
+      counter, one more Apps Script instance, not a new architecture.
+      Source is at `_local/counters-apps-script.gs`.
+  - [ ] **Deploy it**: paste `_local/counters-apps-script.gs` into a Google
+        Sheet's Extensions > Apps Script, deploy as a web app (Execute as
+        Me, Anyone can access), copy the `/exec` URL into `COUNTER_API` at
+        the top of `resource.js`. Until that URL is pasted in, both counts
+        stay hidden on every button — never a fabricated number standing
+        in for a real one.
 - [ ] The one count that's already real and live, for comparison: each
       resource page's contributor avatar shows that person's actual file
       count today, computed straight from `resources.json` — no backend

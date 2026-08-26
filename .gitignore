@@ -1,6 +1,18 @@
 # Local-only: superseded versions, UI experiments, unused source images.
 # Nothing in here is deployed.
-_local/
+# `_local/*` (not `_local/`) on purpose — a directory-matching pattern
+# blocks git from even descending into it, which silently defeats any
+# `!` negation below no matter how it's written. The wildcard form ignores
+# the same contents by default but still lets git walk in and check them.
+_local/*
+# Exception: the Apps Script backend sources. HANDOVER.md already documents
+# votes-apps-script.gs as "kept in _local/" as if it were tracked — it
+# wasn't (git ls-files confirmed zero files under _local/ before this line
+# existed), meaning a fresh clone silently lost the only copy of a real,
+# deployed backend's source. These are actual source code, not disposable
+# experiments; they belong with everything else in _local/ that's just
+# private, not with things that are genuinely safe to lose.
+!_local/*.gs
 
 # OS / editor
 .DS_Store

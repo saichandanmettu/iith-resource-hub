@@ -18,6 +18,33 @@
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+/* Real download/share counts, same pattern as releases.js's VOTE_API — one
+   more Apps Script web app, source kept at _local/counters-apps-script.gs.
+   Deploy it, paste the /exec URL below, and counts start appearing; until
+   then this stays a placeholder and the buttons just don't show a number
+   (same graceful no-op releases.js already uses for its own PASTE_ guard) —
+   never a fabricated number in the meantime. */
+const COUNTER_API = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+const counterConfigured = () => COUNTER_API.indexOf("PASTE_") !== 0;
+
+async function loadCounts(id) {
+  if (!counterConfigured()) return null;
+  try {
+    const res = await fetch(`${COUNTER_API}?action=read&id=${encodeURIComponent(id)}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+function bumpCount(id, action) {
+  if (!counterConfigured()) return;
+  /* Fire-and-forget — a download or share should never wait on this, and
+     a failed count update shouldn't block or error the actual action. */
+  fetch(`${COUNTER_API}?action=${action}&id=${encodeURIComponent(id)}`).catch(() => {});
+}
+
 /* This page doesn't load app.js (no folder grid, no filters — nothing else
    there applies here), so it can't rely on window.showToast from app.js
    even though it shares the same .toast markup. Same behavior, defined
@@ -144,13 +171,13 @@ function render(root, resource, course, contributor, allResources) {
       <aside class="rp-side">
         <div class="rp-side-card">
           <div class="rp-actions">
-            <a class="btn-open rp-download" href="${esc(fileUrl)}" download>
+            <a class="btn-open rp-download" href="${esc(fileUrl)}" id="rpDownloadBtn" download>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Download
+              Download<span class="rp-btn-count" id="rpDlCount" hidden></span>
             </a>
             <button class="btn-share" type="button" id="rpShareBtn">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              Share
+              Share<span class="rp-btn-count" id="rpShareCount" hidden></span>
             </button>
           </div>
 
@@ -184,10 +211,27 @@ function render(root, resource, course, contributor, allResources) {
 
   document.getElementById("rpViewerSlot").appendChild(renderViewer(fileUrl, resource.title));
 
+  const dlCountEl = document.getElementById("rpDlCount");
+  const shareCountEl = document.getElementById("rpShareCount");
+  const showCount = (el, n) => { el.textContent = ` ${n}`; el.hidden = false; };
+
+  loadCounts(resource.id).then((counts) => {
+    if (!counts) return;
+    showCount(dlCountEl, counts.downloads);
+    showCount(shareCountEl, counts.shares);
+  });
+
+  document.getElementById("rpDownloadBtn").addEventListener("click", () => {
+    bumpCount(resource.id, "download");
+    if (!dlCountEl.hidden) showCount(dlCountEl, Number(dlCountEl.textContent) + 1);
+  });
+
   document.getElementById("rpShareBtn").addEventListener("click", () => {
     const url = new URL(`resource.html?id=${resource.id}`, window.location.href).href;
     if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
     showToast(`Link copied for "${resource.title}"`);
+    bumpCount(resource.id, "share");
+    if (!shareCountEl.hidden) showCount(shareCountEl, Number(shareCountEl.textContent) + 1);
   });
 }
 

@@ -1263,12 +1263,20 @@ body[data-menu-open="true"] .mobile-backdrop {
 /* Share used to be an icon-only circle — nobody could tell what it did
    without hovering for the title tooltip. A labeled outline pill next to
    Open (same shape, secondary weight) reads immediately. */
-/* Was border: var(--hair) — a pale cream line that reads fine on .cta-ghost's
-   plain --surface backdrop, but on this row's own kind-tinted wash (see
-   .fm-row above) it was nearly invisible, which read as "no border" even
-   though one was technically there. A minimal black outline instead. */
-.btn-share { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); }
-.btn-share:hover { background: var(--ink); color: #fff; transform: translateY(-1px); }
+/* Solid brand amber, not per-kind color — Share is the same action
+   regardless of whether the row/page it's on is amber, olive, terracotta
+   or mauve, so it gets the site's one signature color (the same gradient
+   .cta-solid uses) rather than blending into or clashing with whichever
+   kind happens to be showing. White text fails on this exact gradient
+   (checked: 2.55:1) — same finding DESIGN.md already documents for
+   .t-papers's front flap — so this reuses that fix too: var(--ink) on
+   raw --papers clears 6.15:1. */
+.btn-share {
+  background: linear-gradient(180deg, #FA9A0A 0%, #F28700 100%);
+  border: 0; color: var(--ink);
+  box-shadow: 0 6px 14px -6px rgba(242, 135, 0, .5);
+}
+.btn-share:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -6px rgba(242, 135, 0, .6); }
 .fm-empty { text-align: center; color: var(--muted); padding: 32px 0; font-size: .92rem; }
 
 .fm-footer {
@@ -8202,6 +8210,11 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 }
 .rp-actions { display: flex; gap: 10px; }
 .rp-actions .btn-open, .rp-actions .btn-share { flex: 1; justify-content: center; padding: 12px 16px; font-size: .86rem; }
+/* Starts [hidden] and stays that way until loadCounts() gets a real number
+   back from the counter endpoint (see resource.js) — an un-configured or
+   unreachable counter means no badge at all, never a placeholder "0" or
+   guess standing in for a real one. */
+.rp-btn-count { opacity: .75; font-variant-numeric: tabular-nums; }
 
 /* The contributor's own count, not their initials. There's no real
    download/share counter yet (see roadmap.md) — this number needs no
