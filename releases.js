@@ -64,12 +64,20 @@ const RELEASES = [
     items: ["Smooth scroll", "Rebuilt folder cards", "Animated headlines"]
   },
   {
-    status: "building",
+    status: "shipped",
     tag: "Honor Roll",
     title: "Contributor points",
     date: "August 2026",
-    body: "Every file is worth points to whoever shared it, so the people keeping the archive alive are visible instead of anonymous. Seeded by hand while uploads are still manual.",
+    body: "Every file is worth points to whoever shared it, computed live from the archive itself — so the people keeping it alive are visible instead of anonymous.",
     items: ["Points per resource kind", "This semester and all time", "Credit stays optional"]
+  },
+  {
+    status: "building",
+    tag: "Archive",
+    title: "Download & share counts, per file",
+    date: "August 2026",
+    body: "Every resource page already has Download and Share buttons — the real counts next to them go live once the counter is wired in. No fake numbers in the meantime.",
+    items: ["Real per-file download counts", "Real per-file share counts", "Shown only once they're real"]
   },
   {
     status: "building",
@@ -86,6 +94,14 @@ const RELEASES = [
     date: "August 2026",
     body: "Every textbook a course leans on, on one shelf. Pull a book out to see what it is good for.",
     items: ["Shelves grouped by department", "Book detail panel", "Search by title, author or publisher"]
+  },
+  {
+    status: "building",
+    tag: "Bookshelf",
+    title: "More papers, notes, and books — every week",
+    date: "August 2026",
+    body: "The shelves and folders are built; now it's about filling them. Real files are being added and reviewed as they come in.",
+    items: ["New papers added as they're reviewed", "Reference shelf being restocked with real titles", "Coverage growing course by course"]
   },
   {
     status: "shipped",
