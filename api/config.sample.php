@@ -17,7 +17,10 @@ return [
   // __DIR__ here is abhyas-private/ itself once this file is in place.
   'private_dir'  => __DIR__,
   'public_dir'   => dirname(__DIR__) . '/public_html',
-  'files_dir'    => dirname(__DIR__) . '/public_html/files',
+  // Outside public_html on purpose (see api/file.php) — uploaded PDFs
+  // are the one thing on this project with no other copy anywhere
+  // (HANDOVER.md §4), and public_html gets reset on every deploy.
+  'files_dir'    => __DIR__ . '/files',
 
   // Admins. Generate a hash with api/hash.php, paste it here, delete that file.
   // At least two people should have an account (see HANDOVER.md).

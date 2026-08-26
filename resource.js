@@ -144,7 +144,10 @@ function renderViewer(fileUrl, title) {
 
 function render(root, resource, course, contributor, allResources) {
   const kind = KIND[resource.type] || KIND.papers;
-  const fileUrl = "files/" + resource.file;
+  /* Served through PHP, not a static path — files/ moved to
+     abhyas-private/, outside anything a deploy can touch. See
+     api/file.php for why. */
+  const fileUrl = "api/file.php?path=" + encodeURIComponent(resource.file);
   const branches = (course && Array.isArray(course.branches) && course.branches.length)
     ? course.branches
     : [resource.department];
@@ -180,7 +183,7 @@ function render(root, resource, course, contributor, allResources) {
       <aside class="rp-side">
         <div class="rp-side-card">
           <div class="rp-actions">
-            <a class="btn-open rp-download" href="${esc(fileUrl)}" id="rpDownloadBtn" download>
+            <a class="btn-open rp-download" href="${esc(fileUrl)}" id="rpDownloadBtn" download="${esc(resource.file.split("/").pop())}">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download<span class="rp-btn-count" id="rpDlCount" hidden></span>
             </a>

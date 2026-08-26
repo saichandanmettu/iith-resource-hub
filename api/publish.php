@@ -133,7 +133,6 @@ if ($action === 'publish') {
     'code'        => $code,
     'course'      => $course,
     'department'  => $dept,
-    'semester'    => (int) ($body['semester'] ?? 0) ?: null,
     'type'        => $type,
     'examType'    => (string) ($body['examType'] ?? ''),
     'professor'   => (string) ($body['professor'] ?? '') ?: '—',
@@ -180,12 +179,11 @@ if ($action === 'edit') {
   foreach ($all as $i => $r) { if (($r['id'] ?? '') === $id) { $idx = $i; break; } }
   if ($idx === null) fail(404, 'Resource not found');
 
-  foreach (['course', 'department', 'semester', 'type', 'examType', 'professor', 'year', 'roll'] as $k) {
+  foreach (['course', 'department', 'type', 'examType', 'professor', 'year', 'roll'] as $k) {
     if (array_key_exists($k, $body)) $all[$idx][$k] = $body[$k];
   }
   $all[$idx]['department'] = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($all[$idx]['department'] ?? '')));
   if (isset($body['year'])) $all[$idx]['year'] = (int) $body['year'] ?: null;
-  if (isset($body['semester'])) $all[$idx]['semester'] = (int) $body['semester'] ?: null;
 
   if (($all[$idx]['type'] ?? '') === 'reference') {
     $all[$idx]['book'] = [

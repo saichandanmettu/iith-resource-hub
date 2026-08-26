@@ -20,36 +20,29 @@
   const API = "../api/publish.php";
 
   /* ============================================================
-     Course registry — one place a code maps to a name.
+     Course registry — one place a code maps to a name, read from the
+     site's real courses.json instead of a small hardcoded sample list.
+     Every known code autofills; only a genuinely new one needs typing
+     once (add it to courses.json afterward and it autofills from then
+     on for everyone).
 
-     Note what it deliberately does NOT do: it never sets the
-     branch. In this archive `department` means "which branch's
-     students take this", and one course legitimately belongs to
-     several — MA1010 sits under CS while MA1310 sits under MSME.
-     A fixed code->branch map would quietly move papers out of the
-     branch whose students need them.
+     Note what it deliberately does NOT do: it never sets the branch.
+     In this archive `department` means "which branch's students take
+     this", and one course legitimately belongs to several — MA1010
+     sits under CS while MA1310 sits under MSME. A fixed code->branch
+     map would quietly move papers out of the branch whose students
+     need them.
      ============================================================ */
-  const COURSE_CATALOG = {
-    "MA1010": { name: "Elementary Linear Algebra", sem: 1, professors: ["Amit Tripathi"] },
-    "MA1110": { name: "Calculus-I", sem: 1, professors: ["Jyotirmoy Rana", "Vikas Krishnamurthy"] },
-    "MA1210": { name: "Calculus-II", sem: 2, professors: ["Rajesh Kannan", "Sukumar"] },
-    "MA1310": { name: "Differential Equations", sem: 2, professors: ["Dhriti Sundar Patra"] },
-    "MA2110": { name: "Vector Calculus", sem: 2, professors: ["Alok Pan"] },
-    "MA2210": { name: "Complex Analysis", sem: 3, professors: ["Alok Pan"] },
-    "PH1210": { name: "Maths for Physics", sem: 2, professors: ["Alok Pan"] },
-    "PH2110": { name: "Modern Physics", sem: 3, professors: [] },
-    "CY1120": { name: "Materials Chemistry", sem: 2, professors: ["Atul Deshpande"] },
-    "CY2140": { name: "Environmental Chemistry", sem: 4, professors: ["Sudharshanam"] },
-    "CS2110": { name: "Design and Analysis of Algorithms", sem: 4, professors: [] },
-    "CS2130": { name: "Database Management Systems", sem: 5, professors: [] },
-    "CS3110": { name: "Operating Systems", sem: 5, professors: [] },
-    "EE2140": { name: "Digital Circuits", sem: 3, professors: [] },
-    "ES1110": { name: "Introduction to Climate Change", sem: 1, professors: ["Pritha Chatterjee", "Deepu J Babu"] },
-    "ME2110": { name: "Mechanics of Solids", sem: 3, professors: ["Prabhat Kumar"] },
-    "ME2210": { name: "Fluid Mechanics", sem: 4, professors: [] },
-    "MS1110": { name: "Introduction to Materials Science and Engineering", sem: 2, professors: ["Ranjith Ramadurai"] },
-    "LA1010": { name: "Communication Skills", sem: 1, professors: ["Srirupa Chatterjee"] },
-  };
+  let COURSE_CATALOG = {};
+  const courseRegistryReady = fetch("../courses.json", { cache: "no-cache" })
+    .then((r) => (r.ok ? r.json() : {}))
+    .then((data) => {
+      COURSE_CATALOG = data || {};
+      document.getElementById("codeList").innerHTML =
+        Object.keys(COURSE_CATALOG).sort().map((c) =>
+          `<option value="${c}">${esc(COURSE_CATALOG[c].name)}</option>`).join("");
+    })
+    .catch(() => { COURSE_CATALOG = {}; });
 
   let state = { items: [], contributors: {}, current: null, csrf: null, filter: "" };
 
@@ -217,7 +210,7 @@
   let previewUrl = null; // revoke the previous blob: URL before making a new one
 
   function resetForm() {
-    ["fCode", "fCourse", "fSem", "fYear", "fExam", "fProf", "fContrib", "fRoll",
+    ["fCode", "fCourse", "fYear", "fExam", "fProf", "fContrib", "fRoll",
      "fBookAuthor", "fBookPublisher", "fBookGist"].forEach((id) => { document.getElementById(id).value = ""; });
     document.getElementById("fType").value = "papers";
     document.getElementById("fBookCover").value = "ink";
@@ -252,7 +245,6 @@
 
     document.getElementById("fCode").value = it.code || "";
     document.getElementById("fCourse").value = it.course || "";
-    document.getElementById("fSem").value = it.semester || "";
     document.getElementById("fType").value = it.type || "papers";
     document.getElementById("fYear").value = it.year || "";
     document.getElementById("fExam").value = it.examType || "";
@@ -269,7 +261,7 @@
     /* Same viewer the public site uses — pointed at the file already live,
        not a blob: URL, since there's nothing local to preview here. */
     const pane = document.getElementById("pdfPane");
-    const fileUrl = it.file ? new URL(`../files/${it.file}`, window.location.href).href : null;
+    const fileUrl = it.file ? new URL(`../api/file.php?path=${encodeURIComponent(it.file)}`, window.location.href).href : null;
     pane.innerHTML = fileUrl
       ? `<iframe src="../assets/pdfjs/web/viewer.html?file=${encodeURIComponent(fileUrl)}" title="Preview"></iframe>`
       : `<div class="ad-pdf-stub">No file on record for this entry.</div>`;
@@ -328,8 +320,8 @@
     ).join("");
   }
 
-  /* Auto-fill from the registry: name, semester and professors, but
-     never the branch — see the note on COURSE_CATALOG above. */
+  /* Auto-fill from the registry: name and professors, but never the
+     branch — see the note on COURSE_CATALOG above. */
   const codeInput = document.getElementById("fCode");
   codeInput.addEventListener("input", () => {
     const code = codeInput.value.trim().toUpperCase();
@@ -338,11 +330,9 @@
     if (!hit) { hint.hidden = true; return; }
     codeInput.value = code;
     const course = document.getElementById("fCourse");
-    const sem = document.getElementById("fSem");
     const prof = document.getElementById("fProf");
     if (!course.value.trim()) course.value = hit.name;
-    if (!sem.value) sem.value = hit.sem || "";
-    if (!prof.value.trim() && hit.professors.length) prof.value = hit.professors.join(", ");
+    if (!prof.value.trim() && hit.professors?.length) prof.value = hit.professors.join(", ");
     hint.textContent = `Known course — ${hit.name}`;
     hint.hidden = false;
   });
@@ -352,7 +342,6 @@
       code: document.getElementById("fCode").value.trim().toUpperCase(),
       course: document.getElementById("fCourse").value.trim(),
       department: document.getElementById("fDept").value,
-      semester: document.getElementById("fSem").value || "",
       type: document.getElementById("fType").value,
       year: document.getElementById("fYear").value || "",
       examType: document.getElementById("fExam").value || "",
@@ -432,10 +421,7 @@
     ));
   }
 
-  /* populate the code autocomplete */
-  document.getElementById("codeList").innerHTML =
-    Object.keys(COURSE_CATALOG).sort().map((c) =>
-      `<option value="${c}">${esc(COURSE_CATALOG[c].name)}</option>`).join("");
+  /* codeList is populated once courseRegistryReady resolves, above */
 
   /* ============================================================
      MOCK — delete once api/publish.php is live
@@ -446,11 +432,11 @@
   };
   let mockItems = [
     { id: "cs2110-2024-endsem", status: "published", title: "Algorithms — End-Sem", filename: "algo.pdf",
-      code: "CS2110", course: "Design and Analysis of Algorithms", department: "CS", semester: 4, type: "papers",
+      code: "CS2110", course: "Design and Analysis of Algorithms", department: "CS", type: "papers",
       year: 2024, examType: "End-Sem", professor: "", contributor: "c1", roll: "CS23",
       added: "2026-08-20", file: null },
     { id: "cy1120-2024-quiz", status: "published", title: "Materials Chemistry — Quiz", filename: "quiz2.pdf",
-      code: "CY1120", course: "Materials Chemistry", department: "MSME", semester: 2, type: "papers",
+      code: "CY1120", course: "Materials Chemistry", department: "MSME", type: "papers",
       year: 2024, examType: "Quiz", professor: "Atul Deshpande", contributor: "c2", roll: "MS24",
       added: "2026-08-18", file: null },
   ];
@@ -480,7 +466,7 @@
       mockItems.push({
         id, status: "published", title: `${payload.get("course")} — ${payload.get("examType") || payload.get("type")}`,
         code: payload.get("code"), course: payload.get("course"), department: payload.get("department"),
-        semester: Number(payload.get("semester")) || null, type: payload.get("type"), year: Number(payload.get("year")) || null,
+        type: payload.get("type"), year: Number(payload.get("year")) || null,
         examType: payload.get("examType"), professor: payload.get("professor") || "—",
         contributor: payload.get("contributor") || null, roll: payload.get("roll"), added: new Date().toISOString().slice(0, 10),
         file: null,
