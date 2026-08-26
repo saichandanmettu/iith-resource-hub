@@ -217,6 +217,7 @@
     document.getElementById("fFile").value = "";
     document.getElementById("codeHint").hidden = true;
     document.getElementById("dupeWarn").hidden = true;
+    deptTouched = false; // let the next code typed autofill branch again
     syncBookFields();
   }
 
@@ -320,8 +321,17 @@
     ).join("");
   }
 
-  /* Auto-fill from the registry: name and professors, but never the
-     branch — see the note on COURSE_CATALOG above. */
+  /* Auto-fill from the registry: name, professors, AND branch — keyed to
+     the exact code, never guessed from its prefix. That distinction
+     matters: MA1010 and MA1310 share a prefix but sit under different
+     branches (CS and MSME respectively) in courses.json, which is
+     exactly why a prefix-based guess would get one of them wrong. This
+     is safe because it's a per-code lookup in the same registry the
+     name autofill already trusts, not a pattern match on the code
+     itself. */
+  let deptTouched = false;
+  document.getElementById("fDept").addEventListener("change", () => { deptTouched = true; });
+
   const codeInput = document.getElementById("fCode");
   codeInput.addEventListener("input", () => {
     const code = codeInput.value.trim().toUpperCase();
@@ -331,8 +341,10 @@
     codeInput.value = code;
     const course = document.getElementById("fCourse");
     const prof = document.getElementById("fProf");
+    const dept = document.getElementById("fDept");
     if (!course.value.trim()) course.value = hit.name;
     if (!prof.value.trim() && hit.professors?.length) prof.value = hit.professors.join(", ");
+    if (!deptTouched && hit.branches?.length) dept.value = hit.branches[0];
     hint.textContent = `Known course — ${hit.name}`;
     hint.hidden = false;
   });
