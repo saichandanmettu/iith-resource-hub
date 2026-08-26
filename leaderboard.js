@@ -645,24 +645,61 @@
     if (modalBar) modalBar.innerHTML = createStackedBar(c);
     if (modalFileCount) modalFileCount.textContent = c.resources.length;
 
-    // Stats Grid
+    // Stats Grid (Option 1: Tactile Kind Badges)
     if (modalStatsGrid) {
+      const pCnt = c.counts?.papers || 0;
+      const aCnt = c.counts?.assignment || 0;
+      const nCnt = c.counts?.notes || 0;
+      const rCnt = c.counts?.reference || 0;
+
+      const pPts = c.pointsBreakdown?.papers || 0;
+      const aPts = c.pointsBreakdown?.assignment || 0;
+      const nPts = c.pointsBreakdown?.notes || 0;
+      const rPts = c.pointsBreakdown?.reference || 0;
+
       modalStatsGrid.innerHTML = `
-        <div class="m-stat-item k-papers">
-          <span class="m-stat-count">${c.counts.papers}</span>
-          <span class="m-stat-lbl">Papers (+${c.pointsBreakdown.papers} pts)</span>
+        <div class="lbg-m-stat-card k-papers ${pCnt === 0 ? 'is-zero' : ''}">
+          <div class="m-stat-l">
+            <span class="m-stat-dot"></span>
+            <div class="m-stat-info">
+              <span class="m-stat-name">Past Papers</span>
+              <span class="m-stat-files">${pCnt} ${pCnt === 1 ? 'paper' : 'papers'}</span>
+            </div>
+          </div>
+          <span class="m-stat-pill">+${pPts} pts</span>
         </div>
-        <div class="m-stat-item k-assignment">
-          <span class="m-stat-count">${c.counts.assignment}</span>
-          <span class="m-stat-lbl">Assignments (+${c.pointsBreakdown.assignment} pts)</span>
+
+        <div class="lbg-m-stat-card k-assignment ${aCnt === 0 ? 'is-zero' : ''}">
+          <div class="m-stat-l">
+            <span class="m-stat-dot"></span>
+            <div class="m-stat-info">
+              <span class="m-stat-name">Assignments</span>
+              <span class="m-stat-files">${aCnt} ${aCnt === 1 ? 'file' : 'files'}</span>
+            </div>
+          </div>
+          <span class="m-stat-pill">+${aPts} pts</span>
         </div>
-        <div class="m-stat-item k-notes">
-          <span class="m-stat-count">${c.counts.notes}</span>
-          <span class="m-stat-lbl">Notes (+${c.pointsBreakdown.notes} pts)</span>
+
+        <div class="lbg-m-stat-card k-notes ${nCnt === 0 ? 'is-zero' : ''}">
+          <div class="m-stat-l">
+            <span class="m-stat-dot"></span>
+            <div class="m-stat-info">
+              <span class="m-stat-name">Notes & Slides</span>
+              <span class="m-stat-files">${nCnt} ${nCnt === 1 ? 'file' : 'files'}</span>
+            </div>
+          </div>
+          <span class="m-stat-pill">+${nPts} pts</span>
         </div>
-        <div class="m-stat-item k-reference">
-          <span class="m-stat-count">${c.counts.reference}</span>
-          <span class="m-stat-lbl">Books (+${c.pointsBreakdown.reference} pts)</span>
+
+        <div class="lbg-m-stat-card k-reference ${rCnt === 0 ? 'is-zero' : ''}">
+          <div class="m-stat-l">
+            <span class="m-stat-dot"></span>
+            <div class="m-stat-info">
+              <span class="m-stat-name">Reference Books</span>
+              <span class="m-stat-files">${rCnt} ${rCnt === 1 ? 'book' : 'books'}</span>
+            </div>
+          </div>
+          <span class="m-stat-pill">+${rPts} pts</span>
         </div>
       `;
     }
@@ -684,11 +721,8 @@
                   <div class="m-file-title">${r.title || r.course}</div>
                   <div class="m-file-meta">
                     <span class="m-file-code">${r.code || ''}</span>
-                    <span>&middot;</span>
-                    <span>Sem ${r.semester || 1}</span>
-                    <span>&middot;</span>
-                    <span>${r.year || 2024}</span>
-                    ${r.pages ? `<span>&middot; ${r.pages} pgs</span>` : ''}
+                    ${r.year ? `<span>&middot;</span><span>${r.year}</span>` : ''}
+                    ${r.pages ? `<span>&middot;</span><span>${r.pages} pgs</span>` : ''}
                   </div>
                 </div>
               </div>
@@ -703,16 +737,19 @@
     }
 
     modal.hidden = false;
-    modal.classList.add('is-open');
+    modal.offsetHeight; // trigger reflow
+    modal.classList.add('open');
     document.body.style.overflow = 'hidden';
+    window.__pauseLenis?.();
   }
 
   function closeModal() {
     if (!modal) return;
-    modal.classList.remove('is-open');
+    modal.classList.remove('open');
     setTimeout(() => {
       modal.hidden = true;
       document.body.style.overflow = '';
+      window.__resumeLenis?.();
     }, 200);
   }
 
