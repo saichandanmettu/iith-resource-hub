@@ -52,6 +52,21 @@ const BookShelf = (function () {
   function fill(r) {
     document.getElementById("modalCover").innerHTML =
       `<span class="book ${coverClass(r)}">${coverFace(r)}</span>`;
+    // Most reference books have no hosted file at all — they're a pointer
+    // to a real, usually copyrighted, textbook, not a copy of one (see
+    // api/publish.php build_record()). Link out when there's a link,
+    // open the actual file only when one was actually uploaded, and if
+    // somehow neither exists, don't render a dead "#" button.
+    const openHref = r.file
+      ? "api/file.php?path=" + encodeURIComponent(r.file)
+      : (r.book.link || "");
+    const openLabel = r.file ? "Open the PDF" : "Find this book online";
+    const cta = openHref
+      ? `<a class="cta-solid" href="${esc(openHref)}"${r.file ? "" : ' target="_blank" rel="noopener"'}>${openLabel}
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
+        </a>`
+      : "";
+
     document.getElementById("modalBody").innerHTML = `
       <p class="m-kind">${esc(r.code || r.department)} &middot; Reference</p>
       <h3 class="m-title">${esc(title(r))}</h3>
@@ -59,13 +74,11 @@ const BookShelf = (function () {
       <p class="m-gist">${esc(r.book.gist)}</p>
       <div class="m-facts">
         <div><b>${esc(r.book.publisher)}</b><span>Publisher</span></div>
-        <div><b>${r.pages}</b><span>Pages</span></div>
+        <div><b>${r.pages || "—"}</b><span>Pages</span></div>
         <div><b>${esc(r.course)}</b><span>Prescribed for</span></div>
       </div>
       <div class="m-cta">
-        <a class="cta-solid" href="#">Open the PDF
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
-        </a>
+        ${cta}
         <a class="cta-ghost" href="index.html#archive" data-close>See the course folder</a>
       </div>`;
   }

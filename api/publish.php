@@ -166,27 +166,40 @@ if (!$isMultipart) require_csrf($body['csrf'] ?? null);
 if ($action === 'publish') {
   require_csrf($_POST['csrf'] ?? null);
 
-  if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) fail(400, 'No file received.');
-  $f = $_FILES['file'];
-  if ($f['size'] <= 0 || $f['size'] > $c['max_upload_bytes']) fail(413, 'That file is too large.');
-  if (!is_uploaded_file($f['tmp_name']) || !looks_like_pdf($f['tmp_name'])) fail(415, 'Only PDF files can be accepted.');
-
   $fields = parsed_fields($body);
-  $sha256 = hash_file('sha256', $f['tmp_name']);
+  $hasFile = !empty($_FILES['file']['name']);
 
+  /* A reference book is a pointer to something real, not a copy of it —
+     there's nowhere legitimate to host the actual text of a commercial
+     textbook, so it's the one type allowed to skip the file entirely and
+     carry a link out instead (see build_record()'s book.link). Every
+     other type still needs a real PDF, same as always. */
+  if (!$hasFile && $fields['type'] !== 'reference') fail(400, 'No file received.');
+
+  $rel = '';
+  $sha256 = '';
   $existing = read_json($c['private_dir'] . '/resources.json', []);
-  $duplicateOf = find_duplicate($existing, $sha256);
-  // Non-blocking: tell the admin, let them decide. They are the moderator
-  // AND the uploader here, so a hard block would just be in their own way.
-  if ($duplicateOf !== null && empty($body['force'])) {
-    fail(409, "This looks byte-for-byte identical to an existing file ($duplicateOf). Resubmit with confirmation to publish anyway.");
-  }
 
-  $rel  = dest_for($c, $fields);
-  $dest = $c['files_dir'] . '/' . $rel;
-  if (!is_dir(dirname($dest))) @mkdir(dirname($dest), 0755, true);
-  if (!move_uploaded_file($f['tmp_name'], $dest)) fail(500, 'Could not store the file.');
-  @chmod($dest, 0644);
+  if ($hasFile) {
+    if ($_FILES['file']['error'] !== UPLOAD_ERR_OK) fail(400, 'No file received.');
+    $f = $_FILES['file'];
+    if ($f['size'] <= 0 || $f['size'] > $c['max_upload_bytes']) fail(413, 'That file is too large.');
+    if (!is_uploaded_file($f['tmp_name']) || !looks_like_pdf($f['tmp_name'])) fail(415, 'Only PDF files can be accepted.');
+
+    $sha256 = hash_file('sha256', $f['tmp_name']);
+    $duplicateOf = find_duplicate($existing, $sha256);
+    // Non-blocking: tell the admin, let them decide. They are the moderator
+    // AND the uploader here, so a hard block would just be in their own way.
+    if ($duplicateOf !== null && empty($body['force'])) {
+      fail(409, "This looks byte-for-byte identical to an existing file ($duplicateOf). Resubmit with confirmation to publish anyway.");
+    }
+
+    $rel  = dest_for($c, $fields);
+    $dest = $c['files_dir'] . '/' . $rel;
+    if (!is_dir(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+    if (!move_uploaded_file($f['tmp_name'], $dest)) fail(500, 'Could not store the file.');
+    @chmod($dest, 0644);
+  }
 
   $record = build_record($fields, $admin, $rel, $sha256, $body);
   $record['contributor'] = match_or_create_contributor($c, (string) ($body['contributor'] ?? ''), (string) ($body['roll'] ?? ''));
@@ -274,7 +287,15 @@ if ($action === 'edit') {
       'publisher' => (string) ($body['bookPublisher'] ?? $all[$idx]['book']['publisher'] ?? ''),
       'cover'     => (string) ($body['bookCover'] ?? $all[$idx]['book']['cover'] ?? 'ink'),
       'gist'      => (string) ($body['bookGist'] ?? $all[$idx]['book']['gist'] ?? ''),
+      'link'      => trim((string) ($body['bookLink'] ?? $all[$idx]['book']['link'] ?? '')),
     ];
+    if (array_key_exists('bookTitle', $body) && trim((string) $body['bookTitle']) !== '') {
+      $all[$idx]['title'] = trim((string) $body['bookTitle']) . ' — Reference Book';
+    }
+    if (array_key_exists('pages', $body)) {
+      $pages = (int) $body['pages'];
+      if ($pages > 0) $all[$idx]['pages'] = $pages; else unset($all[$idx]['pages']);
+    }
   }
 
   if (array_key_exists('contributor', $body)) {
@@ -356,7 +377,13 @@ function parsed_fields(array $body): array {
   if ($code === '' || $dept === '' || $course === '') fail(400, 'Course code, branch and course name are required.');
 
   $type = in_array($body['type'] ?? '', ['papers', 'notes', 'assignment', 'reference'], true) ? $body['type'] : 'papers';
-  $exam = slugify((string) ($body['examType'] ?? '')) ?: slugify($type);
+  // A reference book has no "exam type" — fall back to the book's own
+  // title instead of the generic type slug, or two different books for
+  // the same course/year would both id as e.g. "mnc-ma1110-2024-reference"
+  // and collide (see build_record()'s id, which doesn't otherwise know
+  // one book from another).
+  $examFallback = $type === 'reference' ? slugify((string) ($body['bookTitle'] ?? '')) : '';
+  $exam = slugify((string) ($body['examType'] ?? '')) ?: ($examFallback ?: slugify($type));
   $year = (int) ($body['year'] ?? 0) ?: (int) date('Y');
 
   return compact('code', 'dept', 'course', 'type', 'exam', 'year');
@@ -409,6 +436,15 @@ function find_duplicate(array $existing, string $sha256): ?string {
 function build_record(array $fields, string $admin, string $rel, string $sha256, array $body): array {
   ['code' => $code, 'dept' => $dept, 'course' => $course, 'type' => $type, 'exam' => $exam, 'year' => $year] = $fields;
 
+  // A reference book's title is the BOOK's title, not the course's — the
+  // generic "{course} — {exam}" scheme (built for exam papers/notes/
+  // assignments) would show "Calculus-I — Thomas Calculus" instead of
+  // "Thomas' Calculus". books.js's title() also expects exactly this
+  // " — Reference Book" suffix to strip back off for display.
+  $title = $type === 'reference'
+    ? trim((string) ($body['bookTitle'] ?? '')) . ' — Reference Book'
+    : $course . ' — ' . ucfirst($exam);
+
   $record = [
     // Department is part of the id, not just code-year-exam: a course
     // genuinely shared across every branch (an open elective) is published
@@ -417,7 +453,7 @@ function build_record(array $fields, string $admin, string $rel, string $sha256,
     // here those copies would all collide on the same id — resource.html
     // ?id=..., edit and delete would then hit whichever one matched first.
     'id'          => strtolower($dept) . '-' . strtolower($code) . '-' . $year . '-' . $exam,
-    'title'       => $course . ' — ' . ucfirst($exam),
+    'title'       => $title,
     'code'        => $code,
     'course'      => $course,
     'department'  => $dept,
@@ -434,13 +470,22 @@ function build_record(array $fields, string $admin, string $rel, string $sha256,
   ];
 
   if ($type === 'reference') {
+    if (trim((string) ($body['bookTitle'] ?? '')) === '') fail(400, 'A reference book needs its own title.');
+
     $record['book'] = [
       'author'    => (string) ($body['bookAuthor'] ?? ''),
       'publisher' => (string) ($body['bookPublisher'] ?? ''),
       'cover'     => (string) ($body['bookCover'] ?? 'ink'),
       'gist'      => (string) ($body['bookGist'] ?? ''),
+      'link'      => trim((string) ($body['bookLink'] ?? '')),
     ];
     if ($record['book']['author'] === '') fail(400, 'A reference book needs an author.');
+    // Needs SOMETHING for a reader to actually get to — the file we just
+    // stored, or, since that's optional for this type, a link out.
+    if ($rel === '' && $record['book']['link'] === '') fail(400, 'A reference book needs either a file or a link to find it online.');
+
+    $pages = (int) ($body['pages'] ?? 0);
+    if ($pages > 0) $record['pages'] = $pages;
   }
 
   return $record;

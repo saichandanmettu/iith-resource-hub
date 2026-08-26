@@ -142,12 +142,37 @@ function renderViewer(fileUrl, title) {
   return wrap;
 }
 
+/* The no-file-hosted case for a reference book — same visual language as
+   renderViewer's own empty state, but this one isn't a "check back later,"
+   it's the normal, permanent state for a book Abhyas only points at. */
+function renderNoFileNotice(bookLink) {
+  const wrap = document.createElement("div");
+  wrap.className = "rp-viewer";
+  const cta = bookLink
+    ? `<a class="cta-solid" href="${esc(bookLink)}" target="_blank" rel="noopener" style="margin-top:12px">Find this book online</a>`
+    : "";
+  wrap.innerHTML = `
+    <div class="rp-viewer-empty">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <b>No file hosted here</b>
+      <span>This is a pointer to a real book, not a copy of it — use the link to find it.</span>
+      ${cta}
+    </div>`;
+  return wrap;
+}
+
 function render(root, resource, course, contributor, allResources) {
   const kind = KIND[resource.type] || KIND.papers;
+  /* Most reference books have no hosted file at all — a pointer to a real
+     (usually copyrighted) textbook, not a copy of one, per
+     api/publish.php build_record(). Every other type still always has
+     one. */
+  const hasFile = Boolean(resource.file);
   /* Served through PHP, not a static path — files/ moved to
      abhyas-private/, outside anything a deploy can touch. See
      api/file.php for why. */
-  const fileUrl = "api/file.php?path=" + encodeURIComponent(resource.file);
+  const fileUrl = hasFile ? "api/file.php?path=" + encodeURIComponent(resource.file) : "";
+  const bookLink = resource.book?.link || "";
   const branches = (course && Array.isArray(course.branches) && course.branches.length)
     ? course.branches
     : [resource.department];
@@ -183,10 +208,15 @@ function render(root, resource, course, contributor, allResources) {
       <aside class="rp-side">
         <div class="rp-side-card">
           <div class="rp-actions">
+            ${hasFile ? `
             <a class="btn-open rp-download" href="${esc(fileUrl)}" id="rpDownloadBtn" download="${esc(resource.file.split("/").pop())}">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download<span class="rp-btn-count" id="rpDlCount" hidden></span>
-            </a>
+            </a>` : bookLink ? `
+            <a class="btn-open rp-download" href="${esc(bookLink)}" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Find this book online
+            </a>` : ""}
             <button class="btn-share" type="button" id="rpShareBtn">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               Share<span class="rp-btn-count" id="rpShareCount" hidden></span>
@@ -221,7 +251,9 @@ function render(root, resource, course, contributor, allResources) {
     </div>
   `;
 
-  document.getElementById("rpViewerSlot").appendChild(renderViewer(fileUrl, resource.title));
+  document.getElementById("rpViewerSlot").appendChild(
+    hasFile ? renderViewer(fileUrl, resource.title) : renderNoFileNotice(bookLink)
+  );
 
   const dlCountEl = document.getElementById("rpDlCount");
   const shareCountEl = document.getElementById("rpShareCount");
@@ -229,14 +261,19 @@ function render(root, resource, course, contributor, allResources) {
 
   loadCounts(resource.id).then((counts) => {
     if (!counts) return;
-    showCount(dlCountEl, counts.downloads);
+    // Nothing to count downloads OF when there's no file to download —
+    // "Find this book online" leaves the archive entirely, not something
+    // this site's counters track. Share still applies either way.
+    if (dlCountEl) showCount(dlCountEl, counts.downloads);
     showCount(shareCountEl, counts.shares);
   });
 
-  document.getElementById("rpDownloadBtn").addEventListener("click", () => {
-    bumpCount(resource.id, "download");
-    if (!dlCountEl.hidden) showCount(dlCountEl, Number(dlCountEl.textContent) + 1);
-  });
+  if (hasFile) {
+    document.getElementById("rpDownloadBtn").addEventListener("click", () => {
+      bumpCount(resource.id, "download");
+      if (!dlCountEl.hidden) showCount(dlCountEl, Number(dlCountEl.textContent) + 1);
+    });
+  }
 
   document.getElementById("rpShareBtn").addEventListener("click", () => {
     const url = new URL(`resource.html?id=${resource.id}`, window.location.href).href;

@@ -105,9 +105,14 @@
         <p class="ad-hint" id="submissionInfo" hidden></p>
 
         <label class="ad-field" id="fileField">
-          <span>PDF file</span>
+          <span id="fileFieldLabel">PDF file</span>
           <input type="file" id="fFile" accept="application/pdf">
         </label>
+        <!-- A reference book has nowhere legal to host the actual text —
+             it's a pointer to a real book, not a copy of one — so it skips
+             the file entirely and takes a link out instead. Any other type
+             still requires the PDF field above. -->
+        <p class="ad-hint" id="noFileHint" hidden>Reference books don't need a file — add a link to find it online instead.</p>
 
         <label class="ad-field">
           <span>Course code</span>
@@ -156,19 +161,24 @@
         <!-- Reference books carry the payload library.html renders. Without it
              the Bookshelf filters the record out and the shelf shows nothing. -->
         <div id="bookFields" hidden>
+          <label class="ad-field"><span>Book title</span><input type="text" id="fBookTitle" placeholder="Thomas' Calculus"></label>
           <div class="ad-row2">
             <label class="ad-field"><span>Book author</span><input type="text" id="fBookAuthor"></label>
             <label class="ad-field"><span>Publisher</span><input type="text" id="fBookPublisher"></label>
           </div>
-          <label class="ad-field">
-            <span>Cover</span>
-            <select id="fBookCover">
-              <option value="ink">Ink</option><option value="amber">Amber</option>
-              <option value="crimson">Crimson</option><option value="mint">Mint</option>
-              <option value="violet">Violet</option><option value="sky">Sky</option>
-            </select>
-          </label>
-          <label class="ad-field"><span>One-line gist</span><textarea id="fBookGist" rows="2"></textarea></label>
+          <div class="ad-row2">
+            <label class="ad-field"><span>Pages</span><input type="number" id="fBookPages" min="1"></label>
+            <label class="ad-field">
+              <span>Cover</span>
+              <select id="fBookCover">
+                <option value="ink">Ink</option><option value="amber">Amber</option>
+                <option value="crimson">Crimson</option><option value="mint">Mint</option>
+                <option value="violet">Violet</option><option value="sky">Sky</option>
+              </select>
+            </label>
+          </div>
+          <label class="ad-field"><span>Summary</span><textarea id="fBookGist" rows="5" placeholder="A couple of paragraphs on what the book covers and why it's on this list."></textarea></label>
+          <label class="ad-field"><span>Link to find it online</span><input type="url" id="fBookLink" placeholder="https://..."></label>
         </div>
 
         <label class="ad-field">
@@ -202,6 +212,6 @@
 <div class="toast" id="toast" aria-live="polite" hidden></div>
 
 <script src="../data.js?v=12"></script>
-<script src="admin.js?v=14"></script>
+<script src="admin.js?v=15"></script>
 </body>
 </html>

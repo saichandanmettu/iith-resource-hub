@@ -345,7 +345,8 @@
 
   function resetForm() {
     ["fCode", "fCourse", "fYear", "fExam", "fProf", "fContrib", "fRoll",
-     "fBookAuthor", "fBookPublisher", "fBookGist"].forEach((id) => { document.getElementById(id).value = ""; });
+     "fBookTitle", "fBookAuthor", "fBookPublisher", "fBookGist", "fBookLink", "fBookPages"]
+      .forEach((id) => { document.getElementById(id).value = ""; });
     document.getElementById("fType").value = "papers";
     document.getElementById("fBookCover").value = "ink";
     document.getElementById("fFile").value = "";
@@ -400,10 +401,16 @@
     document.getElementById("fContrib").value = it.contributor ? contributorName(it.contributor) : "";
     document.getElementById("fRoll").value = it.roll || "";
     fillDepts(it.department);
+    // The book's own title, not the record's generated one — strip the
+    // " — Reference Book/Guide" suffix build_record() appends, same regex
+    // books.js's title() uses to show it clean everywhere else.
+    document.getElementById("fBookTitle").value = (it.title || "").replace(/\s+[—–-]\s+Reference (Book|Guide)$/i, "");
     document.getElementById("fBookAuthor").value = it.book?.author || "";
     document.getElementById("fBookPublisher").value = it.book?.publisher || "";
     document.getElementById("fBookCover").value = it.book?.cover || "ink";
     document.getElementById("fBookGist").value = it.book?.gist || "";
+    document.getElementById("fBookLink").value = it.book?.link || "";
+    document.getElementById("fBookPages").value = it.pages || "";
     syncBookFields();
 
     /* Same viewer the public site uses — pointed at the file already live,
@@ -502,10 +509,16 @@
   });
 
   /* Reference is the only type that needs the book payload — show those
-     fields only when they apply, but never let a book be filed without them. */
+     fields only when they apply, but never let a book be filed without them.
+     It's also the only type where the PDF field becomes optional: a
+     reference book is a pointer to something students can find themselves,
+     not a copy of it, so it takes a link instead of a file when there
+     isn't one. */
   function syncBookFields() {
     const isBook = document.getElementById("fType").value === "reference";
     document.getElementById("bookFields").hidden = !isBook;
+    document.getElementById("fileFieldLabel").textContent = isBook ? "PDF file (optional)" : "PDF file";
+    document.getElementById("noFileHint").hidden = !isBook;
   }
   document.getElementById("fType").addEventListener("change", syncBookFields);
 
@@ -555,10 +568,13 @@
       professor: document.getElementById("fProf").value.trim(),
       contributor: document.getElementById("fContrib").value.trim(),
       roll: document.getElementById("fRoll").value.trim(),
+      bookTitle: document.getElementById("fBookTitle").value.trim(),
       bookAuthor: document.getElementById("fBookAuthor").value.trim(),
       bookPublisher: document.getElementById("fBookPublisher").value.trim(),
       bookCover: document.getElementById("fBookCover").value,
       bookGist: document.getElementById("fBookGist").value.trim(),
+      bookLink: document.getElementById("fBookLink").value.trim(),
+      pages: document.getElementById("fBookPages").value || "",
     };
   }
 
@@ -589,6 +605,15 @@
       alert("A reference book needs an author, or the Bookshelf cannot render it.");
       return;
     }
+    if (f.type === "reference" && !f.bookTitle) {
+      alert("A reference book needs its own title — the course name isn't the book's name.");
+      return;
+    }
+    const fileForAdd = state.mode === "add" ? document.getElementById("fFile").files[0] : null;
+    if (f.type === "reference" && !fileForAdd && !f.bookLink) {
+      alert("A reference book needs either a file or a link to find it online.");
+      return;
+    }
 
     try {
       let successMsg = "Saved.";
@@ -612,9 +637,9 @@
         successMsg = "Approved and published.";
       } else { // add
         const file = document.getElementById("fFile").files[0];
-        if (!file) { alert("Pick a PDF first."); return; }
+        if (!file && f.type !== "reference") { alert("Pick a PDF first."); return; }
         const fd = new FormData();
-        fd.append("file", file);
+        if (file) fd.append("file", file);
         Object.entries(f).forEach(([k, v]) => fd.append(k, v));
         const r = await api("publish", fd);
         if (!r.ok && r.error && /identical/i.test(r.error)) {
