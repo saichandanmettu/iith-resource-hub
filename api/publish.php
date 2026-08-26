@@ -251,6 +251,37 @@ if ($action === 'reject') {
   ok(['id' => $id]);
 }
 
+/* ---------------- one-time repair: prepend department to existing ids ----------------
+ * TEMPORARY — remove this block once run. build_record()'s id used to be
+ * code-year-exam with no department, so anything published across several
+ * departments before the fix (open electives, fanned out one record per
+ * branch) collided on an identical id. This is a single idempotent pass:
+ * every record whose id doesn't already start with its own department
+ * gets that department prepended, matching build_record()'s current
+ * formula. Safe to run more than once — already-fixed ids are untouched.
+ */
+if ($action === 'repair_ids') {
+  $rpath = $c['private_dir'] . '/resources.json';
+  $all = read_json($rpath, []);
+  $fixed = 0;
+  foreach ($all as $i => $r) {
+    $dept = strtolower((string) ($r['department'] ?? ''));
+    $id = (string) ($r['id'] ?? '');
+    if ($dept === '' || $id === '') continue;
+    if (!str_starts_with($id, $dept . '-')) {
+      $all[$i]['id'] = $dept . '-' . $id;
+      $fixed++;
+    }
+  }
+  // Paranoia: refuse to write if this pass somehow produced a collision.
+  $ids = array_column($all, 'id');
+  if (count($ids) !== count(array_unique($ids))) {
+    fail(500, 'Repair would still leave duplicate ids — aborted, nothing written.');
+  }
+  if ($fixed > 0) write_json_atomic($rpath, $all);
+  ok(['fixed' => $fixed, 'total' => count($all)]);
+}
+
 /* ---------------- edit (metadata on an already-published resource) ---------------- */
 if ($action === 'edit') {
   $id = (string) ($body['id'] ?? '');
@@ -410,7 +441,13 @@ function build_record(array $fields, string $admin, string $rel, string $sha256,
   ['code' => $code, 'dept' => $dept, 'course' => $course, 'type' => $type, 'exam' => $exam, 'year' => $year] = $fields;
 
   $record = [
-    'id'          => strtolower($code) . '-' . $year . '-' . $exam,
+    // Department is part of the id, not just code-year-exam: a course
+    // genuinely shared across every branch (an open elective) is published
+    // once per department (library.js/app.js filter on exact department
+    // match, there's no "universal" resource concept), and without dept
+    // here those copies would all collide on the same id — resource.html
+    // ?id=..., edit and delete would then hit whichever one matched first.
+    'id'          => strtolower($dept) . '-' . strtolower($code) . '-' . $year . '-' . $exam,
     'title'       => $course . ' — ' . ucfirst($exam),
     'code'        => $code,
     'course'      => $course,
