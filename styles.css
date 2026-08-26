@@ -678,11 +678,20 @@ body[data-menu-open="true"] .mobile-backdrop {
   scrollbar-width: none;
 }
 @media (max-width: 640px) {
-  /* Same "more to swipe" signal as .fm-tabs — the 5th pill (Reference)
-     never fits alongside the other four on a phone screen. */
+  /* Wrap filter toggles on mobile, centered, so all 5 categories are visible without horizontal scroll */
   .pills {
-    -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
-    mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 22px;
+    max-width: 360px;
+    margin: 0 auto;
+    overflow-x: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }
 .pills::-webkit-scrollbar { display: none; }
@@ -1049,14 +1058,22 @@ body[data-menu-open="true"] .mobile-backdrop {
   .top-in { gap: 12px; }
   .logo { margin-right: auto; }
   .btn-add { white-space: nowrap; padding: 10px 15px; font-size: .82rem; }
-  .hero { padding: 48px 0 30px; }
-  .hero h1 { max-width: none; }
-  .hero p { font-size: .98rem; }
   .hero-stats { gap: 24px; }
   .confetti { display: none; }
-  .pills { gap: 3px; padding: 4px; }
-  .pill { font-size: .8rem; padding: 8px 13px; }
-  .search { padding: 13px 18px; }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 22px;
+    max-width: 360px;
+    margin: 0 auto;
+    overflow-x: visible;
+  }
+  .pill { font-size: .82rem; padding: 7px 13px; }
+  .search { padding: 13px 18px; margin-bottom: 16px; }
   /* Was 8px flat — less than desktop's 14px, so the header (and the
      logo/hamburger inside it) sat closer to the screen's top edge on
      phones than anywhere else on the site. Top gets desktop's breathing
@@ -1064,21 +1081,15 @@ body[data-menu-open="true"] .mobile-backdrop {
   body { padding: 14px 8px 8px; }
   .shell { border-radius: 22px; }
   .top-in { height: 64px; }
-  .hero { padding: 34px 0 16px; }
+  .hero { padding: 30px 0 10px; }
   .stage { margin-top: 36px; min-height: 0; }
   .cta-row { flex-direction: column; align-items: stretch; }
   .cta-solid, .cta-ghost { justify-content: center; }
 
-  /* Folder cards only — scoped to .grid, not .wrap, so the search bar and
-     pills above (which already look right) are untouched.
-     1. More headroom above the first row: on tap/hover the paper stack
-        springs up out of the folder (.t-papers:hover .s3 rises 64px, more
-        than .grid's old 22px top padding could clear), overlapping the
-        filter pills sitting right above it. 80px cleared it with room to
-        spare but read as too much dead air once seen live — 64px still
-        clears the sprung sheets with a few px to breathe, without the gap
-        itself becoming the thing you notice. */
-  .grid { padding-top: 64px; }
+  /* Folder cards only — scoped to .grid, not .wrap.
+     Reduced padding-top from 64px to 28px to eliminate excessive dead air
+     between the category pills and the first row of cards on mobile. */
+  .grid { padding-top: 28px; }
 }
 
 /* Folder cards only, narrowest phones — .grid, not .wrap, so the search bar
