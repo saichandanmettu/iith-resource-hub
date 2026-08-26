@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="assets/abhyas-mark.png">
+<title>404 &middot; Page Not Found &middot; Abhyas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=153">
+<style>
+/* ============================================================
+   Abhyas 404 — 100% Authentic Design System
+   Exact tokens from styles.css and DESIGN.md
+   ============================================================ */
+.shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: clip;
+}
+
+#physicsCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: all;
+  z-index: 1;
+}
+
+.nf-stage-wrap {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 20px 75px;
+  min-height: 560px;
+  pointer-events: none;
+}
+
+.nf-interactive {
+  pointer-events: auto;
+}
+
+/* Giant 404 Lockup */
+.nf-num-lockup {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+.nf-404-text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(7.5rem, 18vw, 13rem);
+  line-height: .86;
+  letter-spacing: var(--track-hero);
+  color: var(--ink);
+  text-shadow: 0 16px 36px rgba(40,33,41,.12);
+  transition: transform .25s var(--ease), color .25s var(--ease);
+}
+.nf-num-lockup:hover .nf-404-text {
+  transform: scale(1.03) rotate(-1deg);
+  color: var(--papers-ink);
+}
+
+/* Interactive Pill Hint */
+.nf-pill-hint {
+  position: absolute;
+  top: 14px;
+  right: -28px;
+  background: var(--papers-tint);
+  color: var(--papers-ink);
+  border: 1px solid rgba(242,135,0,.35);
+  font: 600 .74rem var(--font-mono);
+  padding: 5px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(242,135,0,.2);
+  transform: rotate(12deg);
+  animation: floatHint 3s ease-in-out infinite;
+}
+@keyframes floatHint {
+  0%, 100% { transform: rotate(12deg) translateY(0); }
+  50% { transform: rotate(8deg) translateY(-8px); }
+}
+
+/* ------------------------------------------------------------
+   The "Lost Question Paper" Sheet Lockup
+   Blends 100% with the floating exam papers in the background!
+   ------------------------------------------------------------ */
+.nf-exam-sheet {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-md);
+  padding: 22px 26px 18px;
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto 36px;
+  box-shadow: 0 20px 40px -15px rgba(70, 50, 20, .14), 0 2px 8px rgba(40, 33, 41, .04);
+  text-align: left;
+  background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(40, 33, 41, .035) 28px);
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.nf-exam-sheet:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 26px 48px -16px rgba(70, 50, 20, .2), 0 4px 12px rgba(40, 33, 41, .06);
+}
+
+/* Red / Coral Professor Ink Stamp */
+.nf-stamp-seal {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  border: 2px dashed #DC2626;
+  color: #DC2626;
+  font: 800 .74rem var(--font-mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 6px;
+  transform: rotate(8deg);
+  opacity: .88;
+  pointer-events: none;
+  transition: transform .25s var(--pop);
+}
+.nf-stamp-seal.stamp-anim {
+  animation: stampSlap .3s var(--pop);
+}
+@keyframes stampSlap {
+  0% { transform: scale(1.6) rotate(20deg); opacity: 0; }
+  100% { transform: scale(1) rotate(8deg); opacity: .88; }
+}
+
+.nf-sheet-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  padding-right: 90px;
+}
+.nf-sheet-code {
+  font: 700 .76rem var(--font-mono);
+  color: var(--papers-ink);
+  background: var(--papers-tint);
+  padding: 3px 9px;
+  border-radius: 999px;
+  letter-spacing: -.01em;
+}
+.nf-sheet-sem {
+  font: 600 .72rem var(--font-mono);
+  color: var(--muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.nf-sheet-body {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.nf-q-label {
+  font: 800 .98rem var(--font-mono);
+  color: var(--papers-ink);
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.nf-sheet-text {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: .96rem;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0;
+  flex: 1;
+  transition: opacity .15s ease;
+}
+
+.nf-sheet-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--hair-strong);
+}
+.nf-sheet-hint {
+  font: 500 .72rem var(--font-mono);
+  color: var(--muted);
+}
+.nf-btn-stamp-shuffle {
+  border: 1px solid var(--hair);
+  background: var(--paper);
+  cursor: pointer;
+  color: var(--ink);
+  font: 700 .72rem var(--font-mono);
+  padding: 4px 12px;
+  border-radius: 999px;
+  transition: all .2s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.nf-btn-stamp-shuffle:hover {
+  background: var(--papers-tint);
+  color: var(--papers-ink);
+  border-color: rgba(242, 135, 0, .4);
+}
+
+/* Two Bold Action Buttons */
+.nf-actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.nf-btn-primary {
+  border: 0;
+  cursor: pointer;
+  color: #fff !important;
+  text-decoration: none;
+  background: var(--papers);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: 999px;
+  box-shadow: 0 10px 24px -6px rgba(242,135,0,.6);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform .2s var(--pop), box-shadow .2s var(--ease);
+}
+.nf-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -6px rgba(242,135,0,.75);
+}
+
+.nf-btn-secondary {
+  border: 1px solid var(--hair-strong);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 14px 28px;
+  border-radius: 999px;
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(40,33,41,.04);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform .2s var(--pop), box-shadow .2s var(--ease), background .2s var(--ease);
+}
+.nf-btn-secondary:hover {
+  background: #FFFFFF;
+  border-color: var(--papers);
+  transform: translateY(-2px);
+  color: var(--papers-ink);
+}
+
+/* ------------------------------------------------------------
+   Interactive Stress Relief Deck & Meter Strip
+   ------------------------------------------------------------ */
+.nf-meter-deck {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nf-meter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font: 500 .78rem var(--font-mono);
+  color: var(--ink-soft);
+  box-shadow: 0 2px 8px rgba(40, 33, 41, .04);
+  transition: all .25s var(--ease);
+}
+
+.nf-meter-pill:hover {
+  background: var(--paper);
+  border-color: var(--hair-strong);
+}
+
+.nf-num-pop {
+  display: inline-block;
+  font-weight: 700;
+  color: var(--ink);
+  min-width: 18px;
+  text-align: center;
+  transition: transform .18s var(--pop);
+}
+.nf-num-pop.pop {
+  transform: scale(1.4);
+  color: var(--papers-ink);
+}
+
+.nf-stress-pill {
+  background: var(--surface);
+  border-color: var(--hair);
+}
+.nf-stress-val {
+  font-weight: 700;
+  transition: color .25s var(--ease);
+}
+.nf-stress-mood {
+  font: 600 .72rem var(--font-mono);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--wash-strong);
+  color: var(--ink-soft);
+  transition: all .25s var(--ease);
+}
+
+/* Stress Level Dynamic Themes */
+.stress-level-panic {
+  border-color: rgba(220, 38, 38, 0.25);
+}
+.stress-level-panic .nf-stress-val {
+  color: #DC2626;
+}
+.stress-level-panic .nf-stress-mood {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.stress-level-calm {
+  border-color: rgba(242, 135, 0, 0.25);
+}
+.stress-level-calm .nf-stress-val {
+  color: var(--papers-ink);
+}
+.stress-level-calm .nf-stress-mood {
+  background: var(--papers-tint);
+  color: var(--papers-ink);
+}
+
+.stress-level-zen {
+  border-color: rgba(105, 139, 57, 0.25);
+}
+.stress-level-zen .nf-stress-val {
+  color: var(--notes-ink);
+}
+.stress-level-zen .nf-stress-mood {
+  background: var(--notes-tint);
+  color: var(--notes-ink);
+}
+
+.stress-level-nirvana {
+  border-color: rgba(202, 138, 4, 0.4);
+  background: linear-gradient(135deg, #FFFBEB, #FEF08A);
+}
+.stress-level-nirvana .nf-stress-val {
+  color: #854D0E;
+}
+.stress-level-nirvana .nf-stress-mood {
+  background: #FEF08A;
+  color: #713F12;
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.4);
+}
+
+/* Click Ripple Effect */
+.click-ripple {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(242, 135, 0, .3);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  animation: rippleFx .6s ease-out forwards;
+  z-index: 99;
+}
+@keyframes rippleFx {
+  to { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+}
+
+@media (max-width: 640px) {
+  .nf-pill-hint { display: none; }
+  .nf-sticky-note { margin: 0 10px 30px; }
+  .nf-stat-capsule { flex-direction: column; gap: 6px; border-radius: 18px; }
+  .nf-stat-dot { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Floating Physics Canvas Inside Shell -->
+  <canvas id="physicsCanvas"></canvas>
+
+  <!-- Standard Site Top Navbar -->
+  <header class="top nf-interactive" style="position:relative; z-index:10;">
+    <div class="wrap top-in">
+      <a class="logo" href="index.html"><img src="assets/abhyas-mark.png" alt="" width="42" height="42"> Abhyas</a>
+      <nav>
+        <a href="index.html">Archive</a>
+        <a href="library.html">Bookshelf</a>
+        <a href="leaderboard.html">Honor Roll</a>
+      </nav>
+      <a class="btn-add" href="contribute.html">Contribute</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" aria-expanded="false" type="button">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Stage Hero -->
+  <main class="wrap nf-stage-wrap">
+
+    <!-- Giant 404 Lockup -->
+    <div class="nf-num-lockup nf-interactive" id="easterEggTrigger" title="Click to toss celebratory papers!">
+      <div class="nf-404-text">404</div>
+      <div class="nf-pill-hint">Tap screen to toss paper!</div>
+    </div>
+
+    <!-- The Lost Question Paper Sheet -->
+    <div class="nf-exam-sheet nf-interactive" id="examSheetCard">
+      <div class="nf-stamp-seal" id="stampSeal">MISSING ✕</div>
+
+      <div class="nf-sheet-meta">
+        <span class="nf-sheet-code">IITH-404</span>
+        <span class="nf-sheet-sem">LOST-SEM &middot; 100 MARKS</span>
+      </div>
+
+      <div class="nf-sheet-body">
+        <span class="nf-q-label">Q.1</span>
+        <p class="nf-sheet-text" id="excuseText">Professor walked into class, saw zero attendance, and erased this question paper.</p>
+      </div>
+
+      <div class="nf-sheet-foot">
+        <span class="nf-sheet-hint">Remark: Zero credit awarded.</span>
+        <button class="nf-btn-stamp-shuffle" id="btnShuffleExcuse" type="button" title="Get next question">
+          <span>Next Question</span>
+          <span id="shuffleIcon" style="display:inline-block; transition: transform .25s var(--ease);">↻</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Two Bold CTA Buttons -->
+    <div class="nf-actions nf-interactive">
+      <a href="index.html" class="nf-btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Explore Archive</span>
+      </a>
+
+      <button class="nf-btn-secondary" id="btnLaunchPaper" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <span>Launch Paper Plane</span>
+      </button>
+    </div>
+
+    <!-- Interactive Stress Relief Meter Deck -->
+    <div class="nf-meter-deck nf-interactive">
+      <div class="nf-meter-pill">
+        <span>📄</span>
+        <span>Papers tossed:</span>
+        <b class="nf-num-pop" id="tossCounter">0</b>
+      </div>
+
+      <div class="nf-meter-pill nf-stress-pill stress-level-panic" id="stressPill">
+        <span id="stressEmoji">⚡</span>
+        <span>Stress:</span>
+        <b id="stressVal" class="nf-stress-val">100%</b>
+        <span class="nf-stress-mood" id="stressMood">Mid-Sem Panic 😰</span>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Standard Site Footer -->
+  <footer class="foot nf-interactive" style="position:relative; z-index:10;">
+    <div class="wrap">
+      <div class="foot-top">
+
+        <div class="foot-brand">
+          <a class="foot-mark" href="index.html"><img src="assets/abhyas-mark.png" alt="" width="42" height="42"> Abhyas</a>
+          <p class="foot-blurb">Sharing is caring.</p>
+          <div class="foot-fine">
+            <span class="foot-by">Built with <span class="foot-heart">🧡</span> by <a class="foot-person" href="https://github.com/saichandanmettu" target="_blank" rel="noopener noreferrer"><img src="assets/chandan.png" alt="" width="22" height="22" onerror="this.remove()"><b>Saichandan</b></a></span>
+            <span>&copy; 2026 Abhyas &middot; Shared for educational use</span>
+          </div>
+        </div>
+
+        <div class="foot-col">
+          <h3>Support</h3>
+          <ul>
+            <li><a href="terms.html">Terms</a></li>
+            <li><a href="mailto:ms24btech11021@iith.ac.in?subject=Feature%20Request">Request a feature</a></li>
+            <li><a href="contribute.html">Contribute a file</a></li>
+          </ul>
+        </div>
+
+        <div class="foot-col">
+          <h3>Explore</h3>
+          <ul>
+            <li><a href="index.html">The archive</a></li>
+            <li><a href="library.html">The bookshelf</a></li>
+            <li><a href="releases.html">Releases &amp; updates</a></li>
+            <li><a href="leaderboard.html">Honor Roll</a></li>
+          </ul>
+        </div>
+
+        <div class="foot-col">
+          <h3>More for IITH</h3>
+          <ul>
+            <li><a href="https://sanchari.iith.online">Sanchari &middot; campus transit</a></li>
+            <li><a href="https://ruchi.iith.online">Ruchi &middot; mess menu</a></li>
+            <li><a href="https://nivas.iith.online">Nivas &middot; hostels</a></li>
+            <li><a href="https://iith.online">Garage &middot; all our projects</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="wrap foot-word-wrap">
+      <div class="foot-word" aria-hidden="true">Abhyas</div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- Mobile nav menu + backdrop: moved outside .shell, which has
+     overflow:clip. position:fixed descendants of an overflow:clip/
+     hidden ancestor get clipped/broken (most reliably reproducible
+     on iOS Safari) even though fixed is meant to be viewport-relative
+     regardless of DOM nesting. Same reasoning as every other page —
+     this page was missing this block entirely, so the hamburger
+     button rendered but did nothing on mobile. -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <ul class="mobile-nav-list">
+      <li>
+        <a class="mobile-nav-link" href="index.html">
+          <div class="mobile-nav-left">
+            <div class="mobile-nav-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
+            <span>Archive</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="mobile-nav-link" href="library.html">
+          <div class="mobile-nav-left">
+            <div class="mobile-nav-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+            </div>
+            <span>Bookshelf</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="mobile-nav-link" href="leaderboard.html">
+          <div class="mobile-nav-left">
+            <div class="mobile-nav-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34M7 4h10v6a5 5 0 0 1-10 0V4z"/></svg>
+            </div>
+            <span>Honor Roll</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="mobile-nav-link" href="releases.html">
+          <div class="mobile-nav-left">
+            <div class="mobile-nav-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            </div>
+            <span>Releases</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a class="mobile-nav-link" href="terms.html">
+          <div class="mobile-nav-left">
+            <div class="mobile-nav-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <span>Terms & Rules</span>
+          </div>
+        </a>
+      </li>
+    </ul>
+
+    <div class="mobile-divider"></div>
+
+    <a class="mobile-menu-cta" href="contribute.html">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="mobile-cta-pulse"></span>
+        <span>Contribute to Archive</span>
+      </div>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+  <div class="mobile-backdrop" id="mobileBackdrop"></div>
+
+<script src="lenis.min.js"></script>
+<script src="smooth.js?v=9"></script>
+
+<!-- ============================================================
+     Delightful Physics & Interactive Engine
+     ============================================================ -->
+<script>
+(function() {
+  "use strict";
+
+  /* ---------------- Academic Jokes Array ---------------- */
+  const EXCUSES = [
+    "Professor walked into class, saw zero attendance, and erased this page.",
+    "This page was submitted at 11:59:59 PM and got rejected by Moodle.",
+    "Lost somewhere between Kandi campus and Sangareddy bus stop.",
+    "The TA promised to upload the solution sheet 'by tonight' (3 semesters ago).",
+    "Page got an F in attendance and was barred from the End-Sem exam.",
+    "Currently waiting in line at the mess hall for breakfast.",
+    "This paper was marked with negative grading and ceased to exist.",
+    "Found in a hidden Google Drive folder accessible only to alumni.",
+    "The lab server rebooted right before this page could compile.",
+    "Page bunked lecture to play badminton at the sports complex."
+  ];
+
+  const STAMPS = ["MISSING ✕", "BUNKED ✕", "0 / 100", "UNGRADED", "REJECTED ✕", "FAILED 0%"];
+  let excuseIdx = 0;
+  let stampIdx = 0;
+  let shuffleRot = 0;
+  const excuseEl = document.getElementById("excuseText");
+  const btnShuffle = document.getElementById("btnShuffleExcuse");
+  const shuffleIcon = document.getElementById("shuffleIcon");
+  const stampSeal = document.getElementById("stampSeal");
+  const examSheetCard = document.getElementById("examSheetCard");
+
+  btnShuffle.addEventListener("click", () => {
+    excuseIdx = (excuseIdx + 1) % EXCUSES.length;
+    stampIdx = (stampIdx + 1) % STAMPS.length;
+    shuffleRot += 180;
+    shuffleIcon.style.transform = `rotate(${shuffleRot}deg)`;
+
+    // Slap stamp animation
+    stampSeal.textContent = STAMPS[stampIdx];
+    stampSeal.classList.remove("stamp-anim");
+    void stampSeal.offsetWidth;
+    stampSeal.classList.add("stamp-anim");
+
+    excuseEl.style.opacity = "0";
+    setTimeout(() => {
+      excuseEl.textContent = EXCUSES[excuseIdx];
+      excuseEl.style.opacity = "1";
+    }, 120);
+  });
+
+  // Subtle 3D mouse parallax on the exam sheet
+  if (window.matchMedia("(min-width: 768px)").matches) {
+    examSheetCard.addEventListener("mousemove", (e) => {
+      const rect = examSheetCard.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      examSheetCard.style.transform = `perspective(800px) rotateY(${x * 0.025}deg) rotateX(${-y * 0.025}deg) translateY(-3px)`;
+    });
+    examSheetCard.addEventListener("mouseleave", () => {
+      examSheetCard.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) translateY(0)";
+    });
+  }
+
+  /* ---------------- Physics Canvas & Floating Paper Simulation ----------------
+     Two things every other animation on this site already does (smooth.js)
+     that this canvas didn't: respect prefers-reduced-motion, and stop
+     running when the tab isn't visible. An infinite requestAnimationFrame
+     loop that never pauses is exactly the kind of thing that drains a
+     phone's battery for no reason once the tab is backgrounded. */
+  const isReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const canvas = document.getElementById("physicsCanvas");
+  const ctx = canvas.getContext("2d");
+
+  let width, height;
+  let papers = [];
+  let tossedCount = 0;
+  let rafId = null;
+  const tossCounterEl = document.getElementById("tossCounter");
+
+  function resize() {
+    const shell = document.querySelector(".shell");
+    width = canvas.width = shell.offsetWidth;
+    height = canvas.height = shell.offsetHeight;
+  }
+  window.addEventListener("resize", resize);
+  setTimeout(resize, 50);
+
+  const PAPER_KINDS = [
+    { label: "MID-SEM", code: "CS2110", bg: "#FEE7C0", border: "#F28700", text: "#8B5000" },
+    { label: "NOTES",   code: "EE2140", bg: "#ECF0D1", border: "#698B39", text: "#495A23" },
+    { label: "QUIZ II", code: "CY1120", bg: "#FDDFCC", border: "#D04724", text: "#8D2D14" },
+    { label: "END-SEM", code: "MA1010", bg: "#FEE7C0", border: "#F28700", text: "#8B5000" },
+    { label: "BOOK",    code: "ME2110", bg: "#F0E6F0", border: "#8C6597", text: "#5B3C60" },
+    { label: "GRADE A+",code: "IIT-H",  bg: "#DCFCE7", border: "#16A34A", text: "#166534" }
+  ];
+
+  class FloatingPaper {
+    constructor(x, y, vx, vy, isPlane = false) {
+      this.x = x != null ? x : Math.random() * width;
+      this.y = y != null ? y : Math.random() * height;
+      this.vx = vx != null ? vx : (Math.random() - 0.5) * 1.5;
+      this.vy = vy != null ? vy : (Math.random() * 0.8 + 0.3);
+      this.angle = Math.random() * Math.PI * 2;
+      this.vAngle = (Math.random() - 0.5) * 0.03;
+      this.w = 54 + Math.random() * 20;
+      this.h = this.w * 1.35;
+      this.kind = PAPER_KINDS[Math.floor(Math.random() * PAPER_KINDS.length)];
+      this.isPlane = isPlane;
+      this.gravity = 0.05;
+      this.friction = 0.99;
+      this.wobble = Math.random() * 10;
+    }
+
+    update() {
+      this.wobble += 0.03;
+      if (this.isPlane) {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.angle = Math.atan2(this.vy, this.vx);
+        this.vy += 0.02;
+      } else {
+        this.vx += Math.sin(this.wobble) * 0.08;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += this.gravity * 0.2;
+        this.angle += this.vAngle;
+        this.vx *= this.friction;
+      }
+
+      // Edge handling
+      if (this.x < -100) this.x = width + 50;
+      if (this.x > width + 100) this.x = -50;
+      if (this.y > height + 100) {
+        this.y = -80;
+        this.x = Math.random() * width;
+        this.vy = Math.random() * 0.8 + 0.4;
+      }
+    }
+
+    draw(ctx) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle);
+
+      if (this.isPlane) {
+        // Origami Paper Plane
+        ctx.fillStyle = "#FFFFFF";
+        ctx.strokeStyle = this.kind.border;
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = "rgba(40,33,41,0.12)";
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(25, 0);
+        ctx.lineTo(-20, -14);
+        ctx.lineTo(-12, 0);
+        ctx.lineTo(-20, 14);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = this.kind.bg;
+        ctx.beginPath();
+        ctx.moveTo(25, 0);
+        ctx.lineTo(-12, 0);
+        ctx.lineTo(-20, 14);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        // Crisp Floating Exam Sheet
+        ctx.shadowColor = "rgba(40,33,41,0.08)";
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 6;
+
+        ctx.fillStyle = "#FFFDF5";
+        ctx.strokeStyle = "rgba(40,33,41,0.12)";
+        ctx.lineWidth = 1;
+
+        const hw = this.w / 2;
+        const hh = this.h / 2;
+        ctx.beginPath();
+        ctx.roundRect(-hw, -hh, this.w, this.h, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Top Header
+        ctx.fillStyle = this.kind.bg;
+        ctx.beginPath();
+        ctx.roundRect(-hw + 3, -hh + 3, this.w - 6, 14, [4, 4, 0, 0]);
+        ctx.fill();
+
+        ctx.fillStyle = this.kind.text;
+        ctx.font = "bold 6.5px 'DM Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.kind.label, 0, -hh + 10);
+
+        // Course Code
+        ctx.fillStyle = "#282129";
+        ctx.font = "700 8px 'Archivo', sans-serif";
+        ctx.fillText(this.kind.code, 0, -hh + 24);
+
+        // Mock Notes Lines
+        ctx.strokeStyle = "rgba(40,33,41,0.12)";
+        ctx.lineWidth = 1.2;
+        for (let i = 0; i < 3; i++) {
+          const ly = -hh + 34 + i * 6;
+          ctx.beginPath();
+          ctx.moveTo(-hw + 8, ly);
+          ctx.lineTo(hw - 8, ly);
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
+    }
+  }
+
+  const STRESS_LEVELS = [
+    { threshold: 0, val: "100%", emoji: "⚡", mood: "Mid-Sem Panic 😰", cls: "stress-level-panic" },
+    { threshold: 3, val: "65%",  emoji: "☕", mood: "Calming Down 😌", cls: "stress-level-calm" },
+    { threshold: 7, val: "20%",  emoji: "🏸", mood: "Lecture Bunked 🍃", cls: "stress-level-calm" },
+    { threshold: 14, val: "-50%", emoji: "🧘", mood: "Zen Mode 🍵", cls: "stress-level-zen" },
+    { threshold: 25, val: "-100%", emoji: "✨", mood: "Stress Free 🏆", cls: "stress-level-zen" },
+    { threshold: 45, val: "-999%", emoji: "🌌", mood: "Ascended to Nirvana 🚀", cls: "stress-level-nirvana" }
+  ];
+
+  function updateStressDeck() {
+    tossCounterEl.textContent = tossedCount;
+    tossCounterEl.classList.remove("pop");
+    void tossCounterEl.offsetWidth;
+    tossCounterEl.classList.add("pop");
+
+    let current = STRESS_LEVELS[0];
+    for (const lvl of STRESS_LEVELS) {
+      if (tossedCount >= lvl.threshold) {
+        current = lvl;
+      }
+    }
+
+    const stressPill = document.getElementById("stressPill");
+    const stressEmoji = document.getElementById("stressEmoji");
+    const stressVal = document.getElementById("stressVal");
+    const stressMood = document.getElementById("stressMood");
+
+    stressPill.className = `nf-meter-pill nf-stress-pill ${current.cls}`;
+    stressEmoji.textContent = current.emoji;
+    stressVal.textContent = current.val;
+    stressMood.textContent = current.mood;
+  }
+
+  // Initial Papers — skipped entirely under reduced motion, not just
+  // slowed down. Ambient decoration is exactly what that setting exists
+  // to remove; the page still works fully without it.
+  if (!isReducedMotion) {
+    for (let i = 0; i < 8; i++) {
+      papers.push(new FloatingPaper());
+    }
+  }
+
+  function spawnTossedPaper(x, y, count = 1) {
+    for (let i = 0; i < count; i++) {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.8;
+      const speed = 7 + Math.random() * 8;
+      const isPlane = Math.random() > 0.6;
+      papers.push(new FloatingPaper(
+        x,
+        y,
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed,
+        isPlane
+      ));
+    }
+    tossedCount += count;
+    updateStressDeck();
+  }
+
+  // Animation Loop
+  function loop() {
+    ctx.clearRect(0, 0, width, height);
+
+    if (papers.length > 40) {
+      papers.splice(0, papers.length - 40);
+    }
+
+    papers.forEach(p => {
+      p.update();
+      p.draw(ctx);
+    });
+
+    rafId = requestAnimationFrame(loop);
+  }
+  if (!isReducedMotion) loop();
+
+  // Stop burning CPU/battery on a backgrounded tab, and pick back up
+  // when the visitor returns — a 404 page has no reason to be the one
+  // page on this site that keeps animating with nobody looking at it.
+  document.addEventListener("visibilitychange", () => {
+    if (isReducedMotion) return;
+    if (document.hidden) {
+      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    } else if (rafId === null) {
+      loop();
+    }
+  });
+
+  /* ---------------- Click & Toss Events ---------------- */
+  window.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("a, input, button")) return;
+
+    const shell = document.querySelector(".shell");
+    const rect = shell.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const ripple = document.createElement("div");
+    ripple.className = "click-ripple";
+    ripple.style.left = x + "px";
+    ripple.style.top = y + "px";
+    shell.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+
+    spawnTossedPaper(x, y, 2);
+  });
+
+  // Launch Paper Plane Button
+  document.getElementById("btnLaunchPaper").addEventListener("click", (e) => {
+    const shell = document.querySelector(".shell");
+    const sRect = shell.getBoundingClientRect();
+    const rect = e.target.getBoundingClientRect();
+    spawnTossedPaper(rect.left - sRect.left + rect.width / 2, rect.top - sRect.top, 5);
+  });
+
+  // Easter Egg: Tap 404
+  document.getElementById("easterEggTrigger").addEventListener("click", () => {
+    for (let i = 0; i < 15; i++) {
+      setTimeout(() => {
+        spawnTossedPaper(width / 2 + (Math.random() - 0.5) * 200, height / 3, 1);
+      }, i * 40);
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
