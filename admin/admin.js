@@ -76,8 +76,12 @@
       body: isForm ? payload : payload ? JSON.stringify(payload) : undefined,
       credentials: "same-origin",
     });
-    if (res.status === 401) { showLogin(); throw new Error("unauthorised"); }
     const data = await res.json().catch(() => ({ ok: false, error: `${action} failed (${res.status})` }));
+    /* A 401 means two different things depending on who asked: for
+       `login` itself it's just "wrong password" — show that, don't treat
+       it as a lost session (we're already on the login screen). For
+       every other action it means the session expired mid-console. */
+    if (res.status === 401 && action !== "login") { showLogin(); throw new Error(data.error || "Session expired — please sign in again"); }
     if (!res.ok && res.status !== 409) throw new Error(data.error || `${action} failed (${res.status})`);
     return data;
   }
