@@ -875,7 +875,14 @@ body { background: #EADCC2; padding: 14px; }
 
 /* Course Folder Modal */
 .folder-modal-card {
-  position: relative; width: min(720px, 100%);
+  /* Not `min(720px, 100%)`: .modal is `display:grid; place-items:center`
+     with no explicit column track, so a percentage on a grid item has no
+     definite basis to resolve against here — it silently loses to the
+     720px branch instead of constraining it, and the card ran off both
+     edges of the viewport on phones. calc(100vw - 48px) matches .modal's
+     24px padding on each side and is viewport-relative regardless of grid
+     sizing quirks — same fix already used correctly by .lbg-modal-card. */
+  position: relative; width: min(720px, calc(100vw - 48px));
   background: var(--surface); border-radius: 28px;
   padding: 34px 32px 26px;
   box-shadow: 0 40px 90px -25px rgba(50, 35, 10, .5);
@@ -966,7 +973,8 @@ body { background: #EADCC2; padding: 14px; }
 
 /* Share Resource Modal */
 .share-modal-card {
-  position: relative; width: min(560px, 100%);
+  /* See .folder-modal-card above — same grid/percentage bug, same fix. */
+  position: relative; width: min(560px, calc(100vw - 48px));
   background: var(--surface); border-radius: 28px;
   padding: 34px 32px; box-shadow: 0 40px 90px -25px rgba(50, 35, 10, .5);
   opacity: 0; transform: translateY(22px) scale(.96);
@@ -1018,7 +1026,8 @@ body { background: #EADCC2; padding: 14px; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 
 .modal-card {
-  position: relative; width: min(760px, 100%);
+  /* See .folder-modal-card above — same grid/percentage bug, same fix. */
+  position: relative; width: min(760px, calc(100vw - 48px));
   background: var(--surface); border-radius: 28px;
   padding: 32px; display: grid; grid-template-columns: 180px 1fr; gap: 30px;
   perspective: 3000px; perspective-origin: 28% 50%;
