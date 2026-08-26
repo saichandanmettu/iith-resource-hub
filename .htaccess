@@ -1,0 +1,6 @@
+# Abhyas — site-wide error page.
+# Without this, a broken/old link shows Hostinger's own generic error
+# template instead of anything this project controls. ErrorDocument
+# needs a path starting with / (not a bare filename) to be treated as
+# a real page rather than a literal string to print.
+ErrorDocument 404 /404.html
