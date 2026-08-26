@@ -999,7 +999,11 @@ body { background: #EADCC2; padding: 14px; }
   .pills { gap: 3px; padding: 4px; }
   .pill { font-size: .8rem; padding: 8px 13px; }
   .search { padding: 13px 18px; }
-  body { padding: 8px; }
+  /* Was 8px flat — less than desktop's 14px, so the header (and the
+     logo/hamburger inside it) sat closer to the screen's top edge on
+     phones than anywhere else on the site. Top gets desktop's breathing
+     room back; sides stay tighter since width is actually scarce there. */
+  body { padding: 14px 8px 8px; }
   .shell { border-radius: 22px; }
   .top-in { height: 64px; }
   .hero { padding: 34px 0 16px; }
