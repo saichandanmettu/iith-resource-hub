@@ -874,16 +874,18 @@ body[data-menu-open="true"] .mobile-backdrop {
    ========================================================= */
 .t-papers {
   --back: #DC7A00;
-  --front: linear-gradient(180deg, #FA9A0A 0%, #F28700 100%);
+  /* Was #FA9A0A -> #F28700 (bright orange) with black .fc-front text — the
+     DESIGN.md-flagged fix for white failing 2.17-2.55:1 on that gradient.
+     True, but it made papers the one kind with black text against three
+     kinds of white text, and that mismatch is what actually read as
+     "over-saturated" next to the others, not the hue itself. Darkened
+     ~35% toward black instead (#A26406 -> #9D5700): still unmistakably
+     gold/amber, but now clears 4.81-5.53:1 for white text on its own —
+     same white every other kind uses, no more one-off black exception. */
+  --front: linear-gradient(180deg, #A26406 0%, #9D5700 100%);
   --glow: rgba(242, 135, 0, .4);
   --dot: #F28700;
 }
-/* DESIGN.md-flagged fix: white text on this gradient was 2.17–2.55:1, well
-   under the 4.5:1 AA floor. --papers-ink (the amber-family dark) still only
-   reaches 2.54–2.99:1 — not enough, because this gradient is lighter than
-   the other three kinds'. --ink (the site's main body-copy dark) clears
-   both gradient stops at 6.15–7.23:1. */
-.t-papers .fc-front { color: var(--ink); }
 .t-papers .fc-sheet { top: 22px; left: 20px; right: 20px; height: 132px; }
 .t-papers .s2 { top: 16px; left: 27px; right: 27px; z-index: 1; opacity: .72; }
 .t-papers .s3 { top: 10px; left: 34px; right: 34px; z-index: 0; opacity: .5; }
@@ -952,6 +954,15 @@ body[data-menu-open="true"] .mobile-backdrop {
   transition: transform .35s ease, background .3s ease;
 }
 .t-assignment:hover .fc-front { background: rgba(255, 255, 255, .3); }
+/* The sheet behind the frosted glass was the site-wide white .fc-sheet —
+   white paper blurring through a white-tinted glass pane, so the whole
+   card read as one washed-out white smear with barely any silhouette.
+   A dark sheet gives the blur something to actually differentiate from
+   the glass in front of it; text/rules flip to light-on-dark to match. */
+.t-assignment .fc-sheet { background: #251510; }
+.t-assignment .fc-sheet b { color: #fff; }
+.t-assignment .fc-sheet small { color: rgba(255, 255, 255, .55); }
+.t-assignment .fc-rule span { background: rgba(255, 255, 255, .16); }
 .t-assignment .fc-sheet { top: 24px; left: 26px; right: 26px; height: 124px; }
 .t-assignment .s2 { top: 17px; left: 34px; right: 34px; z-index: 1; opacity: .7; }
 .t-assignment .s3 { display: none; }
