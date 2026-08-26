@@ -8,6 +8,62 @@
    ------------------------------------------------------------ */
 const RELEASES = [
   {
+    status: "shipped",
+    tag: "Contribute",
+    title: "Public submissions are open",
+    date: "27 Aug 2026",
+    body: "Students can submit files straight from the Contribute page now. Nothing goes live until an admin reviews it — a real private queue, not a mailbox.",
+    items: ["Upload form on Contribute", "Private review queue", "Approve or reject before anything is public"]
+  },
+  {
+    status: "shipped",
+    tag: "Archive",
+    title: "Every resource gets its own page",
+    date: "26 Aug 2026",
+    body: "Papers, notes and assignments each have a dedicated page now — view the file inline, download it, or share a link, instead of a bare download button in a list.",
+    items: ["Inline PDF viewer", "Real download & share buttons", "Direct shareable link per file"]
+  },
+  {
+    status: "shipped",
+    tag: "Honor Roll",
+    title: "Redesigned, top to bottom",
+    date: "25–26 Aug 2026",
+    body: "Podium treatment for the top three, a rebuilt contributor detail view broken down by file type, and corrected semester labelling.",
+    items: ["Podium for the top 3", "Points broken down by resource kind", "Fixed semester nomenclature"]
+  },
+  {
+    status: "shipped",
+    tag: "Mobile",
+    title: "Actually usable on a phone now",
+    date: "26 Aug 2026",
+    body: "A real navigation menu for small screens, and every popup — course folders, book details, share sheets — fixed to stay on-screen instead of bleeding off both edges.",
+    items: ["New mobile navigation menu", "Every modal fits the screen", "Fixed scrolling inside long lists"]
+  },
+  {
+    status: "shipped",
+    tag: "Site-wide",
+    title: "Renamed to match how people actually talk about it",
+    date: "26 Aug 2026",
+    body: "Browse became the Archive, Library became the Bookshelf, Leaderboard became the Honor Roll — across every page, nav link, and footer.",
+    items: ["Archive", "Bookshelf", "Honor Roll"]
+  },
+  {
+    status: "shipped",
+    tag: "Archive",
+    title: "Course folders, cleaned up",
+    date: "26 Aug 2026",
+    body: "Simplified file rows inside each folder — colour-coded by resource type, year as a chip, professor on its own line — and fixed a hover state that was washing rows out to plain white.",
+    items: ["Colour-coded by resource kind", "Cleaner file rows", "Fixed hover state"]
+  },
+  {
+    status: "shipped",
+    tag: "Site-wide",
+    title: "A broader visual pass",
+    date: "22 Aug 2026",
+    body: "Smooth scrolling, a rebuilt folder-card design, and kinetic word-by-word headline animation across every page.",
+    items: ["Smooth scroll", "Rebuilt folder cards", "Animated headlines"]
+  },
+  {
     status: "building",
     tag: "Honor Roll",
     title: "Contributor points",
@@ -38,13 +94,6 @@ const RELEASES = [
     date: "August 2026",
     body: "Resources grouped by course rather than dumped in one list, with a colour per resource kind so you can spot a type before you read it.",
     items: ["Folder per course", "Filter by kind", "Full-text search across courses and professors"]
-  },
-  {
-    status: "next",
-    tag: "Contribute",
-    title: "Open uploads",
-    body: "Let students submit files directly, with a review step before anything goes live.",
-    items: ["Upload form", "Moderation queue", "Contributor credits"]
   },
   {
     status: "next",
