@@ -443,7 +443,11 @@ body[data-menu-open="true"] .mobile-backdrop {
 
 .hero h1 {
   font-family: var(--font-display); font-weight: 800;
-  font-size: clamp(2.35rem, 7.4vw, 5.4rem);
+  /* Floor was 2.35rem — since 7.4vw only clears that at ~508px, every phone
+     was rendering at the floor value, not scaling with viewport at all.
+     Raised the floor itself so phones get a visibly bigger headline; the
+     vw term and the 5.4rem cap above ~508px are unchanged. */
+  font-size: clamp(2.7rem, 7.4vw, 5.4rem);
   line-height: 1.12; letter-spacing: var(--track-hero);
   margin: 0 0 22px;
   overflow: visible;
@@ -1030,8 +1034,11 @@ body[data-menu-open="true"] .mobile-backdrop {
      1. More headroom above the first row: on tap/hover the paper stack
         springs up out of the folder (.t-papers:hover .s3 rises 64px, more
         than .grid's old 22px top padding could clear), overlapping the
-        filter pills sitting right above it. */
-  .grid { padding-top: 80px; }
+        filter pills sitting right above it. 80px cleared it with room to
+        spare but read as too much dead air once seen live — 64px still
+        clears the sprung sheets with a few px to breathe, without the gap
+        itself becoming the thing you notice. */
+  .grid { padding-top: 64px; }
 }
 
 /* Folder cards only, narrowest phones — .grid, not .wrap, so the search bar
