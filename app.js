@@ -26,38 +26,50 @@ function groupByCourse(list) {
   return [...map.values()].sort((a, b) => b.items.length - a.items.length);
 }
 
-/* How recent a folder is. Every resource carries `added` (an ISO
-   YYYY-MM-DD date build_record() stamps on publish), which sorts
-   correctly as a plain string — no need to reverse-engineer recency
-   from `id`. (id used to be a numeric auto-increment so `(year*1e6) + id`
-   worked as a tie-break; migrated resources now carry the real backend's
-   string ids like "ep-ep1118-2024-mid-sem", and `numeric + string` in JS
-   silently concatenates instead of adding, so every folder with a real
-   resource scored as a non-numeric string that never compared greater
-   than 0 — this always picked whichever folder happened to sort first
-   by file count instead of the actual most-recent one.) */
-function folderRecency(f) {
-  return f.items.reduce((best, r) => (r.added || "") > best ? r.added : best, "");
+/* The most recent item of a given kind inside a folder — not the folder's
+   own overall recency, which could be led by a different kind entirely
+   (Calculus-II's newest file might be a paper even though the item we
+   want to represent it by, here, is its one assignment). */
+function newestOfKind(f, kind) {
+  return f.items
+    .filter((r) => r.type === kind)
+    .reduce((best, r) => ((r.added || "") > (best?.added || "") ? r : best), null);
 }
 
-/* Lead the grid with one folder of each kind, most recent first, so the
-   opening row shows all four folder styles at once instead of whatever
-   the count sort happens to surface. Only for the unfiltered view: once
-   someone picks a kind or searches, their order is the one that matters. */
+/* Lead the grid with one card per kind whenever the archive has ANY file
+   of that kind — not just a folder whose MAJORITY is that kind. A course
+   that's mostly past papers but has one assignment in it should still be
+   able to fill the assignment slot: kind-by-kind selection runs
+   independently, on purpose, and can and will surface the same course
+   folder to fill two slots if it happens to be the only or best source of
+   more than one kind. Once you have a real reference book (or a second
+   course with an assignment), it slots in on its own, no lead-order
+   accounting needed. Only for the unfiltered view: once someone picks a
+   kind or searches, their order is the one that matters. */
 const KIND_ORDER = ["papers", "notes", "assignment", "reference"];
 
 function leadWithEachKind(folders) {
   const lead = [];
-  const taken = new Set();
+  const used = new Set(); // by folder+kind pair, not by course — see above
 
   KIND_ORDER.forEach((kind) => {
-    const pick = folders
-      .filter((f) => !taken.has(f.course) && dominantKind(f) === kind)
-      .sort((a, b) => (folderRecency(b) > folderRecency(a) ? 1 : folderRecency(b) < folderRecency(a) ? -1 : 0))[0];
-    if (pick) { lead.push(pick); taken.add(pick.course); }
+    let best = null;
+    let bestItem = null;
+    folders.forEach((f) => {
+      const item = newestOfKind(f, kind);
+      if (!item) return;
+      if (!bestItem || (item.added || "") > (bestItem.added || "")) {
+        best = f;
+        bestItem = item;
+      }
+    });
+    if (best) {
+      lead.push({ ...best, _leadKind: kind, _leadItem: bestItem });
+      used.add(best.course);
+    }
   });
 
-  return [...lead, ...folders.filter((f) => !taken.has(f.course))];
+  return [...lead, ...folders.filter((f) => !used.has(f.course))];
 }
 
 function fileLabel(r) {
@@ -90,9 +102,15 @@ function tier(r, n) {
 }
 
 function card(f, i) {
-  const kind = dominantKind(f);
-  const items = f.items;
-  const n = items.length;
+  // Lead-row cards (see leadWithEachKind) carry an explicit kind + the
+  // specific item that earned this folder its slot — e.g. Calculus-II's
+  // lone assignment, even though the folder's own overall majority is
+  // past papers. Render by that kind/item instead of recomputing the
+  // folder's dominant type, which would just put it back under "papers"
+  // and silently drop the assignment slot it was chosen to fill.
+  const kind = f._leadKind || dominantKind(f);
+  const items = f._leadItem ? [f._leadItem, ...f.items.filter((r) => r !== f._leadItem)] : f.items;
+  const n = f.items.length;
 
   const foot = kind === "reference"
     ? '<div class="fc-open" data-book-action="true">Open the book <span>&rarr;</span></div>'
