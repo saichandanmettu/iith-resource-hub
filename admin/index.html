@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=5">
+<link rel="stylesheet" href="admin.css?v=6">
 </head>
 <body>
 
@@ -63,6 +63,20 @@
   <div class="ad-toolbar">
     <input class="ad-search" type="search" id="search" placeholder="Search by title, code, or contributor&hellip;">
     <button class="ad-review-btn" type="button" id="btnAdd">+ Add resource</button>
+  </div>
+
+  <!-- Reuses the site's own .pill component (styles.css) rather than a
+       second filter-pill implementation just for the admin console. -->
+  <div class="ad-filters" id="filterBar">
+    <div class="pills">
+      <button class="pill on" data-kind="all" type="button"><i></i> Everything</button>
+      <button class="pill" data-kind="papers" type="button"><i style="background:var(--papers)"></i> Past papers</button>
+      <button class="pill" data-kind="notes" type="button"><i style="background:var(--notes)"></i> Notes</button>
+      <button class="pill" data-kind="assignment" type="button"><i style="background:var(--assignment)"></i> Assignments</button>
+      <button class="pill" data-kind="reference" type="button"><i style="background:var(--reference)"></i> Reference</button>
+    </div>
+    <select class="ad-filter-select" id="filterDept"><option value="all">Branch: All</option></select>
+    <select class="ad-filter-select" id="filterYear"><option value="all">Year: All</option></select>
   </div>
 
   <div class="ad-queue" id="queue"></div>
@@ -184,7 +198,10 @@
   </div>
 </div>
 
+<!-- Same toast used site-wide (styles.css) — not a separate admin-only notification system. -->
+<div class="toast" id="toast" aria-live="polite" hidden></div>
+
 <script src="../data.js?v=12"></script>
-<script src="admin.js?v=13"></script>
+<script src="admin.js?v=14"></script>
 </body>
 </html>

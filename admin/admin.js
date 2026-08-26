@@ -40,10 +40,35 @@
       document.getElementById("codeList").innerHTML =
         Object.keys(COURSE_CATALOG).sort().map((c) =>
           `<option value="${c}">${esc(COURSE_CATALOG[c].name)}</option>`).join("");
+      // The Pending list's "New course" badge depends on this registry.
+      // If the console already rendered once before this fetch resolved,
+      // re-render now so nothing is stuck labelled "new" incorrectly.
+      if (state.pending.length || state.items.length) renderList();
     })
     .catch(() => { COURSE_CATALOG = {}; });
 
-  let state = { items: [], pending: [], trash: [], contributors: {}, current: null, mode: "add", tab: "pending", csrf: null, filter: "" };
+  let state = {
+    items: [], pending: [], trash: [], contributors: {}, current: null, mode: "add", tab: "pending",
+    csrf: null, filter: "", filterKind: "all", filterDept: "all", filterYear: "all",
+  };
+
+  /* Same toast used site-wide (resource.js) — one visible confirmation
+     per action instead of a wall of alert() boxes for things that
+     aren't actually errors. */
+  let toastTimer = null;
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    if (!t) return;
+    t.textContent = msg;
+    t.hidden = false;
+    t.offsetHeight;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      t.classList.remove("show");
+      setTimeout(() => { t.hidden = true; }, 300);
+    }, 2600);
+  }
 
   function contributorName(id) {
     if (!id) return "no credit";
@@ -157,7 +182,26 @@
     set("cPending", data.counts.pending ?? 0);
     set("cPublished", data.counts.published);
     set("cTrash", data.counts.trash ?? 0);
+    populateFilterOptions();
     renderList();
+  }
+
+  /* Branch options come from the site's own DEPARTMENTS list (data.js) —
+     every branch, not just ones with a resource yet. Year options come
+     from whatever years actually exist in the data, since there's no
+     fixed registry for that the way there is for branches. */
+  function populateFilterOptions() {
+    const deptSel = document.getElementById("filterDept");
+    if (deptSel.options.length <= 1 && typeof DEPARTMENTS !== "undefined") {
+      deptSel.innerHTML = `<option value="all">Branch: All</option>` +
+        DEPARTMENTS.map((d) => `<option value="${esc(d.code)}">${esc(d.code)}</option>`).join("");
+    }
+    const years = new Set([...state.items, ...state.pending].map((i) => i.year).filter(Boolean));
+    const yearSel = document.getElementById("filterYear");
+    const current = yearSel.value;
+    yearSel.innerHTML = `<option value="all">Year: All</option>` +
+      [...years].sort((a, b) => b - a).map((y) => `<option value="${y}">${y}</option>`).join("");
+    yearSel.value = [...years].map(String).includes(current) ? current : "all";
   }
 
   function renderList() {
@@ -166,8 +210,12 @@
     const onPending = state.tab === "pending";
     const onTrash = state.tab === "trash";
     const source = onPending ? state.pending : onTrash ? state.trash : state.items;
-    const rows = source.filter((i) => !q ||
-      [i.title, i.course, i.code, i.filename, contributorName(i.contributor)].some((f) => String(f || "").toLowerCase().includes(q)));
+    const rows = source
+      .filter((i) => state.filterKind === "all" || i.type === state.filterKind)
+      .filter((i) => state.filterDept === "all" || i.department === state.filterDept)
+      .filter((i) => state.filterYear === "all" || String(i.year) === state.filterYear)
+      .filter((i) => !q ||
+        [i.title, i.course, i.code, i.filename, contributorName(i.contributor)].some((f) => String(f || "").toLowerCase().includes(q)));
 
     if (!rows.length) {
       const empty = onPending ? "Nothing waiting for review" : onTrash ? "Trash is empty" : "Nothing here yet";
@@ -180,7 +228,9 @@
     }
 
     if (onPending) {
-      host.innerHTML = rows.map((it) => `
+      host.innerHTML = rows.map((it) => {
+        const isNewCourse = it.code && !COURSE_CATALOG[it.code.toUpperCase()];
+        return `
         <div class="ad-card k-${esc(it.type)}">
           <div class="ad-fileicon">PDF</div>
           <div class="ad-cardmain">
@@ -190,13 +240,15 @@
               <span>${esc(it.code || "no code")}</span>
               <span>${esc(it.contributor || "no credit given")}</span>
               <span>${esc(it.sizeLabel || "")}</span>
+              ${isNewCourse ? `<span class="ad-newtag">New course</span>` : ""}
               ${it.duplicateOf ? `<span class="ad-dupe">possible duplicate</span>` : ""}
             </div>
           </div>
           <div class="ad-card-actions">
             <button class="ad-review-btn" type="button" data-id="${esc(it.id)}">Review</button>
           </div>
-        </div>`).join("");
+        </div>`;
+      }).join("");
       host.querySelectorAll(".ad-review-btn").forEach((b) => {
         b.addEventListener("click", () => openReview(b.dataset.id));
       });
@@ -258,6 +310,23 @@
       document.querySelectorAll("#tabs .ad-tab").forEach((t) => t.classList.toggle("on", t === tab));
       renderList();
     });
+  });
+
+  document.querySelectorAll("#filterBar [data-kind]").forEach((b) => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#filterBar [data-kind]").forEach((x) => x.classList.remove("on"));
+      b.classList.add("on");
+      state.filterKind = b.dataset.kind;
+      renderList();
+    });
+  });
+  document.getElementById("filterDept").addEventListener("change", (e) => {
+    state.filterDept = e.target.value;
+    renderList();
+  });
+  document.getElementById("filterYear").addEventListener("change", (e) => {
+    state.filterYear = e.target.value;
+    renderList();
   });
 
   function labelOf(t) {
@@ -522,13 +591,16 @@
     }
 
     try {
+      let successMsg = "Saved.";
       if (pendingForceRetry) {
         const { action, payload } = pendingForceRetry;
         pendingForceRetry = null;
         const r = await api(action, payload);
         if (!r.ok) throw new Error(r.error || "Failed");
+        successMsg = action === "approve" ? "Approved and published." : "Published.";
       } else if (state.mode === "edit") {
         await api("edit", { id: state.current.id, ...f });
+        successMsg = "Changes saved.";
       } else if (state.mode === "review") {
         const payload = { id: state.current.id, ...f };
         const r = await api("approve", payload);
@@ -537,6 +609,7 @@
           return;
         }
         if (!r.ok) throw new Error(r.error || "Approve failed");
+        successMsg = "Approved and published.";
       } else { // add
         const file = document.getElementById("fFile").files[0];
         if (!file) { alert("Pick a PDF first."); return; }
@@ -550,10 +623,12 @@
           return;
         }
         if (!r.ok) throw new Error(r.error || "Publish failed");
+        successMsg = "Published.";
       }
       pendingForceRetry = null;
       closePanel();
       loadList();
+      toast(successMsg);
     } catch (ex) {
       alert(ex.message);
     }
@@ -565,6 +640,7 @@
     if (!confirm(`Remove "${it.title}" from the archive listing?\n\nIt moves to Trash for 14 days (restorable there), then drops for good. The PDF file itself is never touched — it stays on disk regardless.`)) return;
     await api("delete", { id });
     loadList();
+    toast(`Moved "${it.title}" to Trash.`);
   }
   document.getElementById("btnDelete").addEventListener("click", () => {
     if (state.current) { doDelete(state.current.id); closePanel(); }
@@ -576,6 +652,7 @@
     const reason = prompt("Reason for rejecting? (kept for your own records, not shown to the student)") ?? "";
     await api("reject", { id, reason });
     loadList();
+    toast("Rejected.");
   }
   document.getElementById("btnReject").addEventListener("click", () => {
     if (state.current) { doReject(state.current.id); closePanel(); }
@@ -593,6 +670,7 @@
   async function doRestore(id) {
     await api("restore", { id });
     loadList();
+    toast("Restored.");
   }
 
   function esc(s) {

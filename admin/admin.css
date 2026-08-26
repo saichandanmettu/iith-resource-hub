@@ -120,6 +120,19 @@ body { background: #EADCC2; }
 }
 .ad-search:focus { outline: none; border-color: var(--papers); box-shadow: 0 0 0 3px rgba(242,135,0,.16); }
 .ad-toolbar .ad-review-btn { position: static; white-space: nowrap; padding: 11px 22px; }
+
+/* ---------------- type/branch/year filters ---------------- */
+.ad-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 20px; }
+.ad-filter-select {
+  background: var(--wash); border: 0; border-radius: 999px; cursor: pointer;
+  padding: 9px 16px; font-family: var(--font-body); font-size: .86rem; font-weight: 600; color: var(--ink-soft);
+}
+/* .ad-dupe already exists below with its own full rule — this only adds
+   the equivalent badge for "course code not in the registry yet". */
+.ad-newtag {
+  font: 400 .68rem var(--font-mono); padding: 4px 10px; border-radius: 999px;
+  background: var(--reference-tint); color: var(--reference-ink);
+}
 .ad-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .ad-edit-btn, .ad-delete-btn {
   border: 1px solid var(--hair); background: var(--surface); cursor: pointer;
