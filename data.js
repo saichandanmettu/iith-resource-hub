@@ -91,26 +91,33 @@ globalThis.RESOURCES = [];
 globalThis.CONTRIBUTORS = [];
 
 /* Resolve against data.js's own URL, not the page's. The review console
-   lives in /admin/, and a bare "resources.json" would resolve to
-   /admin/resources.json and 404. */
+   lives in /admin/, and a bare "api/data.php" would resolve to
+   /admin/api/data.php and 404. */
 const ABHYAS_BASE = (function () {
   const src = document.currentScript && document.currentScript.src;
   return src ? new URL(".", src).href : "./";
 })();
 
+/* Served through PHP, not fetched as a static file. resources.json and
+   contributors.json used to sit directly in public_html — deployed
+   alongside the site's source code, which meant every deploy could
+   silently revert or delete real, live-published data (confirmed
+   happening, twice, 2026-08-26). The actual files now live in
+   abhyas-private/, outside anything a deploy touches; this endpoint is
+   the only way to read them. See api/data.php. */
 globalThis.ABHYAS_READY = (async function loadArchive() {
   try {
     const [resources, contributors] = await Promise.all([
-      fetch(ABHYAS_BASE + "resources.json", { cache: "no-cache" }).then((r) => {
-        if (!r.ok) throw new Error(`resources.json ${r.status}`);
+      fetch(ABHYAS_BASE + "api/data.php?file=resources", { cache: "no-cache" }).then((r) => {
+        if (!r.ok) throw new Error(`resources ${r.status}`);
         return r.json();
       }),
       /* A failed contributors.json used to be swallowed with `: {}`. The
          leaderboard then matched no contributor ids at all and rendered
          "No contributions yet" — a confident, wrong answer with nothing in
          the console. Loud is better than empty. */
-      fetch(ABHYAS_BASE + "contributors.json", { cache: "no-cache" }).then((r) => {
-        if (!r.ok) throw new Error(`contributors.json ${r.status}`);
+      fetch(ABHYAS_BASE + "api/data.php?file=contributors", { cache: "no-cache" }).then((r) => {
+        if (!r.ok) throw new Error(`contributors ${r.status}`);
         return r.json();
       }),
     ]);

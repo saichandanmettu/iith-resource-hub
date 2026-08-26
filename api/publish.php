@@ -66,8 +66,8 @@ $admin = require_admin();
    displayed — including right after a successful publish, which is
    why the dashboard looked frozen at zero even when the write worked. */
 if ($action === 'list') {
-  $all = read_json($c['public_dir'] . '/resources.json', []);
-  $people = read_json($c['public_dir'] . '/contributors.json', []);
+  $all = read_json($c['private_dir'] . '/resources.json', []);
+  $people = read_json($c['private_dir'] . '/contributors.json', []);
   ok([
     'items'        => $all,
     'contributors' => $people,   // {id: {name, roll}} — console resolves ids to names itself
@@ -101,7 +101,7 @@ if ($action === 'publish') {
   $year = (int) ($body['year'] ?? 0) ?: (int) date('Y');
 
   $sha256 = hash_file('sha256', $f['tmp_name']);
-  $existing = read_json($c['public_dir'] . '/resources.json', []);
+  $existing = read_json($c['private_dir'] . '/resources.json', []);
   $duplicateOf = null;
   foreach ($existing as $r) {
     if (!empty($r['sha256']) && $r['sha256'] === $sha256) { $duplicateOf = $r['file'] ?? ($r['id'] ?? null); break; }
@@ -161,7 +161,7 @@ if ($action === 'publish') {
 
   $record['contributor'] = match_or_create_contributor($c, (string) ($body['contributor'] ?? ''), (string) ($body['roll'] ?? ''));
 
-  $rpath = $c['public_dir'] . '/resources.json';
+  $rpath = $c['private_dir'] . '/resources.json';
   $existing[] = $record;
   write_json_atomic($rpath, $existing);
 
@@ -174,7 +174,7 @@ if ($action === 'edit') {
   $id = (string) ($body['id'] ?? '');
   if ($id === '') fail(400, 'Missing id');
 
-  $rpath = $c['public_dir'] . '/resources.json';
+  $rpath = $c['private_dir'] . '/resources.json';
   $all = read_json($rpath, []);
   $idx = null;
   foreach ($all as $i => $r) { if (($r['id'] ?? '') === $id) { $idx = $i; break; } }
@@ -214,7 +214,7 @@ if ($action === 'delete') {
   $id = (string) ($body['id'] ?? '');
   if ($id === '') fail(400, 'Missing id');
 
-  $rpath = $c['public_dir'] . '/resources.json';
+  $rpath = $c['private_dir'] . '/resources.json';
   $all = read_json($rpath, []);
   $found = false;
   $all = array_values(array_filter($all, function ($r) use ($id, &$found) {
@@ -240,7 +240,7 @@ function match_or_create_contributor(array $c, string $name, string $roll): ?str
   $name = trim($name);
   if ($name === '') return null;
 
-  $cpath = $c['public_dir'] . '/contributors.json';
+  $cpath = $c['private_dir'] . '/contributors.json';
   $people = read_json($cpath, []);
   foreach ($people as $cid => $p) {
     if (strcasecmp(trim($p['name'] ?? ''), $name) === 0) return (string) $cid;
