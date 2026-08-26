@@ -348,7 +348,15 @@ Each phase leaves the site working.
    `fetchResources()` at the JSON. No server code. Immediately reduces the
    "one comma breaks everything" risk.
 2. **Real files + the public viewer.** Upload a handful of PDFs by hand under
-   `files/`, add the `file` field, wire up the Adobe viewer.
+   `files/`, add the `file` field. `resource.html` (the per-file page) is
+   already built and reads `files/{r.file}` directly — it just needs real
+   PDFs at those paths to stop showing "preview not available yet". It
+   currently renders with a plain `<iframe>`, not the Adobe viewer this
+   line originally called for: Adobe needs a credential nobody has set up
+   (see HANDOVER.md §2), and a same-origin iframe already does live PDF
+   rendering in every evergreen browser with zero new account. Swap it for
+   Adobe later if its extra chrome (page thumbnails, in-viewer annotation)
+   turns out to matter — that's a one-function change in `resource.js`.
 3. **The review console against real data**, admin-only, no public uploads
    yet — the admin adds resources through it.
 4. **Public submissions.** `submit.php` plus all of section 8. This is the

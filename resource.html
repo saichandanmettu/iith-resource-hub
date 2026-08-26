@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="assets/abhyas-mark.png">
-<title>Releases &mdash; Abhyas</title>
+<title id="rpPageTitle">Resource &middot; Abhyas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@1,6..72,300;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
     <div class="wrap top-in">
       <a class="logo" href="index.html"><img src="assets/abhyas-mark.png" alt="" width="42" height="42"> Abhyas</a>
       <nav>
-        <a href="index.html">Archive</a>
+        <a class="on" href="index.html">Archive</a>
         <a href="library.html">Bookshelf</a>
         <a href="leaderboard.html">Honor Roll</a>
       </nav>
@@ -30,106 +30,19 @@
     </div>
   </header>
 
-  <section class="hero rel-hero">
-    <div class="wrap">
-      <h1>
-        <span class="h-muted">What we shipped</span>
-        <span class="h-serif">And what is <span class="h-underline">next<svg class="h-underline-svg no-split" viewBox="0 0 160 14" fill="none" preserveAspectRatio="none"><path d="M3 10C45 4 115 3 157 8" stroke="var(--papers)" stroke-width="4.5" stroke-linecap="round"/></svg></span></span>
-      </h1>
-      <p class="hero-sub">Abhyas is built in the open. Here is the running log.</p>
+  <main class="wrap rp-wrap">
+    <a class="rp-back" href="index.html">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to archive
+    </a>
+
+    <!-- resource.js fills this in once the file is found — a loading
+         skeleton first, then either the real layout or a not-found state. -->
+    <div id="rpRoot" class="rp-loading">
+      <div class="rp-loading-line" style="width:40%"></div>
+      <div class="rp-loading-line" style="width:70%; height:34px; margin-top:14px;"></div>
+      <div class="rp-loading-line" style="width:100%; height:340px; margin-top:26px; border-radius:22px;"></div>
     </div>
-  </section>
-
-  <main class="wrap">
-    <div class="rel-board" id="releaseList"></div>
-
-    <section class="vt" id="versions">
-      <header class="vt-header">
-        <div class="vt-title-group">
-          <h2>Versions</h2>
-          <p>Major milestones and the bigger releases worth talking about.</p>
-        </div>
-      </header>
-      <div class="vt-timeline" id="versionTimeline">
-        <div class="vt-rail-line" aria-hidden="true"><div class="vt-rail-fill" id="railFill"></div></div>
-      </div>
-    </section>
-
-    <!-- Global Pre-Footer CTA -->
-    <section class="global-cta">
-      <div class="cta-folder-card">
-        
-        <!-- Left Text Column -->
-        <div class="cf-left">
-          <h2 class="cf-title">
-            <span class="h-solid">Got past papers or notes?</span>
-          </h2>
-
-          <p class="cf-desc">
-            Share your course files and let’s build the best resource hub <span class="cf-nowrap">for <b>IITH</b> together.</span>
-          </p>
-
-          <div class="cf-actions">
-            <a class="cta-solid cf-btn" href="contribute.html">
-              Contribute a file
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </a>
-          </div>
-        </div>
-
-        <!-- Right Folder Artifact (Interactive Physics) -->
-        <div class="cf-right">
-          <div class="cf-stage" aria-hidden="true">
-            <div class="cf-folder">
-              
-              <!-- Yellow Sticky Note -->
-              <div class="cf-sticky">15 Depts</div>
-
-              <!-- Folder Back Panel -->
-              <div class="cf-fback"></div>
-              
-              <!-- Sheet 3: Terracotta (Assignments) -->
-              <div class="cf-sheet cf-s3">
-                <div class="cf-sheet-header">
-                  <div class="cf-sheet-tag"><i></i> EE1200 Lab Manual</div>
-                  <span class="cf-sheet-badge">Labs</span>
-                </div>
-                <div class="cf-sheet-lines"><span></span><span></span></div>
-              </div>
-
-              <!-- Sheet 2: Olive (Notes & Slides) -->
-              <div class="cf-sheet cf-s2">
-                <div class="cf-sheet-header">
-                  <div class="cf-sheet-tag"><i></i> MA1110 Lecture Deck</div>
-                  <span class="cf-sheet-badge">Slides</span>
-                </div>
-                <div class="cf-sheet-lines"><span></span><span></span></div>
-              </div>
-
-              <!-- Sheet 1: Amber (Past Exam Paper) -->
-              <div class="cf-sheet cf-s1">
-                <div class="cf-sheet-header">
-                  <div class="cf-sheet-tag"><i></i> CS2110 Endsem 2025</div>
-                  <span class="cf-sheet-badge">Exam</span>
-                </div>
-                <div class="cf-sheet-lines"><span></span><span></span></div>
-              </div>
-
-              <!-- Folder Front Pocket Flap -->
-              <div class="cf-ffront">
-                <div class="cf-ffront-top">
-                  <span class="cf-ffront-code">INTAKE / 2026</span>
-                  <span class="cf-ffront-pill">Drop Box</span>
-                </div>
-                <h3 class="cf-ffront-title">Contributions Hub</h3>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
   </main>
 
   <footer class="foot">
@@ -157,7 +70,7 @@
         <div class="foot-col">
           <h3>Explore</h3>
           <ul>
-            <li><a href="index.html">The archive</a></li>
+            <li><a class="on" href="index.html">The archive</a></li>
             <li><a href="library.html">The bookshelf</a></li>
             <li><a href="releases.html">Releases &amp; updates</a></li>
             <li><a href="leaderboard.html">Honor Roll</a></li>
@@ -185,6 +98,9 @@
 
 </div>
 
+<!-- Floating Toast Notification -->
+<div class="toast" id="toast" aria-live="polite" hidden></div>
+
 <!-- Mobile nav menu + backdrop: moved outside .shell, which has
      overflow:clip. position:fixed descendants of an overflow:clip/
      hidden ancestor get clipped/broken (most reliably reproducible
@@ -194,7 +110,7 @@
   <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
     <ul class="mobile-nav-list">
       <li>
-        <a class="mobile-nav-link" href="index.html">
+        <a class="mobile-nav-link active" href="index.html">
           <div class="mobile-nav-left">
             <div class="mobile-nav-icon">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -224,7 +140,7 @@
         </a>
       </li>
       <li>
-        <a class="mobile-nav-link active" href="releases.html">
+        <a class="mobile-nav-link" href="releases.html">
           <div class="mobile-nav-left">
             <div class="mobile-nav-icon">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
@@ -260,6 +176,7 @@
 
 <script src="lenis.min.js"></script>
 <script src="smooth.js?v=8"></script>
-<script src="releases.js?v=17"></script>
+<script src="data.js?v=10"></script>
+<script src="resource.js?v=3"></script>
 </body>
 </html>

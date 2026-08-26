@@ -1240,18 +1240,22 @@ body[data-menu-open="true"] .mobile-backdrop {
   flex-shrink: 0; white-space: nowrap;
 }
 .fm-btn-group { display: flex; align-items: center; gap: 8px; }
-.btn-dl, .btn-share {
+.btn-open, .btn-share {
   display: inline-flex; align-items: center; gap: 6px;
   text-decoration: none; font-family: inherit; font-size: .82rem; font-weight: 700;
   padding: 8px 14px; border-radius: 999px; border: 0; cursor: pointer;
   transition: transform .18s var(--ease), background .2s, border-color .2s, color .2s;
   white-space: nowrap;
 }
-.btn-dl { background: var(--ink); color: #fff; }
-.btn-dl:hover { transform: translateY(-1px); background: #3d3549; }
+/* Was .btn-dl / "Download" — rows now open the resource's own page
+   (resource.html) instead of pretending to download a file that was never
+   actually served from here. Download still exists, just one level down,
+   on that page, next to the real PDF. */
+.btn-open { background: var(--ink); color: #fff; }
+.btn-open:hover { transform: translateY(-1px); background: #3d3549; }
 /* Share used to be an icon-only circle — nobody could tell what it did
    without hovering for the title tooltip. A labeled outline pill next to
-   Download (same shape, secondary weight) reads immediately. */
+   Open (same shape, secondary weight) reads immediately. */
 /* Was border: var(--hair) — a pale cream line that reads fine on .cta-ghost's
    plain --surface backdrop, but on this row's own kind-tinted wash (see
    .fm-row above) it was nearly invisible, which read as "no border" even
@@ -8046,4 +8050,117 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   .pbcol { animation: none; }
   .pbfolder, .pbsh, .pbfront, .pbsh-count { transition: none !important; }
   .pbsh-count { opacity: 1; transform: none; }
+}
+
+/* ------------------------------------------------------------
+   Single Resource Page (resource.html) — the WooCommerce-style
+   "product page" for one uploaded file. Reuses existing primitives
+   (.fm-badge-code, .fm-year-chip, .btn-open/.btn-share, .cta-solid,
+   the .k-* kind-color triads) rather than inventing a parallel set —
+   this page should feel like it belongs to the same archive, not a
+   bolted-on destination.
+   ------------------------------------------------------------ */
+.rp-wrap { padding: 26px 0 var(--section-y); }
+
+.rp-back {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 600 .86rem var(--font-body); color: var(--ink-soft); text-decoration: none;
+  margin-bottom: 22px;
+  transition: color .2s, transform .2s;
+}
+.rp-back:hover { color: var(--ink); transform: translateX(-2px); }
+
+/* Loading skeleton — shown the instant the page opens, replaced once
+   ABHYAS_READY + courses.json both resolve. Its shapes echo the real
+   layout below (title-width bar, then a tall bar standing in for the
+   viewer) so there's no layout jump when the real content lands. */
+.rp-loading-line {
+  background: var(--wash); border-radius: 8px; height: 20px;
+  animation: rp-pulse 1.4s ease-in-out infinite;
+}
+@keyframes rp-pulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+
+.rp-notfound {
+  text-align: center; padding: 80px 20px 100px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.rp-notfound-badge {
+  font: 800 .8rem var(--font-mono); color: var(--muted); letter-spacing: .1em;
+  background: var(--wash); padding: 6px 14px; border-radius: 999px;
+}
+.rp-notfound h1 { font-family: var(--font-course); font-size: 1.6rem; margin: 0; }
+.rp-notfound p { color: var(--ink-soft); margin: 0 0 8px; max-width: 420px; }
+
+.rp-layout {
+  display: grid; grid-template-columns: 1fr 340px; gap: 32px;
+  align-items: start; padding-bottom: var(--section-y);
+}
+.rp-main { min-width: 0; }
+.rp-head { margin-bottom: 20px; }
+.rp-head-top { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.rp-kind-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 600 .78rem var(--font-mono); text-transform: uppercase; letter-spacing: .05em;
+  color: var(--k-ink, var(--ink-soft)); background: var(--k-tint, var(--wash));
+  padding: 6px 13px 6px 11px; border-radius: 999px;
+}
+.rp-kind-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--k, var(--ink-soft)); flex-shrink: 0; }
+.rp-title {
+  font-family: var(--font-course); font-weight: 800; font-size: clamp(1.5rem, 3vw, 2.1rem);
+  letter-spacing: var(--track-md); line-height: 1.15; margin: 0 0 8px; color: var(--ink);
+}
+.rp-sub { margin: 0; color: var(--ink-soft); font-size: .96rem; }
+
+/* The viewer itself — a plain <iframe> (see resource.js for why, not
+   Adobe) styled as one more "sheet of paper" on the site, same rounded-
+   card language as everything else, not a bare embed dropped on the page. */
+.rp-viewer {
+  border-radius: 22px; overflow: hidden; background: var(--surface);
+  border: 1px solid var(--hair); box-shadow: 0 20px 40px -20px rgba(50, 35, 10, .25);
+  min-height: 480px; display: flex;
+}
+.rp-pdf-frame { width: 100%; min-height: 480px; height: 70vh; border: 0; display: block; background: #fff; }
+.rp-viewer-loading, .rp-viewer-empty {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 60px 30px; text-align: center; color: var(--ink-soft); font-size: .92rem;
+}
+.rp-viewer-empty svg { color: var(--k-ink, var(--muted)); opacity: .7; }
+.rp-viewer-empty b { color: var(--ink); font-size: 1rem; }
+.rp-viewer-empty span { max-width: 320px; }
+
+.rp-side { min-width: 0; }
+.rp-side-card {
+  position: sticky; top: 100px;
+  background: var(--surface); border: 1px solid var(--hair); border-radius: 22px;
+  padding: 22px; display: flex; flex-direction: column; gap: 20px;
+}
+.rp-actions { display: flex; gap: 10px; }
+.rp-actions .btn-open, .rp-actions .btn-share { flex: 1; justify-content: center; padding: 12px 16px; font-size: .86rem; }
+
+.rp-facts { margin: 0; display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px solid var(--hair); }
+.rp-facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.rp-facts dt { font: 600 .74rem var(--font-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0; }
+.rp-facts dd { margin: 0; font: 600 .88rem var(--font-body); color: var(--ink); text-align: right; }
+
+.rp-branches { padding-top: 16px; border-top: 1px solid var(--hair); }
+.rp-branches-label { display: block; font: 600 .74rem var(--font-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 10px; }
+.rp-branch-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+/* --bc comes in inline per chip (the department's own accent from
+   DEPARTMENTS in data.js) — color-mix keeps every chip legible against
+   --wash regardless of how light or dark that accent is, same trick as
+   the kind-color washes elsewhere (.fm-row, .k-*). */
+.rp-branch-chip {
+  font: 600 .74rem var(--font-body); padding: 5px 11px; border-radius: 999px;
+  background: color-mix(in srgb, var(--bc, var(--ink-soft)) 14%, var(--wash));
+  color: color-mix(in srgb, var(--bc, var(--ink-soft)) 70%, var(--ink));
+}
+
+@media (max-width: 900px) {
+  .rp-layout { grid-template-columns: 1fr; }
+  .rp-side-card { position: static; }
+}
+@media (max-width: 640px) {
+  .rp-viewer, .rp-pdf-frame { min-height: 360px; }
+  .rp-pdf-frame { height: 60vh; }
+  .rp-side-card { padding: 18px; }
 }

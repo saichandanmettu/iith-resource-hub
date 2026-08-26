@@ -27,6 +27,7 @@ install and nothing to migrate.
 | Contribute | `contribute.html` |
 | Releases | `releases.html` |
 | Terms | `terms.html` |
+| One resource's own page | `resource.html?id=N` |
 
 All styling is in **one** file, `styles.css`. All resource data is in
 `data.js`.

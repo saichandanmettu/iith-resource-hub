@@ -275,13 +275,13 @@ function renderFolderModalFiles() {
         <div class="fm-actions">
           ${r.year ? `<span class="fm-year-chip">${esc(String(r.year))}</span>` : ""}
           <div class="fm-btn-group">
-            <button class="btn-share" type="button" onclick="copyLink('${esc(r.title)}')">
+            <button class="btn-share" type="button" onclick="copyLink('${esc(r.title)}', ${r.id})">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               Share
             </button>
-            <a class="btn-dl" href="#" onclick="downloadResource(event, '${esc(r.title)}')">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Download
+            <a class="btn-open" href="resource.html?id=${r.id}">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open
             </a>
           </div>
         </div>
@@ -458,16 +458,18 @@ window.showToast = function(msg) {
   }, 2600);
 };
 
-window.copyLink = function(title) {
+/* id is optional so this still works anywhere copyLink is only passed a
+   title — but the folder modal rows now pass the resource's own id, so
+   Share copies a real deep link to that file's page instead of just
+   whatever page happened to be open when you clicked it. */
+window.copyLink = function(title, id) {
+  const url = id != null
+    ? new URL(`resource.html?id=${id}`, window.location.href).href
+    : window.location.href;
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(url).catch(() => {});
   }
   showToast(`Link copied for "${title}"`);
-};
-
-window.downloadResource = function(e, title) {
-  e.preventDefault();
-  showToast(`Downloading "${title}"...`);
 };
 
 /* ============================================================
