@@ -69,6 +69,10 @@ if ($action === 'list') {
     'counts' => [
       'published'    => count(array_filter($all, fn($r) => ($r['status'] ?? 'published') === 'published')),
       'contributors' => count($people),
+      // Always 0 until Phase 4 (public submissions) exists — see
+      // BACKEND-PLAN-v3.md §6. Counted for real the moment any record
+      // ever carries "status": "pending", no code change needed here.
+      'pending'      => count(array_filter($all, fn($r) => ($r['status'] ?? '') === 'pending')),
     ],
   ]);
 }

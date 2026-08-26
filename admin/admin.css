@@ -73,7 +73,7 @@ body { background: #EADCC2; }
 
 /* ---------------- stat strip ---------------- */
 .ad-stats {
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(3, 1fr);
   background: var(--surface); border: 1px solid var(--hair);
   border-radius: var(--r-lg); padding: 22px 10px; margin-bottom: 34px;
 }

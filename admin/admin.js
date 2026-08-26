@@ -148,17 +148,10 @@
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     set("sPublished", data.counts.published);
     set("sContrib", data.counts.contributors ?? 0);
-
-    const h = document.getElementById("adHeadline");
-    const sub = document.getElementById("adSub");
-    if (h) {
-      h.innerHTML = state.items.length
-        ? `<span class="muted">${state.items.length} resource${state.items.length === 1 ? "" : "s"}</span><br>on the archive`
-        : `<span class="muted">Nothing published yet</span><br>add the first one`;
-    }
-    if (sub) {
-      sub.textContent = "Upload a PDF, fill in the course details, and it appears on the archive immediately.";
-    }
+    /* Always 0 until public submissions exist (BACKEND-PLAN-v3.md §6) —
+       shown now, not wired later, so the day a real review queue lands
+       this is a filter on existing UI, not a new stat to design. */
+    set("sPending", data.counts.pending ?? 0);
     renderList();
   }
 
@@ -467,6 +460,7 @@
         counts: {
           published: mockItems.length,
           contributors: new Set(mockItems.filter((i) => i.contributor).map((i) => i.contributor)).size,
+          pending: 0,
         },
       };
     }

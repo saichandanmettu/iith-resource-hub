@@ -1,0 +1,8 @@
+# Hostinger's default MIME map doesn't know about .mjs, so it serves
+# PDF.js's ES module files as text/plain. Browsers enforce strict MIME
+# checking on `<script type="module">` and refuse to execute anything
+# that isn't a real JavaScript type — so without this, viewer.mjs and
+# pdf.mjs load (200 OK) but never run, and the viewer shows an empty
+# page with a working toolbar and nothing underneath it.
+AddType text/javascript .mjs
+AddType application/wasm .wasm
