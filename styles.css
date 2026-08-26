@@ -721,7 +721,15 @@ body[data-menu-open="true"] .mobile-backdrop {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 30px 24px;
+  /* Row gap was 30px — .t-papers's hover lift rises sheets up to 64px
+     (.t-papers:hover .s3 { transform: translateY(-64px) }), and that sheet
+     starts at top:10px inside a 220px card, so on hover it pokes
+     10-64 = -54px above its own card's top edge. A 30px gap only covered
+     just over half that, so a hovered card in row 2 visibly overlapped
+     row 1's card sitting right above it. 64px row gap clears the worst
+     case (papers) with a few px to spare; every other kind's lift is
+     smaller so they clear with room to spare. Column gap unchanged. */
+  gap: 64px 24px;
   padding: 22px 0 var(--section-y);
 }
 
@@ -873,17 +881,20 @@ body[data-menu-open="true"] .mobile-backdrop {
    One stack of sheets rises straight out of the pocket.
    ========================================================= */
 .t-papers {
-  /* Re-anchored to the "Harvest" reference palette's papers hue (#EF8F14)
-     instead of the site's brighter --papers CTA amber (#F28700) — that
-     reference is what "doesn't look saturated" was measured against.
-     --front is still darkened for white-text contrast (raw #EF8F14 is
-     only ~2:1 for white — the reference mockup's own front tones don't
-     clear 4.5:1 either, it's a visual comp, not contrast-checked), just
-     from this softer starting hue instead of the old brighter one. */
-  --back: #CB7A11;
-  --front: linear-gradient(180deg, #A7640E 0%, #8B530C 100%);
-  --glow: rgba(239, 143, 20, .4);
-  --dot: #EF8F14;
+  /* Reverted again, explicitly: match .cf-ffront (the "Got past papers or
+     notes?" CTA folder every page's footer already carries) exactly —
+     #FA9A0A -> #F28700, the site's original brighter --papers CTA amber.
+     That CTA folder was the actual reference this time ("look at the
+     yellow from the other section... it looks so nice"), not the Harvest
+     mockup from the round before. White text on this gradient is
+     2.17-2.55:1, under the 4.5:1 AA floor (same number DESIGN.md already
+     documents) — flagged, not silently worked around, because the call
+     to accept that anyway for visual consistency with .cf-ffront (which
+     ships the same combination unflagged) was made explicitly this round. */
+  --back: #DC7A00;
+  --front: linear-gradient(180deg, #FA9A0A 0%, #F28700 100%);
+  --glow: rgba(242, 135, 0, .4);
+  --dot: #F28700;
 }
 .t-papers .fc-sheet { top: 22px; left: 20px; right: 20px; height: 132px; }
 .t-papers .s2 { top: 16px; left: 27px; right: 27px; z-index: 1; opacity: .72; }
@@ -903,10 +914,13 @@ body[data-menu-open="true"] .mobile-backdrop {
   /* The back must be clearly darker than the front: the notch in .fc-front
      cuts a hole, and what shows through it IS the inside of the folder. Same
      lightness on both layers and the card reads as a flat rectangle. */
-  --back: linear-gradient(135deg, #435E1F 0%, #2F4315 100%);
-  --front: linear-gradient(180deg, #7A9C3D 0%, #597C2B 100%);
+  /* Desaturated ~10 points (HSL) off every stop — same lightness, same
+     hue, just pulled back from the original's saturation the way the
+     assignment terracotta already was and got a good reaction for. */
+  --back: linear-gradient(135deg, #425825 0%, #2E3F19 100%);
+  --front: linear-gradient(180deg, #779148 0%, #587433 100%);
   --glow: rgba(89, 124, 43, .42);
-  --dot: #698B39;
+  --dot: #678143;
 }
 .t-notes .fc-mid { display: none; }
 .t-notes .fc-back { border-radius: 28px; }
@@ -975,7 +989,7 @@ body[data-menu-open="true"] .mobile-backdrop {
    ========================================================= */
 .t-reference {
   --back: transparent;
-  --front: #492E55;
+  --front: #46354E;
   --glow: rgba(73, 46, 85, .45);
   --dot: #8C6597;
 }
@@ -990,9 +1004,12 @@ body[data-menu-open="true"] .mobile-backdrop {
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
 }
 .fc-tier small { display: block; font: 500 .64rem var(--font-mono); opacity: .78; margin-top: 2px; }
-.t3 { top: 0;  height: 86px; width: 80%;  left: 10%; background: #cdb8d6; color: #492E55; }
-.t2 { top: 12px; height: 86px; width: 90%; left: 5%;  background: #a585b5; }
-.t1 { top: 24px; height: 86px; width: 100%; left: 0;  background: #6e4f80; }
+/* Desaturated ~10 points (HSL) off every tier and the front flap — same
+   lightness and hue as before, just pulled back from the original's
+   saturation, matching the softer touch the assignment terracotta got. */
+.t3 { top: 0;  height: 86px; width: 80%;  left: 10%; background: #CBBED0; color: #46354E; }
+.t2 { top: 12px; height: 86px; width: 90%; left: 5%;  background: #A28FAB; }
+.t1 { top: 24px; height: 86px; width: 100%; left: 0;  background: #6B5976; }
 .t-reference:hover .t3 { transform: translateY(-26px); }
 .t-reference:hover .t2 { transform: translateY(-15px); }
 .t-reference:hover .t1 { transform: translateY(-6px); }
