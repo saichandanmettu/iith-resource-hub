@@ -27,21 +27,66 @@ $body = $isMultipart ? $_POST : (json_decode(file_get_contents('php://input') ?:
 /* ---------------- auth ---------------- */
 if ($action === 'login') {
   start_session();
-  // Throttle guessing. Cheap, and enough for a console with 1-2 admins.
-  if (!empty($_SESSION['login_block']) && time() < $_SESSION['login_block']) {
+
+  /* Throttle guessing, keyed by IP rather than session — a lockout that
+     only lives in $_SESSION resets the moment an attacker stops sending
+     the session cookie back, which makes it no lockout at all. This one
+     is a small file in abhyas-private/ (outside the web root, outside
+     git) so it survives across "sessions" an attacker never keeps. */
+  $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+  $throttlePath = $c['private_dir'] . '/login_throttle.json';
+  $now = time();
+  $fh = @fopen($throttlePath, 'c+');
+  $locked = $fh && flock($fh, LOCK_EX);
+
+  $throttle = [];
+  if ($locked) {
+    $raw = stream_get_contents($fh);
+    $decoded = json_decode($raw, true);
+    if (is_array($decoded)) $throttle = $decoded;
+  }
+
+  $entry = $throttle[$ip] ?? ['fails' => 0, 'block_until' => 0, 'last' => 0];
+  // Forget an IP's history after an hour of quiet — an old failed attempt
+  // shouldn't count against someone months later, and it keeps this file
+  // from growing forever with every crawler that ever hit the endpoint.
+  if ($now - ($entry['last'] ?? 0) > 3600) $entry = ['fails' => 0, 'block_until' => 0, 'last' => 0];
+
+  if ($locked && $entry['block_until'] > $now) {
+    flock($fh, LOCK_UN); fclose($fh);
     fail(429, 'Too many attempts. Wait a minute.');
   }
+
   $pw = (string) ($body['password'] ?? '');
+  $matched = null;
   foreach ($c['admins'] as $name => $hash) {
-    if (password_verify($pw, $hash)) {
-      session_regenerate_id(true);          // stop session fixation
-      $_SESSION['admin'] = $name;
-      unset($_SESSION['login_fails'], $_SESSION['login_block']);
-      ok(['user' => $name, 'csrf' => csrf_token()]);
-    }
+    if (password_verify($pw, $hash)) { $matched = $name; break; }
   }
-  $_SESSION['login_fails'] = ($_SESSION['login_fails'] ?? 0) + 1;
-  if ($_SESSION['login_fails'] >= 5) $_SESSION['login_block'] = time() + 60;
+
+  if ($matched !== null) {
+    if ($locked) {
+      unset($throttle[$ip]);
+      foreach ($throttle as $k => $v) {
+        if ($now - ($v['last'] ?? 0) > 3600) unset($throttle[$k]);
+      }
+      ftruncate($fh, 0); rewind($fh);
+      fwrite($fh, json_encode($throttle));
+      flock($fh, LOCK_UN); fclose($fh);
+    }
+    session_regenerate_id(true);          // stop session fixation
+    $_SESSION['admin'] = $matched;
+    ok(['user' => $matched, 'csrf' => csrf_token()]);
+  }
+
+  if ($locked) {
+    $entry['fails'] = ($entry['fails'] ?? 0) + 1;
+    $entry['last'] = $now;
+    if ($entry['fails'] >= 5) $entry['block_until'] = $now + 60;
+    $throttle[$ip] = $entry;
+    ftruncate($fh, 0); rewind($fh);
+    fwrite($fh, json_encode($throttle));
+    flock($fh, LOCK_UN); fclose($fh);
+  }
   fail(401, 'Wrong password');
 }
 

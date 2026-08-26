@@ -282,7 +282,7 @@ function renderFolderModalFiles() {
         <div class="fm-actions">
           ${r.year ? `<span class="fm-year-chip">${esc(String(r.year))}</span>` : ""}
           <div class="fm-btn-group">
-            <button class="btn-share" type="button" onclick="copyLink('${esc(r.title)}', ${r.id})">
+            <button class="btn-share" type="button" data-share-title="${esc(r.title)}" data-share-id="${r.id}">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               Share
             </button>
@@ -345,6 +345,18 @@ function bindModals() {
   // Folder modal clicks & tabs
   document.getElementById("folderModalClose")?.addEventListener("click", closeFolderModal);
   document.querySelector("#folderModal .modal-back")?.addEventListener("click", closeFolderModal);
+
+  // Delegated instead of an inline onclick on each row's Share button — an
+  // inline onclick="copyLink('${title}', ...)" breaks (and can be broken
+  // out of) the moment a title contains a quote or backslash, since it's
+  // interpolated into a JS-string context that HTML-escaping alone doesn't
+  // protect against.
+  document.getElementById("fmBody")?.addEventListener("click", (e) => {
+    const btn = e.target.closest(".btn-share");
+    if (!btn) return;
+    const id = btn.dataset.shareId ? Number(btn.dataset.shareId) : null;
+    copyLink(btn.dataset.shareTitle || "", id);
+  });
 
   document.querySelectorAll("#fmTabs .fm-tab").forEach((tab) => {
     tab.addEventListener("click", () => {

@@ -9,6 +9,11 @@
 (function () {
   'use strict';
 
+  // Contributor names/rolls and resource titles/courses all ultimately come
+  // from user-submitted data (contribute.html) — never trust them raw in
+  // innerHTML.
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
   // --- State ---
   let currentScope = 'semester'; // 'semester' | 'all'
   let currentDept = 'all';       // 'all' | 'CS' | 'EE' | ...
@@ -348,13 +353,13 @@
     const place = ['First', 'Second', 'Third'][rank - 1];
     return `
       <div class="pbcol r${rank}" data-id="${c.id}">
-        <div class="pbfolder" tabindex="0" role="button" aria-label="Rank ${rank}: ${c.name}, ${c.totalPoints} points">
+        <div class="pbfolder" tabindex="0" role="button" aria-label="Rank ${rank}: ${esc(c.name)}, ${c.totalPoints} points">
           <div class="pbback"></div>
           ${podiumSheets(c)}
           <div class="pbfront">
             <div class="pbtop">
-              <p class="pbname">${c.name}</p>
-              <span class="pbroll">${c.roll || ''}</span>
+              <p class="pbname">${esc(c.name)}</p>
+              <span class="pbroll">${esc(c.roll || '')}</span>
             </div>
             <div class="pbbot">
               <span class="pbscore"><b>${c.totalPoints}</b><span>pts</span></span>
@@ -513,7 +518,7 @@
       const deptShort = c.department ? c.department.short : c.roll;
 
       rowsHtml += `
-        <div class="lbg-row ${rankClass} ${isTop3 ? 'is-podium' : ''}" data-id="${c.id}" tabindex="0" role="button" aria-label="Rank ${rankNum}: ${c.name}, ${c.totalPoints} points">
+        <div class="lbg-row ${rankClass} ${isTop3 ? 'is-podium' : ''}" data-id="${c.id}" tabindex="0" role="button" aria-label="Rank ${rankNum}: ${esc(c.name)}, ${c.totalPoints} points">
 
           <!-- Rank Column -->
           <div class="col-rank">
@@ -523,11 +528,11 @@
 
           <!-- User Column -->
           <div class="col-user">
-            <div class="lbg-u-avatar">${getInitials(c.name)}</div>
+            <div class="lbg-u-avatar">${esc(getInitials(c.name))}</div>
             <div class="lbg-u-info">
               <div class="lbg-u-name-line">
-                <span class="lbg-u-name">${c.name}</span>
-                <span class="lbg-u-roll">${c.roll}</span>
+                <span class="lbg-u-name">${esc(c.name)}</span>
+                <span class="lbg-u-roll">${esc(c.roll)}</span>
               </div>
             </div>
           </div>
@@ -688,11 +693,11 @@
           filesHtml += `
             <div class="m-file-card">
               <div class="m-file-l">
-                <span class="m-file-kind" style="background:${kindConf.tint}; color:${kindConf.ink}">${r.type}</span>
+                <span class="m-file-kind" style="background:${kindConf.tint}; color:${kindConf.ink}">${esc(r.type)}</span>
                 <div class="m-file-info">
-                  <div class="m-file-title">${r.title || r.course}</div>
+                  <div class="m-file-title">${esc(r.title || r.course)}</div>
                   <div class="m-file-meta">
-                    <span class="m-file-code">${r.code || ''}</span>
+                    <span class="m-file-code">${esc(r.code || '')}</span>
                     ${r.year ? `<span>&middot;</span><span>${r.year}</span>` : ''}
                     ${r.pages ? `<span>&middot;</span><span>${r.pages} pgs</span>` : ''}
                   </div>
