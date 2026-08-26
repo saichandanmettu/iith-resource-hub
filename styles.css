@@ -1336,6 +1336,26 @@ body[data-menu-open="true"] .mobile-backdrop {
 
   .share-modal-card { padding: 26px 20px; }
   .sm-grid { grid-template-columns: 1fr; }
+
+  /* Full-screen on phones — same move as #lbgProfileModal and for the same
+     reason: this card is a header + a variable-length file list + a footer,
+     the exact shape that was double-scrolling (.fm-body capped at 380px
+     scrolling inside .folder-modal-card, itself capped at 100vh-56px
+     scrolling inside .modal). Letting the card fill the viewport and the
+     file list take the real remaining space removes both caps and the
+     inner scrollbar. #shareModal and the book-cover modal are NOT included
+     here on purpose — they're short, fixed-content cards (a form, a flip
+     animation), not lists, and going full-screen would just leave empty
+     space under them. */
+  #folderModal { padding: 0; }
+  #folderModal .folder-modal-card {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+  #folderModal .fm-body { max-height: none; flex: 1; }
 }
 
 /* Toast Notification */
