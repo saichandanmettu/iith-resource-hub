@@ -138,23 +138,16 @@ any `font-family`.**
 | `--font-course` | Archivo 700 | **Names the thing you are looking for.** Course names, book titles, branch headings, release titles. |
 | `--font-body` | Plus Jakarta Sans | Everything readable. Body copy, nav, buttons, form fields. |
 | `--font-mono` | DM Mono | Metadata only. Course codes, dates, counts, status labels, ⌘K keycaps. |
-| *(unnamed, `.h-serif`)* | Fraunces, italic — falls back to Newsreader | **One hero word per page, and only that.** The italic accent in "All in *one place*", "Sharing is *caring*", "it *forward*", "And what is *next*", "As you *get started*". Never given a `--font-*` token on purpose — it is not a fourth readable face, it is a single accent glyph run. |
+| *(unnamed, `.h-serif`)* | Instrument Serif, italic — falls back to Newsreader | **One hero word per page, and only that.** The italic accent in "All in *one place*", "Sharing is *caring*", "it *forward*", "And what is *next*", "As you *get started*". Never given a `--font-*` token on purpose — it is not a fourth readable face, it is a single accent glyph run. |
 
-**Fixed 2026-08-26 — clipped ascenders/descenders on this line:** the
-word-reveal entrance animation (`smooth.js`, `.word-reveal`/`.word-span`/
-`.word-inner`) settles to `transform: translateY(0) scale(1)` and
-`filter: blur(0px)` when done, not `transform: none` / `filter: none`.
-Those are different to a browser — a non-`none` transform or filter keeps
-the element on a compositor layer clipped to its plain layout box, cutting
-into Fraunces' italic overshoot (it leans and swashes further than an
-upright letter, worse with the WONK axis). Two fixes, applied together:
-the settled state now uses true `none`; `.h-serif`'s word-spans also get
-extra compensating padding (0.34em/0.12em/0.22em vs the generic 0.15em/
-0.05em/0.05em) as a safety margin for the ~1.25s while the transform is
-still genuinely animating. If a future hero line needs its own transform
-that must stay active past the entrance animation, budget real headroom
-on its `.word-span` — don't assume the generic padding is enough for a
-face with more overshoot than Bricolage.
+**Fixed 2026-08-26 — unclipped typography & cinematic kinetic blur reveals:**
+To prevent text clipping on commas, descenders, and serif italic swashes
+(such as "lle", "place", and punctuation), all DOM word-splitting (`.word-span`,
+`.word-inner`) has been eliminated. The hero text renders cleanly as intact
+lines (`.hero h1 > span`) with ample line-height (`1.12` on H1, `1.25` on `.h-serif`),
+`overflow: visible`, and rich cinematic kinetic motion blur transitions (`blur(14px)`
+and subtle scale/translation settling to `none`) that maintain pure glyph fidelity
+and natural font ligatures across all screen sizes.
 
 The split between display and course is the point: **Bricolage speaks for the
 brand, Archivo names the content.** A course name and a book title are the
@@ -166,8 +159,8 @@ same kind of object — a scannable item — so they share a face.
 Archivo             700
 Bricolage Grotesque 700, 800   (variable optical size 12–96)
 DM Mono             400, 500
-Fraunces             italic 400, 500  (variable optical size 9–144, SOFT/WONK axes)
-Newsreader           italic 300, 400  (variable optical size 6–72)
+Instrument Serif    italic 400
+Newsreader          italic 300, 400  (variable optical size 6–72)
 Plus Jakarta Sans   400,500,600,700,800
 ```
 

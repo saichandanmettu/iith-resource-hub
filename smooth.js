@@ -69,81 +69,50 @@
     updateHeader();
   }
 
-  /* 3. Cinematic Word-by-Word Text Splitting */
-  function splitWordsInElement(el, startIndex = 0) {
-    if (el.dataset.wordsSplit) return startIndex;
-    el.dataset.wordsSplit = "true";
-    el.classList.add("word-reveal");
-
-    let count = startIndex;
-    const childNodes = Array.from(el.childNodes);
-
-    childNodes.forEach((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent;
-        const words = text.split(/\s+/).filter(Boolean);
-        if (!words.length) {
-          if (text.trim() === '') {
-            node.replaceWith(document.createTextNode(text));
-          }
-          return;
-        }
-        const frag = document.createDocumentFragment();
-        if (/^\s/.test(text)) frag.appendChild(document.createTextNode(" "));
-        words.forEach((word, idx) => {
-          const span = document.createElement("span");
-          span.className = "word-span";
-          const inner = document.createElement("span");
-          inner.className = "word-inner";
-          inner.style.setProperty("--i", count++);
-          inner.textContent = word;
-          span.appendChild(inner);
-          frag.appendChild(span);
-          if (idx < words.length - 1) {
-            frag.appendChild(document.createTextNode(" "));
+  /* 3. Smooth Hero & Header Reveal Observer (No DOM Text Splitting) */
+  document.addEventListener("DOMContentLoaded", () => {
+    const heroes = document.querySelectorAll(".hero, .faq-intro, .reveal-header");
+    if (!isReduced && heroes.length) {
+      // Trigger visible hero elements immediately on load for silky entrance
+      requestAnimationFrame(() => {
+        heroes.forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          if (rect.top < window.innerHeight && rect.bottom > 0) {
+            el.classList.add("in");
+            const h1 = el.querySelector("h1, h2");
+            if (h1) h1.classList.add("in");
           }
         });
-        if (/\s$/.test(text)) frag.appendChild(document.createTextNode(" "));
-        node.replaceWith(frag);
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        if (node.tagName.toLowerCase() === 'svg' || node.classList.contains('no-split')) return;
-        count = splitWordsInElement(node, count);
-      }
-    });
-    return count;
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const titles = document.querySelectorAll(".hero h1, .split-words, .faq-intro h2");
-    if (!isReduced && titles.length) {
-      titles.forEach((title) => {
-        splitWordsInElement(title);
-        const heroParent = title.closest(".hero");
-        if ("IntersectionObserver" in window) {
-          const obs = new IntersectionObserver(
-            (entries) => {
-              entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                  title.classList.add("in");
-                  if (heroParent) heroParent.classList.add("in");
-                  obs.unobserve(title);
-                }
-              });
-            },
-            { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
-          );
-          obs.observe(title);
-          setTimeout(() => {
-            title.classList.add("in");
-            if (heroParent) heroParent.classList.add("in");
-          }, 1200);
-        } else {
-          title.classList.add("in");
-          if (heroParent) heroParent.classList.add("in");
-        }
       });
+
+      if ("IntersectionObserver" in window) {
+        const obs = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("in");
+                const h1 = entry.target.querySelector("h1, h2");
+                if (h1) h1.classList.add("in");
+                obs.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.1, rootMargin: "0px 0px -5% 0px" }
+        );
+        heroes.forEach((el) => obs.observe(el));
+      } else {
+        heroes.forEach((el) => {
+          el.classList.add("in");
+          const h1 = el.querySelector("h1, h2");
+          if (h1) h1.classList.add("in");
+        });
+      }
     } else {
-      document.querySelectorAll(".hero").forEach((h) => h.classList.add("in"));
+      document.querySelectorAll(".hero, .faq-intro").forEach((h) => {
+        h.classList.add("in");
+        const h1 = h.querySelector("h1, h2");
+        if (h1) h1.classList.add("in");
+      });
     }
   });
 })();

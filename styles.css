@@ -197,71 +197,9 @@ body { background: #EADCC2; padding: 14px; }
 .btn-add:active { transform: scale(0.975); }
 
 /* ------------------------------------------------------------
-   Cinematic Kinetic Blur Text & Headline Reveals (Style 01)
-   ------------------------------------------------------------ */
-.word-reveal {
-  /* overflow visible to prevent clipping ascenders / descenders / blur halos */
-}
-.word-reveal .word-span {
-  display: inline-block;
-  vertical-align: bottom;
-  padding-top: 0.15em;
-  margin-top: -0.15em;
-  padding-right: 0.05em;
-  margin-right: -0.05em;
-  padding-bottom: 0.05em;
-  margin-bottom: -0.05em;
-}
-/* Fraunces italic overshoots a normal glyph box more than Bricolage does —
-   its ascenders lean into the slant and the WONK axis adds swash beyond
-   the font's own metrics. The generic .word-span padding above was tuned
-   for the upright sans line; give the italic line extra room on all four
-   sides so its ink never reaches the edge of the inline-block box. */
-.h-serif.word-reveal .word-span,
-.h-serif .word-reveal .word-span {
-  padding-top: 0.34em;
-  margin-top: -0.34em;
-  padding-right: 0.12em;
-  margin-right: -0.12em;
-  padding-bottom: 0.22em;
-  margin-bottom: -0.22em;
-}
-.word-reveal .word-inner {
-  display: inline-block;
-  opacity: 0;
-  filter: blur(14px);
-  transform: translateY(28px) scale(0.96);
-  transition:
-    opacity 1.15s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 1.25s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 1.25s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: calc(var(--i, 0) * 105ms);
-  will-change: transform, opacity, filter;
-}
-/* Settle to true `none`, not identity values (translateY(0), blur(0px),
-   rotateX(0deg) are still active transforms/filters as far as the browser
-   is concerned). A non-`none` transform or filter keeps the element on a
-   compositor layer clipped to its plain layout box — which is exactly what
-   was cutting the tops off L/P/E in the italic "All in one place" line
-   once the entrance animation finished. `none` drops that layer so the
-   glyphs render like normal text again, ink overshoot included. */
-.word-reveal.in .word-inner,
-.in .word-inner {
-  opacity: 1;
-  filter: none;
-  transform: none;
-}
-
-.hero h1 .h-serif .word-inner {
-  transform: translateY(32px) scale(0.96) rotateX(12deg);
-}
-.word-reveal.in .h-serif .word-inner,
-.in .h-serif .word-inner {
-  transform: none;
-}
-
-/* ------------------------------------------------------------
    Hero — pill, two-tone headline, one line, two buttons
+   Headline reveals smoothly line-by-line without DOM word splitting
+   or inline-block bounding box clipping.
    ------------------------------------------------------------ */
 .hero { padding: 52px 0 20px; text-align: center; }
 .badge {
@@ -278,10 +216,43 @@ body { background: #EADCC2; padding: 14px; }
 .hero h1 {
   font-family: var(--font-display); font-weight: 800;
   font-size: clamp(2.35rem, 7.4vw, 5.4rem);
-  line-height: .96; letter-spacing: var(--track-hero);
+  line-height: 1.12; letter-spacing: var(--track-hero);
   margin: 0 0 22px;
+  overflow: visible;
 }
-.hero h1 > span { display: block; text-wrap: balance; }
+.hero h1 > span {
+  display: block;
+  text-wrap: balance;
+  overflow: visible;
+  line-height: 1.16;
+  opacity: 0;
+  filter: blur(14px);
+  transform: translateY(28px) scale(0.97);
+  will-change: transform, opacity, filter;
+  transition:
+    opacity 1.15s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 1.25s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero h1 > span:first-child {
+  transition-delay: 0.06s;
+}
+.hero h1 > span:nth-child(2) {
+  transition-delay: 0.22s;
+}
+
+.hero.in h1 > span,
+.hero.in .h-serif,
+.hero.in .h-muted,
+.hero.in .h-solid,
+.hero.in .hero-sub,
+.in.hero h1 > span,
+.in h1 > span {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+
 /* The hero is clamp()ed from 37.6px to 86.4px, so its tracking has to move
    with it: below ~650px it drops out of the 48px+ band and needs one step
    looser, or it reads cramped on a phone. */
@@ -291,22 +262,19 @@ body { background: #EADCC2; padding: 14px; }
 .h-muted { color: #b9b2ab; }
 .h-solid { color: var(--ink); }
 .h-serif {
-  font-family: "Fraunces", "Newsreader", serif;
+  font-family: "Instrument Serif", "Newsreader", serif;
   font-style: italic;
   font-weight: 400;
-  font-variation-settings: "SOFT" 40, "WONK" 1;
   color: var(--ink);
-  letter-spacing: -0.018em;
-  /* .hero h1's line-height (.96) is tuned for Bricolage's flat caps. This
-     span is its own block (.hero h1 > span), so it can take a looser value
-     without affecting the sans line above it — Fraunces italic needs the
-     room for its ascenders and swash. */
-  line-height: 1.2;
+  letter-spacing: -0.012em;
+  line-height: 1.25;
+  overflow: visible;
 }
 .hero h1 .h-underline {
   position: relative;
   display: inline-block !important;
   white-space: nowrap;
+  overflow: visible;
 }
 .h-underline-svg {
   position: absolute;
@@ -324,9 +292,9 @@ body { background: #EADCC2; padding: 14px; }
   stroke-linejoin: round;
   stroke-dasharray: 220;
   stroke-dashoffset: 220;
-  transition: stroke-dashoffset 1.45s cubic-bezier(0.22, 1, 0.36, 1) 0.95s;
+  transition: stroke-dashoffset 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.5s;
 }
-.word-reveal.in .h-underline-svg path,
+.hero.in .h-underline-svg path,
 .in .h-underline-svg path {
   stroke-dashoffset: 0;
 }
@@ -342,26 +310,26 @@ body { background: #EADCC2; padding: 14px; }
   transform: translateY(16px);
   will-change: transform, opacity, filter;
   transition:
-    opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.72s,
-    filter 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.72s,
-    transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.72s;
+    opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.38s,
+    filter 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.38s,
+    transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.38s;
 }
 
 .hero.in .hero-sub,
-.word-reveal.in ~ .hero-sub,
 .in .hero-sub {
   opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0);
+  filter: none;
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .word-reveal .word-inner,
-  .hero h1 .h-serif .word-inner,
-  .hero-sub {
+  .hero h1 > span,
+  .hero-sub,
+  .h-serif,
+  .h-muted {
+    opacity: 1 !important;
     filter: none !important;
     transform: none !important;
-    opacity: 1 !important;
     transition: none !important;
   }
   .h-underline-svg path {
@@ -956,9 +924,16 @@ body { background: #EADCC2; padding: 14px; }
   border: 1px solid var(--hair);
   transition: transform .18s var(--ease), border-color .2s, background .2s, box-shadow .2s;
 }
+/* Going white on hover made the row look deselected/blank against its own
+   colored wash — confusing, since the card the pointer is over should read
+   as MORE its color, not less. Deepen the same tint instead, add a border
+   in the kind's own color, and a soft glow behind it — all still the one
+   hue already established for that card, just turned up. */
 .fm-row:hover {
-  background: #fff; border-color: rgba(38, 33, 46, .18);
-  transform: translateY(-2px); box-shadow: 0 6px 16px -4px rgba(70, 50, 20, .08);
+  background: color-mix(in srgb, var(--k, var(--ink)) 22%, var(--surface));
+  border-color: var(--k, rgba(38, 33, 46, .35));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--k, rgba(70, 50, 20, 1)) 55%, transparent);
 }
 /* Each row carries its kind (.k-papers/.k-notes/.k-assignment/.k-reference,
    already defined site-wide with --k/--k-tint/--k-ink) so the row's own
