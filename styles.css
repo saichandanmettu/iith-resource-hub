@@ -612,6 +612,12 @@ body { background: #EADCC2; padding: 14px; }
   --glow: rgba(242, 135, 0, .4);
   --dot: #F28700;
 }
+/* DESIGN.md-flagged fix: white text on this gradient was 2.17–2.55:1, well
+   under the 4.5:1 AA floor. --papers-ink (the amber-family dark) still only
+   reaches 2.54–2.99:1 — not enough, because this gradient is lighter than
+   the other three kinds'. --ink (the site's main body-copy dark) clears
+   both gradient stops at 6.15–7.23:1. */
+.t-papers .fc-front { color: var(--ink); }
 .t-papers .fc-sheet { top: 22px; left: 20px; right: 20px; height: 132px; }
 .t-papers .s2 { top: 16px; left: 27px; right: 27px; z-index: 1; opacity: .72; }
 .t-papers .s3 { top: 10px; left: 34px; right: 34px; z-index: 0; opacity: .5; }

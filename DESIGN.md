@@ -116,10 +116,13 @@ reserved for resource kind. Breaking this makes branch colour look semantic.
 
 Verified with WCAG ratios. Body text `--ink` on `--paper` is **14.8:1**.
 
-**Known issue, pre-existing:** white text on the amber folder face is
-**2.47:1**, below the 4.5 AA threshold. It affects the card titles on
-past-paper folders. Fixing it means darkening the amber or switching that
-text to `--papers-ink`. Do not make it worse.
+**Fixed 2026-08-26:** white text on the amber folder face was 2.17–2.55:1
+across the gradient, below the 4.5 AA floor. `--papers-ink` alone wasn't
+enough (2.54–2.99:1 — this gradient runs lighter than the other three
+kinds'). `.t-papers .fc-front` now uses `--ink`, which clears both gradient
+stops at 6.15–7.23:1. If `.t-papers`'s `--front` gradient changes, recheck
+this — the other three kinds' `--front` values are dark enough that white
+still passes and don't need the override.
 
 ---
 

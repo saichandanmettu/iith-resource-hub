@@ -1,0 +1,9 @@
+# Second layer for the API folder. The endpoints already check sessions and
+# passwords in PHP (see moderate.php) — this just stops anyone from browsing
+# the folder listing or reading a file that isn't meant to be fetched
+# directly (config.sample.php, this .htaccess itself).
+Options -Indexes
+
+<FilesMatch "\.(sample\.php|md|log)$">
+  Require all denied
+</FilesMatch>
