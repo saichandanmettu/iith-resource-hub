@@ -712,7 +712,12 @@ body[data-menu-open="true"] .mobile-backdrop {
 .pill[data-kind="reference"].on  { color: var(--reference-ink); }
 
 /* only speaks when a filter returns nothing — otherwise it takes no space */
-.count { font: 500 .82rem var(--font-mono); color: var(--muted); margin: 18px 0 0; }
+/* Doubles as the empty-state message on both the Archive and Bookshelf
+   pages (app.js / library.js) — empty the rest of the time, per
+   .count:empty below. The larger top margin here is deliberate: this is
+   the ONLY thing on screen when a search/filter matches nothing, right
+   under the filter pills, and it read as cramped against them. */
+.count { font: 500 .82rem var(--font-mono); color: var(--muted); margin: 40px 0 0; text-align: center; }
 .count:empty { display: none; }
 
 /* ------------------------------------------------------------
@@ -1547,7 +1552,6 @@ body[data-menu-open="true"] .mobile-backdrop {
 .shelf-label { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
 .shelf-label h2 { font-family: var(--font-course); font-size: 1.2rem; font-weight: 700; letter-spacing: var(--track-sm); margin: 0; }
 .shelf-label span { font: 500 .72rem var(--font-mono); color: var(--muted); }
-.lib-empty { text-align: center; color: var(--muted); padding: 60px 0 90px; font-size: .95rem; }
 main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 
 .lib-all { text-decoration: none; color: var(--ink); border-bottom: 2px solid var(--papers); padding-bottom: 2px; transition: color .2s, border-color .2s; }

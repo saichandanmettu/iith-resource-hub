@@ -56,8 +56,12 @@ function renderLibrary() {
   const shelves = shelvesByDept(books);
 
   if (!shelves.length) {
-    host.innerHTML = `<p class="lib-empty">No book matches that. Try another search or filter.</p>`;
-    document.getElementById("libCount").textContent = "Nothing found \u2014 try another search or clear the filter.";
+    // One message, not two \u2014 this used to also render a second, differently
+    // worded "no book matches" paragraph inside #shelves at the same time
+    // #libCount showed its own. Same single-message pattern the Archive
+    // page already uses (app.js's #count), same wording too.
+    host.innerHTML = "";
+    document.getElementById("libCount").textContent = "Nothing found \u2014 try searching another course or clearing filters.";
     return;
   }
 
