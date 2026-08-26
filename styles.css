@@ -912,7 +912,11 @@ body { background: #EADCC2; padding: 14px; }
 .fm-tab.on[data-fmtab="reference"] { background: var(--reference); }
 
 .fm-body {
-  overflow-y: auto; max-height: 380px; padding-right: 4px; margin: 16px 0;
+  /* padding-top/bottom (not just padding-right, which was already here for
+     the scrollbar) so the hover lift + glow on the first/last row has room
+     to render instead of getting clipped flat by this scrollport's own
+     edge — that's what was cutting off the top border on hover. */
+  overflow-y: auto; max-height: 380px; padding: 6px 4px; margin: 16px 0;
   display: flex; flex-direction: column; gap: 10px;
 }
 .fm-row {

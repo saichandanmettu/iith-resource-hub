@@ -14,6 +14,16 @@
       smoothWheel: true,
       syncTouch: false,      /* Preserve native 120Hz touch physics on mobile */
       touchMultiplier: 1.5,
+      /* Lenis's own wheel/touch listeners intercept and preventDefault()
+         everywhere by default — lenis.stop() (see __pauseLenis below) only
+         pauses it applying scroll to ITS OWN target, it does NOT stop that
+         interception. Without this, a scrollable area inside a modal
+         (.fm-body, .lbg-m-files-list, .m-facts, any file list that
+         overflows) is unscrollable by wheel/trackpad even while "paused",
+         because the event never reaches the browser's native scroll
+         handling for that element. Excluding anything inside .modal fixes
+         it regardless of Lenis's running state. */
+      prevent: (node) => !!node.closest?.(".modal"),
     });
     window.__lenis = lenis;
 
