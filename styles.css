@@ -132,7 +132,6 @@ body { background: #EADCC2; padding: 14px; }
 }
 .top-in {
   pointer-events: auto;
-  position: relative; /* anchors .mobile-menu's dropdown to this pill */
   display: flex;
   align-items: center;
   height: 72px;
@@ -196,82 +195,6 @@ body { background: #EADCC2; padding: 14px; }
 }
 .btn-add:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -6px rgba(38,33,46,.55); }
 .btn-add:active { transform: scale(0.975); }
-
-/* ------------------------------------------------------------
-   Mobile menu — .top nav is display:none below 720px (see the
-   small-screens block) and had nothing standing in for it: no way to
-   reach Bookshelf or Honor Roll from the header on a phone at all.
-   This is the replacement — hidden on desktop, shown only where nav
-   disappears.
-   ------------------------------------------------------------ */
-.menu-toggle {
-  display: none;
-  position: relative;
-  width: 40px; height: 40px;
-  align-items: center; justify-content: center;
-  border: 1px solid var(--hair); background: var(--surface);
-  border-radius: 50%; color: var(--ink-soft);
-  cursor: pointer; flex-shrink: 0;
-  transition: border-color .2s, color .2s, transform .18s var(--pop);
-}
-.menu-toggle:hover { border-color: var(--ink); color: var(--ink); }
-.menu-toggle:active { transform: scale(0.93); }
-.menu-icon-x { display: none; }
-.menu-toggle[aria-expanded="true"] .menu-icon-bars { display: none; }
-.menu-toggle[aria-expanded="true"] .menu-icon-x { display: block; }
-
-.mobile-menu {
-  /* display stays flex always — toggling display:none/flex can't be
-     transitioned (a browser won't animate from a state that was never
-     rendered a frame earlier), so this uses the standard visibility-delay
-     pattern instead: invisible immediately, but display never leaves the
-     render tree, so opacity/transform can actually animate. */
-  display: flex;
-  visibility: hidden;
-  flex-direction: column;
-  gap: 2px;
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 0; right: 0;
-  background: var(--surface);
-  border: 1px solid var(--hair);
-  /* Flat radius, not the asymmetric folder-corner — that cut is reserved
-     for actual folder-shaped content (.fc-front, .cg-studio, hero cards),
-     not UI chrome. A dropdown is the same family as a modal, which is
-     flat 28px; this is that value scaled down for a compact menu. */
-  border-radius: 20px;
-  box-shadow: 0 20px 48px -14px rgba(40, 33, 41, .28);
-  padding: 6px;
-  opacity: 0;
-  transform: translateY(-10px) scale(.97);
-  transform-origin: top center;
-  transition: opacity .2s var(--ease), transform .26s var(--pop), visibility 0s linear .2s;
-  pointer-events: none;
-  z-index: 5;
-}
-.mobile-menu.open {
-  visibility: visible;
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-  transition: opacity .2s var(--ease), transform .26s var(--pop), visibility 0s linear 0s;
-}
-/* Same full-pill shape as .top nav a — this is that same control, just
-   stacked instead of side by side, not a different one. The .on state
-   uses --wash-strong rather than nav's --surface: nav's active pill
-   floats on a --wash bar, so --surface reads as "raised"; this dropdown
-   IS --surface already, so the same value would be invisible against its
-   own background. --wash-strong is the site's existing next-tint-down
-   for exactly this situation (see .lbg-u-avatar, .fm-row). */
-.mobile-menu-link {
-  display: flex; align-items: center;
-  padding: 13px 18px; border-radius: 999px;
-  font-family: inherit; font-weight: 600; font-size: .95rem;
-  color: var(--ink-soft); text-decoration: none;
-  transition: background .16s, color .16s;
-}
-.mobile-menu-link:hover { background: var(--wash); color: var(--ink); }
-.mobile-menu-link.on { background: var(--wash-strong); color: var(--ink); }
 
 /* ------------------------------------------------------------
    Hero — pill, two-tone headline, one line, two buttons
@@ -822,7 +745,6 @@ body { background: #EADCC2; padding: 14px; }
   .top nav { display: none; }
   .top-in { gap: 12px; }
   .logo { margin-right: auto; }
-  .menu-toggle { display: flex; }
   .btn-add { white-space: nowrap; padding: 10px 15px; font-size: .82rem; }
   .hero { padding: 48px 0 30px; }
   .hero h1 { max-width: none; }
