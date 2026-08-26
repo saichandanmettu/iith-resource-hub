@@ -35,3 +35,16 @@ api/config.php
 *.lock
 .tmp-*
 decisions.json
+
+# Live data written by api/publish.php, not source code. This site
+# auto-deploys on git activity — tracking these meant every deploy (or
+# apparently a periodic sync independent of pushes) could revert a real
+# publish back to whatever was last committed. Confirmed happening live
+# 2026-08-26: a test publish wrote successfully, then vanished within
+# the same session with no push in between. Same reasoning as
+# decisions.json above, just discovered later because these three
+# started as committed placeholder content instead of starting empty.
+/resources.json
+/contributors.json
+/files/*
+!/files/.htaccess
