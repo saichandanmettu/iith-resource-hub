@@ -99,59 +99,23 @@
     return { name: 'New Contributor', class: 'tier-fresh' };
   }
 
-  const FALLBACK_CONTRIBUTORS = [
-    { id: "c1", name: "Aarav Menon", roll: "CS23" },
-    { id: "c2", name: "Ishita Rao", roll: "EP23" },
-    { id: "c3", name: "Rohan Iyer", roll: "MS24" },
-    { id: "c4", name: "Neha Kulkarni", roll: "ME23" },
-    { id: "c5", name: "Kabir Sheth", roll: "EE24" },
-    { id: "c6", name: "Ananya Bose", roll: "CM22" },
-    { id: "c7", name: "Vikram Nair", roll: "CS24" },
-    { id: "c8", name: "Meera Joshi", roll: "ES24" },
-    { id: "c9", name: "Devika Nambiar", roll: "CS23" },
-    { id: "c10", name: "Arjun Pillai", roll: "ME24" },
-    { id: "c11", name: "Sneha Reddy", roll: "CM23" },
-    { id: "c12", name: "Karthik Varma", roll: "EE23" },
-    { id: "c13", name: "Priya Menon", roll: "MNC24" },
-    { id: "c14", name: "Rahul Bhat", roll: "EP24" },
-    { id: "c15", name: "Aisha Qureshi", roll: "BT23" },
-  ];
-
-  const FALLBACK_RESOURCES = [
-    { id: 1, title: "Data Structures End-Sem 2024", contributor: "c1", type: "papers", added: "2026-08-10", code: "CS2110", course: "Data Structures", semester: 3 },
-    { id: 2, title: "Algorithms Quiz 2 Solutions", contributor: "c1", type: "papers", added: "2026-08-12", code: "CS3110", course: "Algorithms", semester: 5 },
-    { id: 3, title: "Operating Systems Lecture Notes", contributor: "c1", type: "notes", added: "2026-08-15", code: "CS3010", course: "Operating Systems", semester: 5 },
-    { id: 4, title: "DBMS Lab Manual", contributor: "c1", type: "assignment", added: "2026-08-18", code: "CS3200", course: "Database Systems", semester: 5 },
-    { id: 5, title: "Modern Physics Mid-Sem Paper", contributor: "c2", type: "papers", added: "2026-07-30", code: "PH2110", course: "Modern Physics", semester: 3 },
-    { id: 6, title: "Quantum Mechanics Problem Sets", contributor: "c2", type: "assignment", added: "2026-08-05", code: "PH3120", course: "Quantum Mechanics", semester: 5 },
-    { id: 7, title: "Electrodynamics Lecture Slides", contributor: "c2", type: "notes", added: "2026-08-14", code: "PH2130", course: "Electrodynamics", semester: 3 },
-    { id: 8, title: "Griffiths Introduction to Electrodynamics", contributor: "c2", type: "reference", added: "2026-08-20", code: "PH2130", course: "Electrodynamics", semester: 3 },
-    { id: 9, title: "Materials Chemistry Quiz 1", contributor: "c3", type: "papers", added: "2026-07-22", code: "CY1120", course: "Materials Chemistry", semester: 2 },
-    { id: 10, title: "Thermodynamics of Materials Notes", contributor: "c3", type: "notes", added: "2026-08-01", code: "MS2100", course: "Thermodynamics of Materials", semester: 3 },
-    { id: 11, title: "Physical Metallurgy Assignment 3", contributor: "c3", type: "assignment", added: "2026-08-16", code: "MS3100", course: "Physical Metallurgy", semester: 5 },
-    { id: 12, title: "Fluid Mechanics End-Sem 2024", contributor: "c4", type: "papers", added: "2026-08-08", code: "ME2110", course: "Fluid Mechanics", semester: 3 },
-    { id: 13, title: "Solid Mechanics Tutorial Sheet", contributor: "c4", type: "assignment", added: "2026-08-11", code: "ME2120", course: "Solid Mechanics", semester: 3 },
-    { id: 14, title: "Signals and Systems Mid-Sem Paper", contributor: "c5", type: "papers", added: "2026-08-02", code: "EE2110", course: "Signals and Systems", semester: 3 },
-    { id: 15, title: "Digital Signal Processing Slides", contributor: "c5", type: "notes", added: "2026-08-19", code: "EE3120", course: "DSP", semester: 5 },
-    { id: 16, title: "Chemical Reaction Engg Notes", contributor: "c6", type: "notes", added: "2026-08-03", code: "CH3110", course: "CRE", semester: 5 },
-    { id: 17, title: "Computer Networks Lab Assignment", contributor: "c7", type: "assignment", added: "2026-08-17", code: "CS3120", course: "Computer Networks", semester: 5 },
-    { id: 18, title: "Linear Algebra Lecture Notes", contributor: "c13", type: "notes", added: "2026-08-06", code: "MA2110", course: "Linear Algebra", semester: 3 },
-    { id: 19, title: "Genetics Lab Manual", contributor: "c15", type: "assignment", added: "2026-08-21", code: "BT2110", course: "Genetics", semester: 3 },
-  ];
-
   // --- Compute Contributor Scores ---
+  //
+  // No mock-data fallback here on purpose, not even for an empty archive.
+  // This used to fall back to a hardcoded fake dataset whenever
+  // RESOURCES.length was 0 — which doesn't just mean "no real content
+  // yet," it silently means "invent 19 fake papers and show them."
+  // Confirmed live, 2026-08-27: contributors.json still had two real
+  // people's names in it (deleting a resource doesn't remove the
+  // contributor it referenced) while resources.json was genuinely
+  // empty — so the fake fallback resources (tagged contributor "c1",
+  // "c2") got matched against those REAL names, and the Honor Roll
+  // displayed fabricated papers and points under real, identifiable
+  // people. An empty archive must render as an empty leaderboard,
+  // never as a substitute for one.
   function computeContributors(scope) {
-    const rawContributors = (typeof CONTRIBUTORS !== 'undefined' && CONTRIBUTORS.length > 0)
-      ? CONTRIBUTORS
-      : (typeof globalThis.CONTRIBUTORS !== 'undefined' && globalThis.CONTRIBUTORS.length > 0)
-        ? globalThis.CONTRIBUTORS
-        : FALLBACK_CONTRIBUTORS;
-
-    const rawResources = (typeof RESOURCES !== 'undefined' && RESOURCES.length > 0)
-      ? RESOURCES
-      : (typeof globalThis.RESOURCES !== 'undefined' && globalThis.RESOURCES.length > 0)
-        ? globalThis.RESOURCES
-        : FALLBACK_RESOURCES;
+    const rawContributors = globalThis.CONTRIBUTORS || [];
+    const rawResources = globalThis.RESOURCES || [];
 
     const semStart = typeof SEMESTER_START !== 'undefined' ? SEMESTER_START : '2026-07-01';
 
@@ -616,8 +580,16 @@
   let computedList = [];
 
   function refreshView() {
-    computedList = computeContributors(currentScope);
-    
+    // A contributor with zero real files right now — either nothing
+    // published yet, or their only resource was since deleted — doesn't
+    // rank. contributors.json can carry orphaned entries (deleting a
+    // resource doesn't remove the contributor it referenced); this is
+    // where that stops being visible rather than showing a 0-point ghost
+    // row or, worse, an empty archive rendering as a populated-looking
+    // board. See the note on computeContributors() above for the related
+    // bug this was found alongside.
+    computedList = computeContributors(currentScope).filter(c => c.totalCount > 0);
+
     // Sort all contributors by points for podium & stats
     const allRanked = [...computedList].sort((a, b) => b.totalPoints - a.totalPoints || b.totalCount - a.totalCount);
 
