@@ -100,7 +100,12 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(20px, 3.2vw, 36px); }
+/* Bumped from clamp(20px,3.2vw,36px) 2026-08-26: folder cards and the
+   leaderboard table were reading edge-to-edge / "elongated" on phone and
+   tablet widths. This is the ONE shared container for every page (Browse,
+   Library, Leaderboard, Releases, Terms, Contribute all use it, unmodified
+   per-page) — so bumping it here fixes the side-margin everywhere at once. */
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(24px, 4vw, 40px); }
 
 /* ------------------------------------------------------------
    Page shell — the whole site sits on a tinted frame as a
@@ -207,6 +212,20 @@ body { background: #EADCC2; padding: 14px; }
   padding-bottom: 0.05em;
   margin-bottom: -0.05em;
 }
+/* Fraunces italic overshoots a normal glyph box more than Bricolage does —
+   its ascenders lean into the slant and the WONK axis adds swash beyond
+   the font's own metrics. The generic .word-span padding above was tuned
+   for the upright sans line; give the italic line extra room on all four
+   sides so its ink never reaches the edge of the inline-block box. */
+.h-serif.word-reveal .word-span,
+.h-serif .word-reveal .word-span {
+  padding-top: 0.34em;
+  margin-top: -0.34em;
+  padding-right: 0.12em;
+  margin-right: -0.12em;
+  padding-bottom: 0.22em;
+  margin-bottom: -0.22em;
+}
 .word-reveal .word-inner {
   display: inline-block;
   opacity: 0;
@@ -219,11 +238,18 @@ body { background: #EADCC2; padding: 14px; }
   transition-delay: calc(var(--i, 0) * 105ms);
   will-change: transform, opacity, filter;
 }
+/* Settle to true `none`, not identity values (translateY(0), blur(0px),
+   rotateX(0deg) are still active transforms/filters as far as the browser
+   is concerned). A non-`none` transform or filter keeps the element on a
+   compositor layer clipped to its plain layout box — which is exactly what
+   was cutting the tops off L/P/E in the italic "All in one place" line
+   once the entrance animation finished. `none` drops that layer so the
+   glyphs render like normal text again, ink overshoot included. */
 .word-reveal.in .word-inner,
 .in .word-inner {
   opacity: 1;
-  filter: blur(0px);
-  transform: translateY(0) scale(1);
+  filter: none;
+  transform: none;
 }
 
 .hero h1 .h-serif .word-inner {
@@ -231,7 +257,7 @@ body { background: #EADCC2; padding: 14px; }
 }
 .word-reveal.in .h-serif .word-inner,
 .in .h-serif .word-inner {
-  transform: translateY(0) scale(1) rotateX(0deg);
+  transform: none;
 }
 
 /* ------------------------------------------------------------
@@ -271,6 +297,11 @@ body { background: #EADCC2; padding: 14px; }
   font-variation-settings: "SOFT" 40, "WONK" 1;
   color: var(--ink);
   letter-spacing: -0.018em;
+  /* .hero h1's line-height (.96) is tuned for Bricolage's flat caps. This
+     span is its own block (.hero h1 > span), so it can take a looser value
+     without affecting the sans line above it — Fraunces italic needs the
+     room for its ascenders and swash. */
+  line-height: 1.2;
 }
 .hero h1 .h-underline {
   position: relative;
@@ -4303,7 +4334,6 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   .lb-bar { transform: scaleX(1) !important; transition: none !important; }
   .lb-pod, .lb-row, .lb-scale-item { transition: none !important; }
 }
-}
 
 /* ============================================================
    CONTRIBUTE GEMINI — The Archive Intake Experience
@@ -5228,6 +5258,26 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   .cg-pulse-grid { grid-template-columns: 1fr; }
   .cg-kind-selector { grid-template-columns: 1fr; }
   .cg-studio { padding: 26px 18px; border-radius: 24px 38px 24px 24px; }
+  /* Three segmented-pill options ("Direct File Drop" / "Drive / Cloud
+     Link" / "Email Dispatch") can't share one row at phone width without
+     wrapping each label across 2-3 lines. Below this, drop the segmented-
+     pill shape and stack them as full-width rows instead — each label
+     gets the whole row and fits on one line again. */
+  .cg-modes {
+    flex-direction: column;
+    width: 100%;
+    background: transparent;
+    padding: 0;
+    gap: 8px;
+  }
+  .cg-mode-btn {
+    width: 100%;
+    justify-content: flex-start;
+    background: var(--wash);
+    padding: 12px 16px;
+    font-size: .88rem;
+  }
+  .cg-mode-btn.on { box-shadow: none; border: 1.5px solid var(--papers); }
   .cg-calc-card, .cg-radar-card { padding: 24px 18px; border-radius: 24px 38px 24px 24px; }
   .cg-submit-btn { width: 100%; justify-content: center; }
   .cg-radar-item { flex-direction: column; align-items: flex-start; }
@@ -6009,6 +6059,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 .lbg-table-header {
   display: grid;
   grid-template-columns: 64px 2.3fr 1.15fr 2.1fr 100px;
+  column-gap: 14px;
   align-items: center;
   padding: 10px 18px;
   font: 600 .76rem var(--font-body);
@@ -6026,6 +6077,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 .lbg-row {
   display: grid;
   grid-template-columns: 64px 2.3fr 1.15fr 2.1fr 100px;
+  column-gap: 14px;
   align-items: center;
   padding: 14px 18px;
   background: var(--paper);
@@ -6694,9 +6746,21 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
     flex-direction: column;
     align-items: stretch;
   }
+  /* The filter-count text plus all 4 kind-legend chips can't share one row
+     without running off the right edge at phone width. Let it wrap onto
+     its own line instead of overflowing. */
+  .lbg-table-meta {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+  }
+  .lbg-legend {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
   .lbg-table-header,
   .lbg-row {
     grid-template-columns: 36px 1fr 80px;
+    column-gap: 10px;
     padding: 12px 10px;
   }
   .col-branch {

@@ -138,7 +138,23 @@ any `font-family`.**
 | `--font-course` | Archivo 700 | **Names the thing you are looking for.** Course names, book titles, branch headings, release titles. |
 | `--font-body` | Plus Jakarta Sans | Everything readable. Body copy, nav, buttons, form fields. |
 | `--font-mono` | DM Mono | Metadata only. Course codes, dates, counts, status labels, ⌘K keycaps. |
-| *(unnamed, `.h-serif`)* | Fraunces, italic — falls back to Newsreader | **One hero word per page, and only that.** The italic accent in "All in *one place*", "Sharing is *caring*", "it *forward*". Never given a `--font-*` token on purpose — it is not a fourth readable face, it is a single accent glyph run. |
+| *(unnamed, `.h-serif`)* | Fraunces, italic — falls back to Newsreader | **One hero word per page, and only that.** The italic accent in "All in *one place*", "Sharing is *caring*", "it *forward*", "And what is *next*", "As you *get started*". Never given a `--font-*` token on purpose — it is not a fourth readable face, it is a single accent glyph run. |
+
+**Fixed 2026-08-26 — clipped ascenders/descenders on this line:** the
+word-reveal entrance animation (`smooth.js`, `.word-reveal`/`.word-span`/
+`.word-inner`) settles to `transform: translateY(0) scale(1)` and
+`filter: blur(0px)` when done, not `transform: none` / `filter: none`.
+Those are different to a browser — a non-`none` transform or filter keeps
+the element on a compositor layer clipped to its plain layout box, cutting
+into Fraunces' italic overshoot (it leans and swashes further than an
+upright letter, worse with the WONK axis). Two fixes, applied together:
+the settled state now uses true `none`; `.h-serif`'s word-spans also get
+extra compensating padding (0.34em/0.12em/0.22em vs the generic 0.15em/
+0.05em/0.05em) as a safety margin for the ~1.25s while the transform is
+still genuinely animating. If a future hero line needs its own transform
+that must stay active past the entrance animation, budget real headroom
+on its `.word-span` — don't assume the generic padding is enough for a
+face with more overshoot than Bricolage.
 
 The split between display and course is the point: **Bricolage speaks for the
 brand, Archivo names the content.** A course name and a book title are the
