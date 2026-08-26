@@ -873,18 +873,17 @@ body[data-menu-open="true"] .mobile-backdrop {
    One stack of sheets rises straight out of the pocket.
    ========================================================= */
 .t-papers {
-  --back: #DC7A00;
-  /* Was #FA9A0A -> #F28700 (bright orange) with black .fc-front text — the
-     DESIGN.md-flagged fix for white failing 2.17-2.55:1 on that gradient.
-     True, but it made papers the one kind with black text against three
-     kinds of white text, and that mismatch is what actually read as
-     "over-saturated" next to the others, not the hue itself. Darkened
-     ~35% toward black instead (#A26406 -> #9D5700): still unmistakably
-     gold/amber, but now clears 4.81-5.53:1 for white text on its own —
-     same white every other kind uses, no more one-off black exception. */
-  --front: linear-gradient(180deg, #A26406 0%, #9D5700 100%);
-  --glow: rgba(242, 135, 0, .4);
-  --dot: #F28700;
+  /* Re-anchored to the "Harvest" reference palette's papers hue (#EF8F14)
+     instead of the site's brighter --papers CTA amber (#F28700) — that
+     reference is what "doesn't look saturated" was measured against.
+     --front is still darkened for white-text contrast (raw #EF8F14 is
+     only ~2:1 for white — the reference mockup's own front tones don't
+     clear 4.5:1 either, it's a visual comp, not contrast-checked), just
+     from this softer starting hue instead of the old brighter one. */
+  --back: #CB7A11;
+  --front: linear-gradient(180deg, #A7640E 0%, #8B530C 100%);
+  --glow: rgba(239, 143, 20, .4);
+  --dot: #EF8F14;
 }
 .t-papers .fc-sheet { top: 22px; left: 20px; right: 20px; height: 132px; }
 .t-papers .s2 { top: 16px; left: 27px; right: 27px; z-index: 1; opacity: .72; }
@@ -942,11 +941,20 @@ body[data-menu-open="true"] .mobile-backdrop {
    ASSIGNMENTS — the frosted reveal.
    The flap is glass; the paper blurs through it before it rises.
    ========================================================= */
+/* Reverted: tried a dark sheet behind the frosted glass so the blur had
+   something to differentiate against (white sheet through white-tinted
+   glass was reading as one washed-out smear). Explicit call: every kind's
+   sheet stays the site's one white paper — consistent white sheets across
+   all four kinds is the actual decision, over any one kind's blur getting
+   slightly more definition from a dark sheet. */
 .t-assignment {
-  --back: linear-gradient(135deg, #E16331 0%, #BB310D 100%);
+  /* Re-anchored to "Harvest"'s softer terracotta (#CE6046) instead of the
+     brighter --assignment CTA red (#D04724) the back gradient used before —
+     same reasoning as .t-papers above. */
+  --back: linear-gradient(135deg, #D57862 0%, #904331 100%);
   --front: rgba(255, 255, 255, .22);
-  --glow: rgba(187, 49, 13, .32);
-  --dot: #D04724;
+  --glow: rgba(206, 96, 70, .32);
+  --dot: #CE6046;
 }
 .t-assignment .fc-front {
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
@@ -954,15 +962,6 @@ body[data-menu-open="true"] .mobile-backdrop {
   transition: transform .35s ease, background .3s ease;
 }
 .t-assignment:hover .fc-front { background: rgba(255, 255, 255, .3); }
-/* The sheet behind the frosted glass was the site-wide white .fc-sheet —
-   white paper blurring through a white-tinted glass pane, so the whole
-   card read as one washed-out white smear with barely any silhouette.
-   A dark sheet gives the blur something to actually differentiate from
-   the glass in front of it; text/rules flip to light-on-dark to match. */
-.t-assignment .fc-sheet { background: #251510; }
-.t-assignment .fc-sheet b { color: #fff; }
-.t-assignment .fc-sheet small { color: rgba(255, 255, 255, .55); }
-.t-assignment .fc-rule span { background: rgba(255, 255, 255, .16); }
 .t-assignment .fc-sheet { top: 24px; left: 26px; right: 26px; height: 124px; }
 .t-assignment .s2 { top: 17px; left: 34px; right: 34px; z-index: 1; opacity: .7; }
 .t-assignment .s3 { display: none; }
