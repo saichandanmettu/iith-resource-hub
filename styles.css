@@ -8083,13 +8083,19 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
    ------------------------------------------------------------ */
 .rp-wrap { padding: 26px 0 var(--section-y); }
 
+/* Was bare text + an icon, no chrome at all — the only unstyled link on
+   the page, which made it read like unfinished markup rather than a
+   deliberate back-navigation control. Same outline-pill language as
+   .btn-share: transparent, ink border, fills solid on hover. */
 .rp-back {
   display: inline-flex; align-items: center; gap: 8px;
-  font: 600 .86rem var(--font-body); color: var(--ink-soft); text-decoration: none;
+  font: 600 .86rem var(--font-body); color: var(--ink); text-decoration: none;
+  background: var(--surface); border: 1.5px solid var(--hair);
+  padding: 9px 16px 9px 12px; border-radius: 999px;
   margin-bottom: 22px;
-  transition: color .2s, transform .2s;
+  transition: color .2s, background .2s, border-color .2s, transform .2s;
 }
-.rp-back:hover { color: var(--ink); transform: translateX(-2px); }
+.rp-back:hover { background: var(--ink); color: #fff; border-color: var(--ink); transform: translateX(-2px); }
 
 /* Loading skeleton — shown the instant the page opens, replaced once
    ABHYAS_READY + courses.json both resolve. Its shapes echo the real
@@ -8112,37 +8118,41 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 .rp-notfound h1 { font-family: var(--font-course); font-size: 1.6rem; margin: 0; }
 .rp-notfound p { color: var(--ink-soft); margin: 0 0 8px; max-width: 420px; }
 
+/* Capped, not the full 1240px .wrap grid pages use — this page is one
+   document plus a sidebar, not a multi-column card grid, and stretching
+   it to the same width as the Archive read as an unfinished layout rather
+   than an intentional one. 1000px matches .ts-wrap (terms.html), the
+   site's other "single reading column" page. */
+.rp-wrap { max-width: 1000px; margin: 0 auto; }
 .rp-layout { padding-bottom: var(--section-y); }
 
-/* The masthead — full-bleed, colored by the resource's own kind
-   family via --k (set by the k-papers/k-notes/k-assignment/k-reference
-   class on #rpRoot, the same triad the folder cards on the Archive
-   grid already use).
-
-   Both gradient stops are --k darkened toward black (60%/45%), never
-   the raw --k value itself or anything mixed toward white. Checked all
-   four kinds against white text at both stops (WCAG relative-luminance
-   contrast, not eyeballed): raw --papers alone is only 2.55:1 — same
-   failure DESIGN.md already documents for .t-papers's front-flap
-   gradient — and raw --notes is 3.92:1, both under the 4.5:1 floor for
-   normal-size text (the kind chip label and subtitle here are normal
-   size, not "large text"). Darkened to 60%/45% black, the worst case
-   (papers, at the lighter 60% stop) still clears 6.2:1, and the other
-   three kinds clear 8–10:1 — one formula, no per-kind text-color
-   exception, safe everywhere on the band. */
+/* The masthead — colored by the resource's own kind family via --k-tint/
+   --k-ink (set by the k-papers/k-notes/k-assignment/k-reference class on
+   #rpRoot). This used to be --k darkened toward black with white text —
+   technically accessible (worst case 6.2:1) but it was never the site's
+   own palette, just a contrast-safe one invented for this page. The
+   Honor Roll's podium cards (.pbfront, --pk-face/--pk-ink) already solved
+   the same problem the soft way: a light pastel tint with deeply-saturated
+   ink text of the same hue, not a dark gradient with white text. --k-tint/
+   --k-ink are that exact formula, already defined for all four kinds and
+   used everywhere else on the site (chips, washes) — reusing them here
+   instead of a one-off dark gradient is what actually matches "the colors
+   we always have," and it's safely accessible on its own: --k-tint vs
+   --k-ink measures 5.36–7.65:1 across all four kinds (checked, not
+   eyeballed), comfortably past the 4.5:1 floor with no exceptions needed. */
 .rp-masthead {
   border-radius: 28px; padding: clamp(24px, 4vw, 34px); margin-bottom: 24px;
-  color: #fff;
+  color: var(--k-ink, var(--ink));
   background: linear-gradient(165deg,
-    color-mix(in srgb, var(--k, var(--ink)) 60%, black) 0%,
-    color-mix(in srgb, var(--k, var(--ink)) 45%, black) 100%);
-  box-shadow: 0 20px 40px -18px color-mix(in srgb, var(--k, var(--ink)) 55%, transparent);
+    color-mix(in srgb, var(--k-tint, var(--wash)) 55%, #fff) 0%,
+    var(--k-tint, var(--wash)) 100%);
+  box-shadow: 0 16px 32px -18px color-mix(in srgb, var(--k, var(--ink)) 35%, transparent);
 }
 .rp-head-top { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
 .rp-kind-chip {
   display: inline-flex; align-items: center; gap: 7px;
   font: 600 .78rem var(--font-mono); text-transform: uppercase; letter-spacing: .05em;
-  color: inherit; background: rgba(255, 255, 255, .22);
+  color: inherit; background: color-mix(in srgb, var(--k, var(--ink)) 16%, #fff);
   padding: 6px 13px 6px 11px; border-radius: 999px;
 }
 .rp-kind-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
@@ -8153,7 +8163,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
    file I clicked" before anything else loads. Plain, not colour-coded like
    the kind chip — they don't carry a kind's meaning, just identity. */
 .rp-plain-chip {
-  font: 600 .78rem var(--font-mono); color: inherit; background: rgba(255, 255, 255, .18);
+  font: 600 .78rem var(--font-mono); color: inherit; background: rgba(255, 255, 255, .65);
   padding: 6px 13px; border-radius: 999px;
 }
 .rp-title {
