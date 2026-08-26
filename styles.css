@@ -1252,8 +1252,12 @@ body[data-menu-open="true"] .mobile-backdrop {
 /* Share used to be an icon-only circle — nobody could tell what it did
    without hovering for the title tooltip. A labeled outline pill next to
    Download (same shape, secondary weight) reads immediately. */
-.btn-share { background: transparent; border: 1.5px solid var(--hair); color: var(--ink-soft); }
-.btn-share:hover { border-color: var(--ink); color: var(--ink); transform: translateY(-1px); }
+/* Was border: var(--hair) — a pale cream line that reads fine on .cta-ghost's
+   plain --surface backdrop, but on this row's own kind-tinted wash (see
+   .fm-row above) it was nearly invisible, which read as "no border" even
+   though one was technically there. A minimal black outline instead. */
+.btn-share { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); }
+.btn-share:hover { background: var(--ink); color: #fff; transform: translateY(-1px); }
 .fm-empty { text-align: center; color: var(--muted); padding: 32px 0; font-size: .92rem; }
 
 .fm-footer {
