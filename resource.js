@@ -7,13 +7,16 @@
    lives here, next to the file it downloads, not on the archive listing
    where clicking it used to just fire a toast and nothing else.
 
-   Deliberately a plain <iframe src="files/...">, not the Adobe PDF Embed
-   API mentioned in HANDOVER.md — that needs a credential that was never
-   set up, and native iframe PDF rendering (every evergreen browser does
-   this without a plugin) works today with zero new account dependency.
-   Swapping the iframe for Adobe later, once/if that credential exists, is
-   a one-function change (renderViewer below) — nothing else on this page
-   needs to know which viewer is behind it.
+   Viewer: self-hosted PDF.js (Mozilla's official "generic" dist build,
+   vendored at assets/pdfjs/, v6.2.108), not the Adobe PDF Embed API
+   mentioned in HANDOVER.md — Adobe needs a credential nobody has set up,
+   and is exactly the account dependency this project keeps avoiding.
+   PDF.js needs no account and renders identically across every browser
+   instead of leaning on whatever PDF plugin (or lack of one) the visitor's
+   browser happens to ship — a plain <iframe src="files/...pdf"> is at the
+   mercy of that, and looks different, or breaks, depending on the browser.
+   The whole viewer decision is isolated to renderViewer() below — nothing
+   else on this page needs to know which viewer is behind it.
    ============================================================ */
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -119,7 +122,13 @@ function renderViewer(fileUrl, title) {
   fetch(fileUrl, { method: "HEAD" })
     .then((res) => {
       if (!res.ok) throw new Error(String(res.status));
-      wrap.innerHTML = `<iframe class="rp-pdf-frame" src="${esc(fileUrl)}" title="${esc(title)}" loading="lazy"></iframe>`;
+      /* PDF.js's own viewer page does the rendering; we just hand it the
+         file. `file` must be resolved to an absolute URL and then encoded
+         as one query value, or a relative path with its own `?`/`#`
+         breaks the viewer's query parsing. */
+      const absolute = new URL(fileUrl, window.location.href).href;
+      const viewerUrl = `assets/pdfjs/web/viewer.html?file=${encodeURIComponent(absolute)}`;
+      wrap.innerHTML = `<iframe class="rp-pdf-frame" src="${esc(viewerUrl)}" title="${esc(title)}" loading="lazy" allow="fullscreen"></iframe>`;
     })
     .catch(() => {
       wrap.innerHTML = `

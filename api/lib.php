@@ -2,6 +2,12 @@
 /**
  * Abhyas — shared backend helpers.
  * Everything risky lives here so it is written once and reviewed once.
+ *
+ * Shape: admin-only direct publishing (BACKEND-PLAN-v3.md). There is no
+ * quarantine folder and no anonymous submitter — the person calling this
+ * is always an authenticated admin, which is what lets this file stay
+ * this small. If public submissions ever launch, that's new code added
+ * alongside this, not a rewrite of it — see BACKEND-PLAN-v3.md §6.
  */
 declare(strict_types=1);
 
@@ -47,10 +53,32 @@ function require_admin(): string {
   return (string) $_SESSION['admin'];
 }
 
+/**
+ * CSRF guard for every state-changing action. Session cookies alone don't
+ * stop a form on another tab/site from POSTing to this endpoint using the
+ * admin's own logged-in session — the browser attaches the cookie either
+ * way. The token below only exists inside this session's own memory and
+ * is never guessable from outside it, so a forged request can't include
+ * it. `require_admin()` proves who you are; this proves the request
+ * actually came from this console.
+ */
+function csrf_token(): string {
+  start_session();
+  if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(16));
+  return $_SESSION['csrf'];
+}
+
+function require_csrf(?string $sent): void {
+  start_session();
+  if (empty($_SESSION['csrf']) || !is_string($sent) || !hash_equals($_SESSION['csrf'], $sent)) {
+    fail(403, 'Session expired, please refresh and try again');
+  }
+}
+
 /* ---------- ids ---------- */
 function new_id(): string { return bin2hex(random_bytes(8)); }
 
-/** Path-traversal guard. Validate BEFORE the id touches the filesystem. */
+/** Path-traversal guard. Validate BEFORE an id touches the filesystem. */
 function safe_id(string $id): string {
   if (!preg_match('/^[a-f0-9]{16}$/', $id)) fail(400, 'Bad id');
   return $id;
@@ -67,8 +95,8 @@ function read_json(string $path, $fallback = []) {
 /**
  * Lock, write to a temp file, prove it parses, then rename over the original.
  * rename() is atomic on the same filesystem, so a reader never sees a
- * half-written index — which would blank Archive, Bookshelf and the Honor Roll
- * at the same time.
+ * half-written index — which would blank Archive, Bookshelf and the Honor
+ * Roll at the same time. Not a subsystem: this is the whole atomicity story.
  */
 function write_json_atomic(string $path, $data): void {
   $dir = dirname($path);
@@ -92,6 +120,15 @@ function write_json_atomic(string $path, $data): void {
   flock($lock, LOCK_UN); fclose($lock);
 }
 
+/**
+ * A timestamped copy before every write, pruned to the last N. This is
+ * plain PHP `copy()` — no shell, no git. A live PHP process running `git
+ * commit` needs shell_exec() enabled and a working tree with push access
+ * sitting on the same shared host, which is its own fragile dependency
+ * (and shells-out-from-PHP is exactly the kind of surface this project
+ * avoids elsewhere). This gets the same "never lose the last N versions"
+ * guarantee with none of that.
+ */
 function backup_file(string $path): void {
   $c = cfg();
   $dir = $c['private_dir'] . '/backups';
@@ -121,4 +158,10 @@ function slugify(string $s): string {
   $s = strtolower(trim($s));
   $s = preg_replace('/[^a-z0-9]+/', '-', $s) ?? '';
   return trim($s, '-');
+}
+
+function human_size(int $b): string {
+  if ($b >= 1048576) return round($b / 1048576, 1) . ' MB';
+  if ($b >= 1024) return round($b / 1024) . ' KB';
+  return $b . ' B';
 }

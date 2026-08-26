@@ -19,32 +19,34 @@ Cloudflare R2 too (better egress cost, but adds an account to inherit — see
 `HANDOVER.md` §3.3 on why every extra account is a liability, not a
 convenience).
 
-**What's actually settled** (`BACKEND-PLAN-v2.md`, which supersedes and
-freezes `backend.md`'s two review rounds): two small PHP endpoints
-(`api/submit.php`, `api/moderate.php`) plus flat JSON files
+**What's actually settled** (`BACKEND-PLAN-v3.md`, which supersedes
+`BACKEND-PLAN-v2.md` for Phases 1–3 — see v3 §0 for why): one PHP endpoint
+(`api/publish.php`, admin-only, no moderation queue) plus flat JSON files
 (`resources.json`, `contributors.json`), all sitting on the **same Hostinger
 hosting** the static site already lives on. No database, no CMS, no second
 account to manage. If you want to reopen that decision, say so explicitly —
 but going in assuming "WordPress or wherever" restarts a question that two
-review rounds already closed.
+review rounds, plus a seven-model comparison in `AGENT-PLANS.md`, already
+closed.
 
 ---
 
 ## 1. Stand the backend up for real
 
-- [ ] Read `BACKEND-PLAN-v2.md` in full — it's the settled plan, `backend.md`
-      is just the historical record of how it got argued out.
-- [ ] Resolve `BACKEND-PLAN-v2.md` §8 — the two decisions listed there are
-      explicitly yours to make, not something to infer.
-- [ ] Follow `HANDOVER.md` §5a "Setup, once": create `abhyas-pending/` and
-      `abhyas-private/` **above** `public_html`, copy `api/config.sample.php`
-      into `abhyas-private/config.php`, generate the admin password hash via
+- [ ] Read `BACKEND-PLAN-v3.md` in full — it's the settled plan for right
+      now. `BACKEND-PLAN-v2.md` and `backend.md` are the historical record
+      of the public-submission design, which comes back for Phase 4.
+- [ ] The two owner decisions from v2 §8 carry over unchanged — PDF viewer
+      (already resolved: self-hosted PDF.js, see §2 below) and when/whether
+      Phase 4 (public uploads) launches (deferred; admin-only for now).
+- [ ] Create `abhyas-private/` **above** `public_html` (no `abhyas-pending/`
+      needed in this phase), copy `api/config.sample.php` into
+      `abhyas-private/config.php`, generate the admin password hash via
       `api/hash.php` **then delete that file**, uncomment Basic Auth in
       `admin/.htaccess`.
-- [ ] **The PHP has never been executed.** It was written without a PHP
-      runtime available to test against. Run every endpoint on a staging
-      copy before pointing the live site at it — `submit.php` especially,
-      since it's the one that accepts public input.
+- [ ] **The PHP has never been executed.** Run every endpoint
+      (`api/publish.php`'s `login`/`list`/`publish`/`edit`/`delete`) on a
+      staging copy before pointing the live site at it.
 - [ ] Decide the two owner-facing single-points-of-failure in `HANDOVER.md`
       §3 while you're in there: the takedown-contact address hardcoded to a
       roll-number email (§3.1), and the release-vote counter's Apps Script

@@ -9,7 +9,6 @@
  */
 return [
   // Where things live. Adjust to match your hosting account.
-  'pending_dir'  => dirname(__DIR__, 2) . '/abhyas-pending',
   'private_dir'  => dirname(__DIR__, 2) . '/abhyas-private',
   'public_dir'   => dirname(__DIR__),          // public_html
   'files_dir'    => dirname(__DIR__) . '/files',
@@ -21,7 +20,5 @@ return [
   ],
 
   'max_upload_bytes' => 25 * 1024 * 1024,  // 25 MB per file
-  'max_pending'      => 50,                // queue cap — flood guard
-  'submit_cooldown'  => 60,                // seconds between submissions per browser
-  'backup_keep'      => 20,
+  'backup_keep'      => 20,                // how many resources.json snapshots to keep
 ];

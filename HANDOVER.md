@@ -157,19 +157,27 @@ arriving — the leaderboard currently ranks people who do not exist.
 
 ## 5a. The backend
 
-Two small PHP endpoints. Everything else is static.
+One PHP endpoint. Everything else is static. This is the **admin-only
+publishing** shape — see `BACKEND-PLAN-v3.md` for why it's smaller than a
+public-submission backend would need to be, and `AGENT-PLANS.md` for how
+that got decided (seven AI models, independently, same conclusion).
 
 | Path | Job |
 |---|---|
-| `api/submit.php` | public: accepts an upload into quarantine |
-| `api/moderate.php` | authenticated: queue, preview, approve, reject |
+| `api/publish.php` | authenticated: publish, edit, delete a resource |
 | `api/hash.php` | generates a password hash. **Delete after use.** |
 | `api/config.sample.php` | template — copy it OUTSIDE `public_html` |
-| `admin/` | the review console |
+| `admin/` | the console — publish form + manage list |
+
+The old public-submission design (`submit.php`, a quarantine folder, a
+moderation queue) is archived, not deleted, at
+`_local/_archive/phase4-deferred-api/` — it comes back if/when public
+submissions actually launch. See `BACKEND-PLAN-v3.md` §6.
 
 ### Setup, once
 
-1. Create `abhyas-pending/` and `abhyas-private/` **above** `public_html`.
+1. Create `abhyas-private/` **above** `public_html`. (No `abhyas-pending/`
+   in this phase — there's nothing to quarantine.)
 2. Copy `api/config.sample.php` to `abhyas-private/config.php` and edit paths.
 3. Open `api/hash.php`, generate a password hash, paste it into the config,
    then **delete `api/hash.php`**.
@@ -178,18 +186,20 @@ Two small PHP endpoints. Everything else is static.
 
 ### Two rules that are not optional
 
-1. **Unreviewed uploads live outside `public_html`.** Anything under the web
-   root is public the moment it is written — before review. The console
-   previews pending files by streaming them through a session check.
-2. **`admin/` is protected at the server, not just in the page.** The
-   JavaScript that hides the console is convenience, not a security boundary.
+1. **`admin/` is protected at the server, not just in the page.** The
+   JavaScript that hides the console is convenience, not a security boundary
+   — `.htaccess` Basic Auth in front, a PHP session re-checked on every
+   request behind it. Neither layer substitutes for the other.
+2. **Every state-changing request needs a valid CSRF token**, issued at
+   login. A session cookie alone doesn't stop a forged request from
+   another tab — the token is what proves a request actually came from
+   this console.
 
 ### Status
 
 The console UI is built and works against a mock (password `demo`). **The PHP
 has never been executed** — it was written without a PHP runtime available.
-Test every endpoint on a staging copy before pointing the live site at it,
-especially `submit.php`.
+Test every endpoint on a staging copy before pointing the live site at it.
 
 ---
 
