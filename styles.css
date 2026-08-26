@@ -229,17 +229,19 @@ body { background: #EADCC2; padding: 14px; }
   display: flex;
   visibility: hidden;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   position: absolute;
   top: calc(100% + 10px);
   left: 0; right: 0;
   background: var(--surface);
   border: 1px solid var(--hair);
-  /* the folder-corner cut, the site's own signature shape, tucked down
-     to a size that still reads on a compact dropdown */
-  border-radius: 22px 30px 22px 22px;
-  box-shadow: 0 24px 56px -16px rgba(40, 33, 41, .3);
-  padding: 8px;
+  /* Flat radius, not the asymmetric folder-corner — that cut is reserved
+     for actual folder-shaped content (.fc-front, .cg-studio, hero cards),
+     not UI chrome. A dropdown is the same family as a modal, which is
+     flat 28px; this is that value scaled down for a compact menu. */
+  border-radius: 20px;
+  box-shadow: 0 20px 48px -14px rgba(40, 33, 41, .28);
+  padding: 6px;
   opacity: 0;
   transform: translateY(-10px) scale(.97);
   transform-origin: top center;
@@ -254,36 +256,22 @@ body { background: #EADCC2; padding: 14px; }
   pointer-events: auto;
   transition: opacity .2s var(--ease), transform .26s var(--pop), visibility 0s linear 0s;
 }
+/* Same full-pill shape as .top nav a — this is that same control, just
+   stacked instead of side by side, not a different one. The .on state
+   uses --wash-strong rather than nav's --surface: nav's active pill
+   floats on a --wash bar, so --surface reads as "raised"; this dropdown
+   IS --surface already, so the same value would be invisible against its
+   own background. --wash-strong is the site's existing next-tint-down
+   for exactly this situation (see .lbg-u-avatar, .fm-row). */
 .mobile-menu-link {
-  display: flex; align-items: center; gap: 13px;
-  padding: 13px 14px; border-radius: 14px;
+  display: flex; align-items: center;
+  padding: 13px 18px; border-radius: 999px;
   font-family: inherit; font-weight: 600; font-size: .95rem;
   color: var(--ink-soft); text-decoration: none;
   transition: background .16s, color .16s;
 }
-.mobile-menu-link svg { flex-shrink: 0; color: var(--muted); transition: color .16s; }
 .mobile-menu-link:hover { background: var(--wash); color: var(--ink); }
-.mobile-menu-link:hover svg { color: var(--ink); }
-/* Same amber "you are here" treatment .top nav a.on already uses on
-   desktop — carried over so the current page is still marked once it's
-   inside a dropdown instead of a row of links. */
-.mobile-menu-link.on { background: var(--papers-tint); color: var(--papers-ink); }
-.mobile-menu-link.on svg { color: var(--papers-ink); }
-.mobile-menu-divider { height: 1px; background: var(--hair); margin: 5px 10px; }
-/* Contribute keeps its usual dark CTA treatment inside the menu too,
-   instead of blending in as a fourth plain link — it's the one action
-   among three destinations, same as it always stands apart in the header. */
-.mobile-menu-cta {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 14px; border-radius: 14px;
-  font-family: inherit; font-weight: 700; font-size: .95rem;
-  background: var(--ink); color: #fff; text-decoration: none;
-  transition: transform .18s var(--pop), background .2s;
-}
-.mobile-menu-cta:hover { background: #3d3549; }
-.mobile-menu-cta:active { transform: scale(0.97); }
-.mobile-menu-cta.on { background: var(--papers); }
-.mobile-menu-cta.on:hover { background: var(--papers); }
+.mobile-menu-link.on { background: var(--wash-strong); color: var(--ink); }
 
 /* ------------------------------------------------------------
    Hero — pill, two-tone headline, one line, two buttons
