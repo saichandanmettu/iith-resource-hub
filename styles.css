@@ -935,6 +935,13 @@ body { background: #EADCC2; padding: 14px; }
 }
 .fm-tab:hover { color: var(--ink); background: var(--wash); }
 .fm-tab.on { background: var(--ink); color: #fff; }
+/* The "All Files" tab stays neutral ink — it isn't one kind. Each of the
+   other four picks up its own color when selected, so the color story
+   lives on the toggle itself rather than being repeated down every card. */
+.fm-tab.on[data-fmtab="papers"] { background: var(--papers); }
+.fm-tab.on[data-fmtab="notes"] { background: var(--notes); }
+.fm-tab.on[data-fmtab="assignment"] { background: var(--assignment); }
+.fm-tab.on[data-fmtab="reference"] { background: var(--reference); }
 
 .fm-body {
   overflow-y: auto; max-height: 380px; padding-right: 4px; margin: 16px 0;
@@ -942,7 +949,11 @@ body { background: #EADCC2; padding: 14px; }
 }
 .fm-row {
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
-  padding: 14px 18px; border-radius: 18px; background: var(--wash); border: 1px solid var(--hair);
+  padding: 14px 18px; border-radius: 18px;
+  /* A soft wash of the kind's own color instead of a flat neutral —
+     reads as "this card belongs to this kind" without a hard accent bar. */
+  background: color-mix(in srgb, var(--k, var(--wash)) 12%, var(--wash));
+  border: 1px solid var(--hair);
   transition: transform .18s var(--ease), border-color .2s, background .2s, box-shadow .2s;
 }
 .fm-row:hover {
@@ -950,12 +961,10 @@ body { background: #EADCC2; padding: 14px; }
   transform: translateY(-2px); box-shadow: 0 6px 16px -4px rgba(70, 50, 20, .08);
 }
 /* Each row carries its kind (.k-papers/.k-notes/.k-assignment/.k-reference,
-   already defined site-wide with --k/--k-tint/--k-ink) so the left edge
-   and the year chip can pick up the same amber/olive/terracotta/mauve
-   family used everywhere else, instead of introducing new colors. */
-.fm-row {
-  border-left: 4px solid var(--k, transparent);
-}
+   already defined site-wide with --k/--k-tint/--k-ink) so the row's own
+   background wash and the year chip can pick up the same amber/olive/
+   terracotta/mauve family used everywhere else, instead of introducing
+   new colors. */
 .fm-row-left { display: flex; align-items: flex-start; gap: 14px; min-width: 0; }
 .fm-type-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
 .fm-info { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
