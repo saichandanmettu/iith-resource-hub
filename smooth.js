@@ -79,6 +79,39 @@
     updateHeader();
   }
 
+  /* 2b. Mobile Menu Toggle — the hamburger that replaces .top nav below
+     720px. See the ".mobile-menu" rules in styles.css for why this exists
+     at all: nav just vanished on phones with nothing standing in for it. */
+  const menuToggle = document.getElementById("menuToggle");
+  const mobileMenu = document.getElementById("mobileMenu");
+  if (menuToggle && mobileMenu) {
+    const closeMenu = () => {
+      menuToggle.setAttribute("aria-expanded", "false");
+      mobileMenu.classList.remove("open");
+    };
+    const openMenu = () => {
+      menuToggle.setAttribute("aria-expanded", "true");
+      mobileMenu.classList.add("open");
+    };
+    menuToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      mobileMenu.classList.contains("open") ? closeMenu() : openMenu();
+    });
+    document.addEventListener("click", (e) => {
+      if (!mobileMenu.classList.contains("open")) return;
+      if (mobileMenu.contains(e.target) || menuToggle.contains(e.target)) return;
+      closeMenu();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+    // A tablet rotated from portrait to landscape (or a resized window)
+    // can cross back over the desktop breakpoint with the menu still open.
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 720) closeMenu();
+    });
+  }
+
   /* 3. Smooth Hero & Header Reveal Observer (No DOM Text Splitting) */
   document.addEventListener("DOMContentLoaded", () => {
     const heroes = document.querySelectorAll(".hero, .faq-intro, .reveal-header");
