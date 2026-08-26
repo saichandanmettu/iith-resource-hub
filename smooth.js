@@ -79,12 +79,48 @@
     updateHeader();
   }
 
-  /* 3. Smooth Hero & Header Reveal Observer (No DOM Text Splitting) */
+  /* 3. Smooth Hero & Kinetic Word-by-Word Reveal */
   document.addEventListener("DOMContentLoaded", () => {
     const heroes = document.querySelectorAll(".hero, .faq-intro, .reveal-header");
+    
+    // Auto-prepare kinetic word spans if not already pre-wrapped in HTML
+    heroes.forEach((hero) => {
+      const h1 = hero.querySelector("h1, h2");
+      if (h1 && !h1.querySelector(".h-word")) {
+        let wordIndex = 0;
+        const processNode = (node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent;
+            if (!text.trim()) return;
+            const words = text.split(/(\s+)/);
+            const frag = document.createDocumentFragment();
+            words.forEach((chunk) => {
+              if (!chunk) return;
+              if (/^\s+$/.test(chunk)) {
+                frag.appendChild(document.createTextNode(chunk));
+              } else {
+                const span = document.createElement("span");
+                span.className = "h-word";
+                span.style.setProperty("--w", wordIndex++);
+                span.textContent = chunk;
+                frag.appendChild(span);
+              }
+            });
+            node.parentNode.replaceChild(frag, node);
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            if (node.tagName.toLowerCase() === "svg" || node.classList.contains("no-split")) {
+              return;
+            }
+            Array.from(node.childNodes).forEach(processNode);
+          }
+        };
+        Array.from(h1.childNodes).forEach(processNode);
+      }
+    });
+
     if (!isReduced && heroes.length) {
-      // Trigger visible hero elements immediately on load for silky entrance
-      requestAnimationFrame(() => {
+      // Micro-tick delay allows initial blur & translateY state to register before .in transition kicks off
+      setTimeout(() => {
         heroes.forEach((el) => {
           const rect = el.getBoundingClientRect();
           if (rect.top < window.innerHeight && rect.bottom > 0) {
@@ -93,7 +129,7 @@
             if (h1) h1.classList.add("in");
           }
         });
-      });
+      }, 40);
 
       if ("IntersectionObserver" in window) {
         const obs = new IntersectionObserver(
