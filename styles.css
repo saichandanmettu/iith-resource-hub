@@ -234,22 +234,25 @@ body { background: #EADCC2; padding: 14px; }
   border-radius: 2px;
   transition: transform 0.28s var(--ease), opacity 0.2s var(--ease), width 0.2s var(--ease);
 }
-/* Morph to "X" close icon */
-.menu-toggle.is-open {
+/* Morph to "X" close icon.
+   Driven by body[data-menu-open], not a class on this element — see the
+   comment on .mobile-menu below for why: one flag, one place it's set,
+   nothing to fall out of sync. */
+body[data-menu-open="true"] .menu-toggle {
   background: var(--ink);
   border-color: var(--ink);
 }
-.menu-toggle.is-open span {
+body[data-menu-open="true"] .menu-toggle span {
   background: #fff;
 }
-.menu-toggle.is-open span:nth-child(1) {
+body[data-menu-open="true"] .menu-toggle span:nth-child(1) {
   transform: translateY(6.5px) rotate(45deg);
 }
-.menu-toggle.is-open span:nth-child(2) {
+body[data-menu-open="true"] .menu-toggle span:nth-child(2) {
   opacity: 0;
   transform: scaleX(0);
 }
-.menu-toggle.is-open span:nth-child(3) {
+body[data-menu-open="true"] .menu-toggle span:nth-child(3) {
   transform: translateY(-6.5px) rotate(-45deg);
 }
 
@@ -276,7 +279,18 @@ body { background: #EADCC2; padding: 14px; }
   transition: opacity 0.28s var(--ease), transform 0.32s var(--ease), visibility 0.28s;
   pointer-events: none;
 }
-.mobile-menu.is-open {
+/* Single source of truth: one attribute, set once, in one place — the
+   same mechanic iith-athletics' nav uses (.nav[data-open="true"] driving
+   everything via CSS). Abhyas previously toggled three separate classes
+   on three separate elements (menu-toggle, mobile-menu, mobile-backdrop)
+   from JS — three DOM writes that could desync if any one silently
+   failed (e.g. a null element skipped by an `if` guard), instead of one
+   flag every rule reads from. .mobile-menu can't use this same selector
+   directly relative to a data-attribute on <header> because it was
+   deliberately moved to be a <body>-level sibling of .shell (see the
+   earlier fix for why) — so the flag lives on <body> itself, the nearest
+   common ancestor of the toggle, the menu, and the backdrop. */
+body[data-menu-open="true"] .mobile-menu {
   opacity: 1;
   visibility: visible;
   transform: translateY(0) scale(1);
@@ -405,7 +419,7 @@ body { background: #EADCC2; padding: 14px; }
   visibility: hidden;
   transition: opacity 0.28s var(--ease), visibility 0.28s;
 }
-.mobile-backdrop.is-open {
+body[data-menu-open="true"] .mobile-backdrop {
   opacity: 1;
   visibility: visible;
 }

@@ -23,7 +23,7 @@
          because the event never reaches the browser's native scroll
          handling for that element. Excluding anything inside .modal fixes
          it regardless of Lenis's running state. */
-      prevent: (node) => !!(node.closest?.(".modal") || node.closest?.(".mobile-menu")),
+      prevent: (node) => !!(node.closest?.(".modal") || node.closest?.(".mobile-menu") || node.closest?.(".mobile-backdrop")),
     });
     window.__lenis = lenis;
 
@@ -124,57 +124,64 @@
         if (h1) h1.classList.add("in");
       });
     }
+  });
 
-    /* 4. Mobile Navigation Menu Controller (Option A) */
+  /* 4. Mobile Navigation Menu Controller
+     Its own top-level listener, not nested inside the hero-reveal one
+     above — that coupling meant an edit to unrelated hero logic could
+     silently take the menu down with it.
+
+     One flag, one place it's written: body[data-menu-open]. Compare to
+     iith-athletics' nav[data-open], which drives its whole dropdown the
+     same way — a single attribute CSS reads everywhere, instead of three
+     separately-toggled classes on three separate elements (the toggle
+     button, the menu, the backdrop) that have to all agree with each
+     other. Three independent writes are three chances to end up out of
+     sync — the toggle icon can visually flip to "X" while the panel
+     underneath never got its class, or vice versa, if any one of the
+     three DOM writes is skipped (a null check that fails quietly, a
+     script that throws partway through). One write can't disagree with
+     itself. */
+  document.addEventListener("DOMContentLoaded", () => {
     const menuToggle = document.getElementById("menuToggle");
     const mobileMenu = document.getElementById("mobileMenu");
     const mobileBackdrop = document.getElementById("mobileBackdrop");
+    if (!menuToggle || !mobileMenu) return;
 
-    if (menuToggle && mobileMenu) {
-      const setMobileMenu = (open) => {
-        menuToggle.classList.toggle("is-open", open);
-        menuToggle.setAttribute("aria-expanded", String(open));
-        mobileMenu.classList.toggle("is-open", open);
-        mobileMenu.setAttribute("aria-hidden", String(!open));
-        if (mobileBackdrop) {
-          mobileBackdrop.classList.toggle("is-open", open);
-        }
-        if (open) {
-          if (typeof window.__pauseLenis === "function") window.__pauseLenis();
-        } else {
-          if (typeof window.__resumeLenis === "function") window.__resumeLenis();
-        }
-      };
+    const isMenuOpen = () => document.body.getAttribute("data-menu-open") === "true";
 
-      menuToggle.addEventListener("click", () => {
-        const isOpen = menuToggle.classList.contains("is-open");
-        setMobileMenu(!isOpen);
-      });
-
-      if (mobileBackdrop) {
-        mobileBackdrop.addEventListener("click", () => setMobileMenu(false));
+    const setMobileMenu = (open) => {
+      document.body.setAttribute("data-menu-open", open ? "true" : "false");
+      menuToggle.setAttribute("aria-expanded", String(open));
+      mobileMenu.setAttribute("aria-hidden", String(!open));
+      if (open) {
+        if (typeof window.__pauseLenis === "function") window.__pauseLenis();
+      } else {
+        if (typeof window.__resumeLenis === "function") window.__resumeLenis();
       }
+    };
 
-      mobileMenu.querySelectorAll("a").forEach((a) => {
-        a.addEventListener("click", () => setMobileMenu(false));
-      });
+    menuToggle.addEventListener("click", () => setMobileMenu(!isMenuOpen()));
 
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && menuToggle.classList.contains("is-open")) {
-          setMobileMenu(false);
-        }
-      });
-
-      // Auto close on resize to desktop (> 720px)
-      window.addEventListener(
-        "resize",
-        () => {
-          if (window.innerWidth > 720 && menuToggle.classList.contains("is-open")) {
-            setMobileMenu(false);
-          }
-        },
-        { passive: true }
-      );
+    if (mobileBackdrop) {
+      mobileBackdrop.addEventListener("click", () => setMobileMenu(false));
     }
+
+    mobileMenu.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", () => setMobileMenu(false));
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && isMenuOpen()) setMobileMenu(false);
+    });
+
+    // Auto close on resize to desktop (> 720px) — e.g. rotating a tablet.
+    window.addEventListener(
+      "resize",
+      () => {
+        if (window.innerWidth > 720 && isMenuOpen()) setMobileMenu(false);
+      },
+      { passive: true }
+    );
   });
 })();
