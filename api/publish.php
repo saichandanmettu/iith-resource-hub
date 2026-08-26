@@ -1,14 +1,17 @@
 <?php
 /**
- * Abhyas — admin publishing API.
+ * Abhyas — admin publishing + moderation API.
  *
- * Everything except `login` requires a signed-in session AND a matching
- * CSRF token, re-checked on every single request. There is no anonymous
- * intake here and no moderation queue — the person calling this endpoint
- * IS the person who gets to decide what's on the archive, so "submit" and
- * "publish" are the same action. See BACKEND-PLAN-v3.md for why this is
- * deliberately smaller than a public-facing intake pipeline would need to
- * be, and what gets added back if/when one is ever built.
+ * Everything except `login` requires a signed-in session; every
+ * state-changing action also needs a matching CSRF token. Two ways a
+ * resource reaches `resources.json`:
+ *   - `publish`: the admin uploads and files something directly (no
+ *     review needed — they ARE the reviewer of their own upload).
+ *   - `approve`: a public submission (api/submit.php) sat in
+ *     abhyas-pending/ until an admin checked it and approved it.
+ * Both end up sharing the same record-building logic (build_record()
+ * below) and the same destination-naming logic (dest_for()) — the only
+ * difference is where the PDF comes from before that point.
  */
 declare(strict_types=1);
 require __DIR__ . '/lib.php';
@@ -59,30 +62,57 @@ if ($action === 'me') {
 $admin = require_admin();
 
 /* ---------------- list ---------------- */
-/* Read-only — CSRF tokens protect state-changing requests, not "show
-   me the data." Checking it here was the bug: admin.js never sends a
-   token on this call (correctly, since GETs shouldn't need one), so
-   every list refresh was silently failing with a 403 that nothing
-   displayed — including right after a successful publish, which is
-   why the dashboard looked frozen at zero even when the write worked. */
+/* Read-only — CSRF tokens protect state-changing requests, not "show me
+   the data." (This exact mistake broke the dashboard once already:
+   every list refresh silently 403'd because admin.js never sends a
+   token on a GET, correctly, since it shouldn't need one.) */
 if ($action === 'list') {
-  $all = read_json($c['private_dir'] . '/resources.json', []);
+  $all    = read_json($c['private_dir'] . '/resources.json', []);
   $people = read_json($c['private_dir'] . '/contributors.json', []);
+
+  $pending = [];
+  foreach (glob($c['pending_dir'] . '/*.json') ?: [] as $p) {
+    $r = read_json($p, []);
+    if ($r) { $r['sizeLabel'] = human_size((int) ($r['size'] ?? 0)); $pending[] = $r; }
+  }
+  usort($pending, fn($a, $b) => strcmp($b['submitted'] ?? '', $a['submitted'] ?? ''));
+
   ok([
     'items'        => $all,
+    'pending'      => $pending,
     'contributors' => $people,   // {id: {name, roll}} — console resolves ids to names itself
     'counts' => [
       'published'    => count(array_filter($all, fn($r) => ($r['status'] ?? 'published') === 'published')),
       'contributors' => count($people),
-      // Always 0 until Phase 4 (public submissions) exists — see
-      // BACKEND-PLAN-v3.md §6. Counted for real the moment any record
-      // ever carries "status": "pending", no code change needed here.
-      'pending'      => count(array_filter($all, fn($r) => ($r['status'] ?? '') === 'pending')),
+      'pending'      => count($pending),
     ],
   ]);
 }
 
-/* ---------------- publish (new file) ---------------- */
+/* ---------------- preview a pending submission ----------------
+   Also read-only, also no CSRF needed. Pending files are not on the
+   public web at all (see api/submit.php) — this authenticated stream
+   is the only way to see one before deciding on it. safe_id() runs
+   BEFORE the id touches the filesystem; that's the path-traversal
+   guard, same as everywhere else this pattern is used. */
+if ($action === 'preview_pending') {
+  $id   = safe_id((string) ($_GET['id'] ?? ''));
+  $path = $c['pending_dir'] . '/' . $id . '.pdf';
+  if (!is_file($path)) fail(404, 'Not found');
+  header('Content-Type: application/pdf');
+  header('X-Content-Type-Options: nosniff');
+  header('Content-Length: ' . (string) filesize($path));
+  readfile($path);
+  exit;
+}
+
+/* Every action below this line changes something and needs a valid
+   CSRF token — a session cookie alone doesn't stop a forged request
+   from another tab riding the same session. `publish` carries its
+   token in the multipart body instead of JSON, so it checks its own. */
+if (!$isMultipart) require_csrf($body['csrf'] ?? null);
+
+/* ---------------- publish (admin's own upload, no review needed) ---------------- */
 if ($action === 'publish') {
   require_csrf($_POST['csrf'] ?? null);
 
@@ -91,73 +121,24 @@ if ($action === 'publish') {
   if ($f['size'] <= 0 || $f['size'] > $c['max_upload_bytes']) fail(413, 'That file is too large.');
   if (!is_uploaded_file($f['tmp_name']) || !looks_like_pdf($f['tmp_name'])) fail(415, 'Only PDF files can be accepted.');
 
-  $code = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) ($body['code'] ?? '')));
-  $dept = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($body['department'] ?? '')));
-  $course = trim((string) ($body['course'] ?? ''));
-  if ($code === '' || $dept === '' || $course === '') fail(400, 'Course code, branch and course name are required.');
-
-  $type = in_array($body['type'] ?? '', ['papers', 'notes', 'assignment', 'reference'], true) ? $body['type'] : 'papers';
-  $exam = slugify((string) ($body['examType'] ?? '')) ?: slugify($type);
-  $year = (int) ($body['year'] ?? 0) ?: (int) date('Y');
-
+  $fields = parsed_fields($body);
   $sha256 = hash_file('sha256', $f['tmp_name']);
+
   $existing = read_json($c['private_dir'] . '/resources.json', []);
-  $duplicateOf = null;
-  foreach ($existing as $r) {
-    if (!empty($r['sha256']) && $r['sha256'] === $sha256) { $duplicateOf = $r['file'] ?? ($r['id'] ?? null); break; }
-  }
+  $duplicateOf = find_duplicate($existing, $sha256);
   // Non-blocking: tell the admin, let them decide. They are the moderator
   // AND the uploader here, so a hard block would just be in their own way.
   if ($duplicateOf !== null && empty($body['force'])) {
     fail(409, "This looks byte-for-byte identical to an existing file ($duplicateOf). Resubmit with confirmation to publish anyway.");
   }
 
-  // Stored name is generated from approved metadata, never the uploader's
-  // filename — this is also the entire duplicate/collision defence for the
-  // common case (same course+year+type uploaded twice by mistake).
-  $rel  = "$dept/$code/" . strtolower($code) . "-$exam-$year.pdf";
+  $rel  = dest_for($c, $fields);
   $dest = $c['files_dir'] . '/' . $rel;
   if (!is_dir(dirname($dest))) @mkdir(dirname($dest), 0755, true);
-  $n = 2;
-  while (is_file($dest)) {                       // never silently overwrite
-    $rel  = "$dept/$code/" . strtolower($code) . "-$exam-$year-$n.pdf";
-    $dest = $c['files_dir'] . '/' . $rel;
-    $n++;
-  }
   if (!move_uploaded_file($f['tmp_name'], $dest)) fail(500, 'Could not store the file.');
   @chmod($dest, 0644);
 
-  $record = [
-    'id'          => strtolower($code) . '-' . $year . '-' . $exam,
-    'title'       => $course . ' — ' . ucfirst($exam),
-    'code'        => $code,
-    'course'      => $course,
-    'department'  => $dept,
-    'type'        => $type,
-    'examType'    => (string) ($body['examType'] ?? ''),
-    'professor'   => (string) ($body['professor'] ?? '') ?: '—',
-    'year'        => $year,
-    'file'        => $rel,
-    'sha256'      => $sha256,
-    'contributor' => null,
-    'added'       => date('Y-m-d'),
-    'approvedBy'  => $admin,          // audit trail, for free
-    // A field that costs nothing today and saves a schema migration the
-    // day a moderation queue is ever reintroduced (BACKEND-PLAN-v3.md §6):
-    // that queue becomes "filter resources.json by status", not a rewrite.
-    'status'      => 'published',
-  ];
-
-  if ($record['type'] === 'reference') {
-    $record['book'] = [
-      'author'    => (string) ($body['bookAuthor'] ?? ''),
-      'publisher' => (string) ($body['bookPublisher'] ?? ''),
-      'cover'     => (string) ($body['bookCover'] ?? 'ink'),
-      'gist'      => (string) ($body['bookGist'] ?? ''),
-    ];
-    if ($record['book']['author'] === '') fail(400, 'A reference book needs an author.');
-  }
-
+  $record = build_record($fields, $admin, $rel, $sha256, $body);
   $record['contributor'] = match_or_create_contributor($c, (string) ($body['contributor'] ?? ''), (string) ($body['roll'] ?? ''));
 
   $rpath = $c['private_dir'] . '/resources.json';
@@ -167,9 +148,61 @@ if ($action === 'publish') {
   ok(['id' => $record['id'], 'file' => $rel]);
 }
 
+/* ---------------- approve (a public submission, reviewed and confirmed) ---------------- */
+if ($action === 'approve') {
+  $id  = safe_id((string) ($body['id'] ?? ''));
+  $src = $c['pending_dir'] . '/' . $id . '.pdf';
+  if (!is_file($src)) fail(404, 'That submission is gone');
+  $sub = read_json($c['pending_dir'] . '/' . $id . '.json', []);
+
+  $fields = parsed_fields($body);
+  $sha256 = (string) ($sub['sha256'] ?? hash_file('sha256', $src));
+
+  $existing = read_json($c['private_dir'] . '/resources.json', []);
+  $duplicateOf = find_duplicate($existing, $sha256);
+  if ($duplicateOf !== null && empty($body['force'])) {
+    fail(409, "This looks byte-for-byte identical to an existing file ($duplicateOf). Approve again to confirm anyway.");
+  }
+
+  $rel  = dest_for($c, $fields);
+  $dest = $c['files_dir'] . '/' . $rel;
+  if (!is_dir(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+  if (!rename($src, $dest)) fail(500, 'Could not move the file');
+  @chmod($dest, 0644);
+
+  $record = build_record($fields, $admin, $rel, $sha256, $body);
+  $record['contributor'] = match_or_create_contributor($c, (string) ($body['contributor'] ?? ''), (string) ($body['roll'] ?? ''));
+
+  $rpath = $c['private_dir'] . '/resources.json';
+  $existing[] = $record;
+  write_json_atomic($rpath, $existing);
+
+  @unlink($c['pending_dir'] . '/' . $id . '.json');
+  ok(['id' => $record['id'], 'file' => $rel]);
+}
+
+/* ---------------- reject a public submission ---------------- */
+if ($action === 'reject') {
+  $id  = safe_id((string) ($body['id'] ?? ''));
+  $dir = $c['private_dir'] . '/rejected';
+  if (!is_dir($dir)) @mkdir($dir, 0700, true);
+
+  // Keep the file and its metadata + reason together — this is the whole
+  // audit trail for "why did this not go up", and it costs nothing extra
+  // to write, same principle as approvedBy/added on a published record.
+  $sub = read_json($c['pending_dir'] . '/' . $id . '.json', []);
+  $sub['rejectedBy']     = $admin;
+  $sub['rejectedAt']     = date('c');
+  $sub['rejectionReason'] = mb_substr((string) ($body['reason'] ?? ''), 0, 300);
+  file_put_contents($dir . '/' . $id . '.json', json_encode($sub, JSON_PRETTY_PRINT));
+
+  @rename($c['pending_dir'] . '/' . $id . '.pdf', $dir . '/' . $id . '.pdf');
+  @unlink($c['pending_dir'] . '/' . $id . '.json');
+  ok(['id' => $id]);
+}
+
 /* ---------------- edit (metadata on an already-published resource) ---------------- */
 if ($action === 'edit') {
-  require_csrf($body['csrf'] ?? null);
   $id = (string) ($body['id'] ?? '');
   if ($id === '') fail(400, 'Missing id');
 
@@ -204,7 +237,6 @@ if ($action === 'edit') {
 
 /* ---------------- delete ---------------- */
 if ($action === 'delete') {
-  require_csrf($body['csrf'] ?? null);
   // Soft-remove from the index only. The PDF stays on disk — HANDOVER.md
   // §4 is explicit that the uploaded files are the one thing on this
   // project with no other copy anywhere, so a web action never deletes
@@ -227,7 +259,84 @@ if ($action === 'delete') {
 
 fail(400, 'Unknown action');
 
-/* ---------------- helpers ---------------- */
+/* ================= helpers ================= */
+
+/**
+ * The metadata every published record needs, validated once, shared by
+ * both `publish` and `approve` — this is the exact set of fields the
+ * admin form always sends, whether the file came from a fresh upload
+ * or a reviewed submission.
+ */
+function parsed_fields(array $body): array {
+  $code   = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) ($body['code'] ?? '')));
+  $dept   = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($body['department'] ?? '')));
+  $course = trim((string) ($body['course'] ?? ''));
+  if ($code === '' || $dept === '' || $course === '') fail(400, 'Course code, branch and course name are required.');
+
+  $type = in_array($body['type'] ?? '', ['papers', 'notes', 'assignment', 'reference'], true) ? $body['type'] : 'papers';
+  $exam = slugify((string) ($body['examType'] ?? '')) ?: slugify($type);
+  $year = (int) ($body['year'] ?? 0) ?: (int) date('Y');
+
+  return compact('code', 'dept', 'course', 'type', 'exam', 'year');
+}
+
+/**
+ * Generated filename, never the uploader's own — collision-safe by
+ * construction (never silently overwrites; adds -2, -3, ... instead),
+ * which is also the entire duplicate defence for "same course+year+
+ * type filed twice."
+ */
+function dest_for(array $c, array $fields): string {
+  ['code' => $code, 'dept' => $dept, 'exam' => $exam, 'year' => $year] = $fields;
+  $rel = "$dept/$code/" . strtolower($code) . "-$exam-$year.pdf";
+  $n = 2;
+  while (is_file($c['files_dir'] . '/' . $rel)) {
+    $rel = "$dept/$code/" . strtolower($code) . "-$exam-$year-$n.pdf";
+    $n++;
+  }
+  return $rel;
+}
+
+function find_duplicate(array $existing, string $sha256): ?string {
+  foreach ($existing as $r) {
+    if (!empty($r['sha256']) && $r['sha256'] === $sha256) return $r['file'] ?? ($r['id'] ?? 'an existing file');
+  }
+  return null;
+}
+
+function build_record(array $fields, string $admin, string $rel, string $sha256, array $body): array {
+  ['code' => $code, 'dept' => $dept, 'course' => $course, 'type' => $type, 'exam' => $exam, 'year' => $year] = $fields;
+
+  $record = [
+    'id'          => strtolower($code) . '-' . $year . '-' . $exam,
+    'title'       => $course . ' — ' . ucfirst($exam),
+    'code'        => $code,
+    'course'      => $course,
+    'department'  => $dept,
+    'type'        => $type,
+    'examType'    => (string) ($body['examType'] ?? ''),
+    'professor'   => (string) ($body['professor'] ?? '') ?: '—',
+    'year'        => $year,
+    'file'        => $rel,
+    'sha256'      => $sha256,
+    'contributor' => null,          // set by the caller after this returns
+    'added'       => date('Y-m-d'),
+    'approvedBy'  => $admin,        // audit trail, for free
+    'status'      => 'published',
+  ];
+
+  if ($type === 'reference') {
+    $record['book'] = [
+      'author'    => (string) ($body['bookAuthor'] ?? ''),
+      'publisher' => (string) ($body['bookPublisher'] ?? ''),
+      'cover'     => (string) ($body['bookCover'] ?? 'ink'),
+      'gist'      => (string) ($body['bookGist'] ?? ''),
+    ];
+    if ($record['book']['author'] === '') fail(400, 'A reference book needs an author.');
+  }
+
+  return $record;
+}
 
 /**
  * Contributors are a registry: match an existing person before inventing a

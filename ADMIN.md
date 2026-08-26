@@ -5,7 +5,7 @@ Short, task-oriented. For *why* things are built this way, see
 
 ---
 
-## Publish a resource
+## Publish a resource yourself
 
 1. Go to `/admin/`, sign in.
 2. Click **Add resource**, pick the PDF — a preview appears before you
@@ -16,6 +16,25 @@ Short, task-oriented. For *why* things are built this way, see
 4. Click **Publish**. If the file looks identical to one already in the
    archive, you'll be told which one and asked to confirm before it goes
    through anyway — it's a heads-up, not a block.
+
+## Review a public submission
+
+Students submit through the Contribute page; nothing they send goes live
+until you approve it.
+
+1. The **Pending** tab shows a count and a card per waiting submission —
+   original filename, size, whatever they typed for course/contributor.
+2. Click **Review** — the PDF streams in from quarantine (never public
+   until approved), with their typed fields pre-filled and editable.
+   Correct anything they got wrong before approving; nothing is trusted
+   from the form beyond being a suggestion.
+3. A "possible duplicate" flag means this looks byte-for-byte identical
+   to something already in the archive or already waiting — check before
+   you approve anyway.
+4. **Approve & publish** files it exactly like a direct upload.
+   **Reject** asks for an optional reason (kept for your own records,
+   never shown to the student) and moves the file to a private rejected
+   folder — nothing is deleted outright.
 
 ## Edit or remove something already published
 

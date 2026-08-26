@@ -54,6 +54,11 @@
     <div class="ad-stat"><b id="sPending">0</b><span>Pending review</span></div>
   </div>
 
+  <div class="ad-tabs" id="tabs" role="group" aria-label="Queue filter">
+    <button class="ad-tab on" type="button" data-tab="pending">Pending <i id="cPending">0</i></button>
+    <button class="ad-tab" type="button" data-tab="published">Published <i id="cPublished">0</i></button>
+  </div>
+
   <div class="ad-toolbar">
     <input class="ad-search" type="search" id="search" placeholder="Search by title, code, or contributor&hellip;">
     <button class="ad-review-btn" type="button" id="btnAdd">+ Add resource</button>
@@ -82,6 +87,7 @@
 
       <div class="ad-side-body">
         <p class="ad-warn" id="dupeWarn" hidden></p>
+        <p class="ad-hint" id="submissionInfo" hidden></p>
 
         <label class="ad-field" id="fileField">
           <span>PDF file</span>
@@ -169,6 +175,7 @@
 
       <div class="ad-side-foot">
         <button class="ad-reject" type="button" id="btnDelete" hidden>Delete</button>
+        <button class="ad-reject" type="button" id="btnReject" hidden>Reject</button>
         <button class="ad-approve" type="button" id="btnSave">Publish</button>
       </div>
     </div>
@@ -177,6 +184,6 @@
 </div>
 
 <script src="../data.js?v=12"></script>
-<script src="admin.js?v=11"></script>
+<script src="admin.js?v=12"></script>
 </body>
 </html>

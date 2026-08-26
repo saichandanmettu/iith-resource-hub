@@ -109,17 +109,30 @@ fill in course/branch/year/type, click Publish, it's live.
 
 No `abhyas-pending/`. It didn't exist in this phase and doesn't need to.
 
-## 6. When Phase 4 (public submissions) actually happens
+## 6. Phase 4 (public submissions) — built, 2026-08-27
 
-Bring back `_local/_archive/phase4-deferred-api/submit.php` and the
-queue half of the old `moderate.php`, updated against `"status"` instead
-of a separate pending directory: a public submission gets written with
-`"status": "pending"` (into a real quarantine location, per v2 §8.1's
-already-settled reasoning) instead of `"published"`, and the console's
-`list` action becomes a filter over that field. Everything built in v3 —
-`publish`/`edit`/`delete`, CSRF, atomic writes, the schema — stays exactly
-as it is; Phase 4 is additive, not a rewrite. That's the entire point of
-adding `status` now instead of later.
+Landed additively, exactly as this section originally predicted: nothing
+in v3's `publish`/`edit`/`delete`, CSRF, or atomic writes changed shape.
+
+- `api/submit.php` — public, unauthenticated, the only thing that writes
+  into `abhyas-pending/` (a sibling of `abhyas-private/`, per v2 §8.1's
+  already-settled quarantine reasoning — never inside `public_html`).
+  Same guards v2 always specified: magic-byte PDF check, generated
+  filename, queue cap (`max_pending`), per-browser cooldown
+  (`submit_cooldown`, 60s — not per-IP, campus NAT), duplicate check
+  spanning both the live index and the pending queue.
+- `api/publish.php` gained `preview_pending` (authenticated stream of a
+  pending PDF, `safe_id()`-guarded, same pattern as everywhere else),
+  `approve`, and `reject`. `approve` shares `build_record()`/`dest_for()`
+  with `publish` — the only difference is whether the PDF comes from a
+  fresh upload or a reviewed submission.
+- The admin console's Add/Edit dialog gained a third mode, Review, and a
+  Pending/Published tab switcher. One dialog, three modes — no separate
+  UI built for review.
+- Pending metadata is deliberately **not** merged into `resources.json`
+  — that file is served to every visitor by `api/data.php`; an unapproved
+  submission has no business being reachable there before a human signs
+  off on it, and physical separation means there's no filter to forget.
 
 ## 7. Still open — same two owner calls as before
 

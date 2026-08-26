@@ -21,6 +21,13 @@ return [
   // are the one thing on this project with no other copy anywhere
   // (HANDOVER.md §4), and public_html gets reset on every deploy.
   'files_dir'    => __DIR__ . '/files',
+  // Public, unauthenticated submissions (api/submit.php) land here —
+  // a sibling of abhyas-private, NOT nested inside it, matching
+  // BACKEND-PLAN-v2.md's original layout. Never web-reachable; the
+  // admin console previews a pending file through an authenticated
+  // PHP stream (api/publish.php?action=preview_pending), never a
+  // direct link.
+  'pending_dir'  => dirname(__DIR__) . '/abhyas-pending',
 
   // Admins. Generate a hash with api/hash.php, paste it here, delete that file.
   // At least two people should have an account (see HANDOVER.md).
@@ -30,4 +37,6 @@ return [
 
   'max_upload_bytes' => 25 * 1024 * 1024,  // 25 MB per file
   'backup_keep'      => 20,
+  'max_pending'      => 50,  // queue cap — flood guard
+  'submit_cooldown'  => 60,  // seconds between submissions, per browser
 ];

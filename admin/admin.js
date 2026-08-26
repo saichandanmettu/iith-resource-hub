@@ -1,17 +1,16 @@
 /* ------------------------------------------------------------
    Abhyas — admin console
 
-   Direct publishing, not moderation: the person signed in here IS the
-   person deciding what goes on the archive, so there's no queue, no
-   approve/reject, no separate "pending" pile. Publish a resource, or
-   edit/delete one already live. See BACKEND-PLAN-v3.md for why this is
-   deliberately smaller than a public-submission review console would
-   need to be.
+   Two ways a resource goes live: the admin publishes something
+   directly (Add resource — no review needed, they ARE the reviewer of
+   their own upload), or a public submission from contribute.html sits
+   in the Pending tab until an admin reviews and approves it. One
+   dialog serves all three actions (Add / Edit / Review) — see
+   setFooterButtons() below for how it tells them apart.
 
-   Every server call goes through api() below. Right now it is answered
-   by a MOCK so the console can be judged before any PHP exists. Flip
-   USE_MOCK to false once api/publish.php is deployed; no other line in
-   this file changes.
+   Every server call goes through api(). USE_MOCK lets the console be
+   judged with fake data before any PHP exists or is reachable; flip it
+   to test against api/publish.php for real.
    ------------------------------------------------------------ */
 (function () {
   "use strict";
@@ -44,7 +43,7 @@
     })
     .catch(() => { COURSE_CATALOG = {}; });
 
-  let state = { items: [], contributors: {}, current: null, csrf: null, filter: "" };
+  let state = { items: [], pending: [], contributors: {}, current: null, mode: "add", tab: "pending", csrf: null, filter: "" };
 
   function contributorName(id) {
     if (!id) return "no credit";
@@ -148,27 +147,58 @@
       return;
     }
     state.items = data.items || [];
+    state.pending = data.pending || [];
     state.contributors = data.contributors || {};
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     set("sPublished", data.counts.published);
     set("sContrib", data.counts.contributors ?? 0);
-    /* Always 0 until public submissions exist (BACKEND-PLAN-v3.md §6) —
-       shown now, not wired later, so the day a real review queue lands
-       this is a filter on existing UI, not a new stat to design. */
     set("sPending", data.counts.pending ?? 0);
+    set("cPending", data.counts.pending ?? 0);
+    set("cPublished", data.counts.published);
     renderList();
   }
 
   function renderList() {
     const host = document.getElementById("queue");
     const q = state.filter.trim().toLowerCase();
-    const rows = state.items.filter((i) => !q ||
-      [i.title, i.course, i.code, contributorName(i.contributor)].some((f) => String(f || "").toLowerCase().includes(q)));
+    const onPending = state.tab === "pending";
+    const source = onPending ? state.pending : state.items;
+    const rows = source.filter((i) => !q ||
+      [i.title, i.course, i.code, i.filename, contributorName(i.contributor)].some((f) => String(f || "").toLowerCase().includes(q)));
 
     if (!rows.length) {
-      host.innerHTML = `<div class="ad-empty"><b>${state.items.length ? "No matches" : "Nothing here yet"}</b><span>${state.items.length ? "Try a different search." : "Click “Add resource” to publish the first file."}</span></div>`;
+      const empty = onPending ? "Nothing waiting for review" : "Nothing here yet";
+      const sub = source.length ? "Try a different search." : (onPending
+        ? "Submissions from the Contribute page will show up here."
+        : "Click “Add resource” to publish the first file.");
+      host.innerHTML = `<div class="ad-empty"><b>${source.length ? "No matches" : empty}</b><span>${sub}</span></div>`;
       return;
     }
+
+    if (onPending) {
+      host.innerHTML = rows.map((it) => `
+        <div class="ad-card k-${esc(it.type)}">
+          <div class="ad-fileicon">PDF</div>
+          <div class="ad-cardmain">
+            <p class="ad-cardtitle">${esc(it.course || it.filename || "Untitled")}</p>
+            <div class="ad-cardmeta">
+              <span class="ad-kind">${esc(labelOf(it.type))}</span>
+              <span>${esc(it.code || "no code")}</span>
+              <span>${esc(it.contributor || "no credit given")}</span>
+              <span>${esc(it.sizeLabel || "")}</span>
+              ${it.duplicateOf ? `<span class="ad-dupe">possible duplicate</span>` : ""}
+            </div>
+          </div>
+          <div class="ad-card-actions">
+            <button class="ad-review-btn" type="button" data-id="${esc(it.id)}">Review</button>
+          </div>
+        </div>`).join("");
+      host.querySelectorAll(".ad-review-btn").forEach((b) => {
+        b.addEventListener("click", () => openReview(b.dataset.id));
+      });
+      return;
+    }
+
     host.innerHTML = rows.map((it) => `
       <div class="ad-card k-${esc(it.type)}">
         <div class="ad-fileicon">PDF</div>
@@ -195,6 +225,14 @@
     });
   }
 
+  document.querySelectorAll("#tabs .ad-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      state.tab = tab.dataset.tab;
+      document.querySelectorAll("#tabs .ad-tab").forEach((t) => t.classList.toggle("on", t === tab));
+      renderList();
+    });
+  });
+
   function labelOf(t) {
     return { papers: "Past paper", notes: "Notes", assignment: "Assignment", reference: "Reference" }[t] || t;
   }
@@ -217,18 +255,31 @@
     document.getElementById("fFile").value = "";
     document.getElementById("codeHint").hidden = true;
     document.getElementById("dupeWarn").hidden = true;
+    document.getElementById("submissionInfo").hidden = true;
     deptTouched = false; // let the next code typed autofill branch again
     syncBookFields();
   }
 
+  /* Three modes share one dialog: add (blank), edit (an already-published
+     resource), review (a pending submission awaiting approve/reject).
+     Each just shows/hides the same fields and swaps the footer buttons —
+     there's no reason to build three separate dialogs for what's really
+     one form with different starting data and a different save action. */
+  function setFooterButtons(mode) {
+    document.getElementById("btnDelete").hidden = mode !== "edit";
+    document.getElementById("btnReject").hidden = mode !== "review";
+    document.getElementById("btnSave").textContent =
+      mode === "edit" ? "Save changes" : mode === "review" ? "Approve & publish" : "Publish";
+  }
+
   function openAdd() {
     state.current = null;
+    state.mode = "add";
     resetForm();
     fillDepts(null);
     document.getElementById("revTitle").textContent = "Add resource";
     document.getElementById("fileField").hidden = false;
-    document.getElementById("btnDelete").hidden = true;
-    document.getElementById("btnSave").textContent = "Publish";
+    setFooterButtons("add");
     document.getElementById("pdfPane").innerHTML = `<div class="ad-pdf-stub">Pick a PDF to preview it here &mdash; nothing uploads until you click Publish.</div>`;
     openPanel();
   }
@@ -237,12 +288,12 @@
     const it = state.items.find((x) => x.id === id);
     if (!it) return;
     state.current = it;
+    state.mode = "edit";
     resetForm();
 
     document.getElementById("revTitle").textContent = "Edit resource";
     document.getElementById("fileField").hidden = true; // the file itself isn't replaceable from here
-    document.getElementById("btnDelete").hidden = false;
-    document.getElementById("btnSave").textContent = "Save changes";
+    setFooterButtons("edit");
 
     document.getElementById("fCode").value = it.code || "";
     document.getElementById("fCourse").value = it.course || "";
@@ -266,6 +317,54 @@
     pane.innerHTML = fileUrl
       ? `<iframe src="../assets/pdfjs/web/viewer.html?file=${encodeURIComponent(fileUrl)}" title="Preview"></iframe>`
       : `<div class="ad-pdf-stub">No file on record for this entry.</div>`;
+
+    openPanel();
+  }
+
+  function openReview(id) {
+    const it = state.pending.find((x) => x.id === id);
+    if (!it) return;
+    state.current = it;
+    state.mode = "review";
+    resetForm();
+
+    document.getElementById("revTitle").textContent = "Review submission";
+    document.getElementById("fileField").hidden = true; // the file is already uploaded — nothing to pick here
+    setFooterButtons("review");
+
+    // The student's fields are a SUGGESTION — every one of them is
+    // editable before approving, same as any typo in a direct upload.
+    document.getElementById("fCode").value = it.code || "";
+    document.getElementById("fCourse").value = it.course || "";
+    document.getElementById("fType").value = it.type || "papers";
+    document.getElementById("fYear").value = it.year || "";
+    document.getElementById("fExam").value = it.examType || "";
+    document.getElementById("fProf").value = it.professor || "";
+    document.getElementById("fContrib").value = it.contributor || "";
+    document.getElementById("fRoll").value = it.roll || "";
+    fillDepts(it.department || null);
+    syncBookFields();
+
+    const info = document.getElementById("submissionInfo");
+    const bits = [`Uploaded as "${it.filename || "unnamed file"}"`, it.sizeLabel, it.submitted ? new Date(it.submitted).toLocaleString() : null];
+    if (it.semesterHint) bits.push(`suggested: ${it.semesterHint}`);
+    info.textContent = bits.filter(Boolean).join(" · ");
+    info.hidden = false;
+
+    const warn = document.getElementById("dupeWarn");
+    warn.hidden = !it.duplicateOf;
+    if (it.duplicateOf) {
+      warn.textContent = `This looks byte-for-byte identical to ${it.duplicateOf}. Approving it publishes a second copy — check before you do.`;
+    }
+
+    // Pending files are never on the public web (api/submit.php) — this
+    // authenticated stream is the only way to see one before deciding.
+    // Must be an ABSOLUTE url: PDF.js resolves a relative `file` param
+    // against the viewer's OWN location (assets/pdfjs/web/), not this
+    // page's — same bug already caught once in openEdit above.
+    const pane = document.getElementById("pdfPane");
+    const previewSrc = new URL(`${API}?action=preview_pending&id=${encodeURIComponent(it.id)}`, window.location.href).href;
+    pane.innerHTML = `<iframe src="../assets/pdfjs/web/viewer.html?file=${encodeURIComponent(previewSrc)}" title="Preview"></iframe>`;
 
     openPanel();
   }
@@ -371,7 +470,18 @@
      clicking Publish again resubmits the SAME file with force:1 attached,
      rather than making the admin re-pick it. Cleared on any successful
      save, any panel close, and any fresh file pick. */
-  let pendingForcePublish = null;
+  /* Set once a publish/approve attempt comes back "this looks like a
+     duplicate" — clicking the button again resubmits the SAME payload
+     with force:1 attached, rather than making the admin redo the form.
+     Cleared on success, panel close, or (for add mode) a fresh file pick. */
+  let pendingForceRetry = null; // { action: "publish" | "approve", payload }
+
+  function offerDupeRetry(action, payload, error, verb) {
+    const warn = document.getElementById("dupeWarn");
+    warn.hidden = false;
+    warn.textContent = `${error} Click ${verb} again to confirm.`;
+    pendingForceRetry = { action, payload };
+  }
 
   document.getElementById("btnSave").addEventListener("click", async () => {
     const f = readForm();
@@ -385,30 +495,36 @@
     }
 
     try {
-      if (state.current) {
+      if (pendingForceRetry) {
+        const { action, payload } = pendingForceRetry;
+        pendingForceRetry = null;
+        const r = await api(action, payload);
+        if (!r.ok) throw new Error(r.error || "Failed");
+      } else if (state.mode === "edit") {
         await api("edit", { id: state.current.id, ...f });
-      } else if (pendingForcePublish) {
-        const r2 = await api("publish", pendingForcePublish);
-        pendingForcePublish = null;
-        if (!r2.ok) throw new Error(r2.error || "Publish failed");
-      } else {
+      } else if (state.mode === "review") {
+        const payload = { id: state.current.id, ...f };
+        const r = await api("approve", payload);
+        if (!r.ok && r.error && /identical/i.test(r.error)) {
+          offerDupeRetry("approve", { ...payload, force: 1 }, r.error, "Approve");
+          return;
+        }
+        if (!r.ok) throw new Error(r.error || "Approve failed");
+      } else { // add
         const file = document.getElementById("fFile").files[0];
         if (!file) { alert("Pick a PDF first."); return; }
         const fd = new FormData();
         fd.append("file", file);
         Object.entries(f).forEach(([k, v]) => fd.append(k, v));
-        const r1 = await api("publish", fd);
-        if (!r1.ok && r1.error && /identical/i.test(r1.error)) {
-          const warn = document.getElementById("dupeWarn");
-          warn.hidden = false;
-          warn.textContent = r1.error + " Click Publish again to confirm.";
+        const r = await api("publish", fd);
+        if (!r.ok && r.error && /identical/i.test(r.error)) {
           fd.append("force", "1");
-          pendingForcePublish = fd;
+          offerDupeRetry("publish", fd, r.error, "Publish");
           return;
         }
-        if (!r1.ok) throw new Error(r1.error || "Publish failed");
+        if (!r.ok) throw new Error(r.error || "Publish failed");
       }
-      pendingForcePublish = null;
+      pendingForceRetry = null;
       closePanel();
       loadList();
     } catch (ex) {
@@ -425,6 +541,17 @@
   }
   document.getElementById("btnDelete").addEventListener("click", () => {
     if (state.current) { doDelete(state.current.id); closePanel(); }
+  });
+
+  async function doReject(id) {
+    const it = state.pending.find((x) => x.id === id);
+    if (!it) return;
+    const reason = prompt("Reason for rejecting? (kept for your own records, not shown to the student)") ?? "";
+    await api("reject", { id, reason });
+    loadList();
+  }
+  document.getElementById("btnReject").addEventListener("click", () => {
+    if (state.current) { doReject(state.current.id); closePanel(); }
   });
 
   function esc(s) {
@@ -452,6 +579,16 @@
       year: 2024, examType: "Quiz", professor: "Atul Deshpande", contributor: "c2", roll: "MS24",
       added: "2026-08-18", file: null },
   ];
+  let mockPending = [
+    { id: "a3f9c1b8e2d4f7a1", status: "pending", filename: "midsem_scan.pdf", sizeLabel: "3.4 MB",
+      submitted: "2026-08-26T10:00:00", code: "CS2110", course: "", department: "", type: "papers",
+      year: 2024, examType: "Mid-Sem", professor: "", contributor: "Aarav Menon", roll: "CS23",
+      semesterHint: "Sem 4 2024", duplicateOf: null },
+    { id: "b81e40c3d5f6a9b2", status: "pending", filename: "IMG_20260821.pdf", sizeLabel: "11.2 MB",
+      submitted: "2026-08-26T05:00:00", code: "ME2210", course: "Fluid Mechanics", department: "ME", type: "notes",
+      year: 2026, examType: "", professor: "", contributor: "", roll: "",
+      semesterHint: "Sem 4 2026", duplicateOf: null },
+  ];
 
   async function mockApi(action, payload) {
     await new Promise((r) => setTimeout(r, 160));
@@ -465,11 +602,12 @@
       return {
         ok: true,
         items: mockItems,
+        pending: mockPending,
         contributors: mockContributors,
         counts: {
           published: mockItems.length,
           contributors: new Set(mockItems.filter((i) => i.contributor).map((i) => i.contributor)).size,
-          pending: 0,
+          pending: mockPending.length,
         },
       };
     }
@@ -492,6 +630,24 @@
     }
     if (action === "delete") {
       mockItems = mockItems.filter((x) => x.id !== payload.id);
+      return { ok: true };
+    }
+    if (action === "approve") {
+      const sub = mockPending.find((x) => x.id === payload.id);
+      if (!sub) return { ok: false, error: "That submission is gone" };
+      const id = (payload.code || "new").toLowerCase() + "-" + (payload.year || "0000");
+      mockItems.push({
+        id, status: "published", title: `${payload.course} — ${payload.examType || payload.type}`,
+        code: payload.code, course: payload.course, department: payload.department, type: payload.type,
+        year: Number(payload.year) || null, examType: payload.examType, professor: payload.professor || "—",
+        contributor: payload.contributor || null, roll: payload.roll, added: new Date().toISOString().slice(0, 10),
+        file: null,
+      });
+      mockPending = mockPending.filter((x) => x.id !== payload.id);
+      return { ok: true, id };
+    }
+    if (action === "reject") {
+      mockPending = mockPending.filter((x) => x.id !== payload.id);
       return { ok: true };
     }
     return { ok: false };

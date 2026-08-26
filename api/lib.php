@@ -3,11 +3,11 @@
  * Abhyas — shared backend helpers.
  * Everything risky lives here so it is written once and reviewed once.
  *
- * Shape: admin-only direct publishing (BACKEND-PLAN-v3.md). There is no
- * quarantine folder and no anonymous submitter — the person calling this
- * is always an authenticated admin, which is what lets this file stay
- * this small. If public submissions ever launch, that's new code added
- * alongside this, not a rewrite of it — see BACKEND-PLAN-v3.md §6.
+ * Shared by three entry points: api/publish.php (admin, session-checked),
+ * api/submit.php (public, unauthenticated — the only thing that writes
+ * to the pending queue), and api/data.php/api/file.php (public,
+ * read-only). See BACKEND-PLAN-v3.md §6 for how the pending-review flow
+ * layers onto the admin-only shape it started as.
  */
 declare(strict_types=1);
 
