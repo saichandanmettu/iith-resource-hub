@@ -117,49 +117,51 @@ function render(root, resource, course, contributor) {
 
   root.className = `rp-layout k-${resource.type}`;
   root.innerHTML = `
-    <div class="rp-main">
-      <div class="rp-head">
-        <div class="rp-head-top">
-          <span class="rp-kind-chip"><span class="rp-kind-dot"></span>${esc(kind.label)}</span>
-          <span class="fm-badge-code">${esc(resource.code)}</span>
-          ${resource.year ? `<span class="fm-year-chip">${esc(String(resource.year))}</span>` : ""}
-        </div>
-        <h1 class="rp-title">${esc(resource.title)}</h1>
-        <p class="rp-sub">${esc(resource.course)} &middot; Semester ${esc(String(resource.semester || "—"))}</p>
+    <div class="rp-masthead">
+      <div class="rp-head-top">
+        <span class="rp-kind-chip"><span class="rp-kind-dot"></span>${esc(kind.label)}</span>
       </div>
-      <div id="rpViewerSlot"></div>
+      <h1 class="rp-title">${esc(resource.title)}</h1>
+      <p class="rp-sub">${esc(resource.course)} &middot; Semester ${esc(String(resource.semester || "—"))}</p>
     </div>
 
-    <aside class="rp-side">
-      <div class="rp-side-card">
-        <div class="rp-actions">
-          <a class="btn-open rp-download" href="${esc(fileUrl)}" download>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download
-          </a>
-          <button class="btn-share" type="button" id="rpShareBtn">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            Share
-          </button>
-        </div>
+    <div class="rp-body">
+      <div class="rp-main">
+        <div id="rpViewerSlot"></div>
+      </div>
 
-        <dl class="rp-facts">
-          <div><dt>Course</dt><dd>${esc(resource.course)}</dd></div>
-          <div><dt>Code</dt><dd>${esc(resource.code)}</dd></div>
-          <div><dt>Semester</dt><dd>${esc(String(resource.semester || "—"))}</dd></div>
-          ${resource.professor && resource.professor !== "—" ? `<div><dt>Professor</dt><dd>${esc(resource.professor)}</dd></div>` : ""}
-          ${resource.pages ? `<div><dt>Pages</dt><dd>${esc(String(resource.pages))}</dd></div>` : ""}
-          ${contributor ? `<div><dt>Shared by</dt><dd>${esc(contributor.name || "an IITH student")}</dd></div>` : ""}
-        </dl>
+      <aside class="rp-side">
+        <div class="rp-side-card">
+          <div class="rp-actions">
+            <a class="btn-open rp-download" href="${esc(fileUrl)}" download>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download
+            </a>
+            <button class="btn-share" type="button" id="rpShareBtn">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Share
+            </button>
+          </div>
 
-        <div class="rp-branches">
-          <span class="rp-branches-label">Taken by</span>
-          <div class="rp-branch-chips">
-            ${branches.map((b) => `<span class="rp-branch-chip" style="--bc: ${departmentAccent(b)}">${esc(departmentName(b))}</span>`).join("")}
+          <dl class="rp-facts">
+            <div><dt>Course</dt><dd>${esc(resource.course)}</dd></div>
+            <div><dt>Code</dt><dd>${esc(resource.code)}</dd></div>
+            <div><dt>Semester</dt><dd>${esc(String(resource.semester || "—"))}</dd></div>
+            ${resource.year ? `<div><dt>Year</dt><dd>${esc(String(resource.year))}</dd></div>` : ""}
+            ${resource.professor && resource.professor !== "—" ? `<div><dt>Professor</dt><dd>${esc(resource.professor)}</dd></div>` : ""}
+            ${resource.pages ? `<div><dt>Pages</dt><dd>${esc(String(resource.pages))}</dd></div>` : ""}
+            ${contributor ? `<div><dt>Shared by</dt><dd>${esc(contributor.name || "an IITH student")}</dd></div>` : ""}
+          </dl>
+
+          <div class="rp-branches">
+            <span class="rp-branches-label">Taken by</span>
+            <div class="rp-branch-chips">
+              ${branches.map((b) => `<span class="rp-branch-chip" style="--bc: ${departmentAccent(b)}">${esc(departmentName(b))}</span>`).join("")}
+            </div>
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </div>
   `;
 
   document.getElementById("rpViewerSlot").appendChild(renderViewer(fileUrl, resource.title));

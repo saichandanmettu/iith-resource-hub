@@ -8054,11 +8054,25 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 
 /* ------------------------------------------------------------
    Single Resource Page (resource.html) — the WooCommerce-style
-   "product page" for one uploaded file. Reuses existing primitives
-   (.fm-badge-code, .fm-year-chip, .btn-open/.btn-share, .cta-solid,
-   the .k-* kind-color triads) rather than inventing a parallel set —
-   this page should feel like it belongs to the same archive, not a
-   bolted-on destination.
+   "product page" for one uploaded file.
+
+   Shipped version of the 4th generation from the Claude Resource
+   Viewer Lab (_local/claude-resource-viewer-lab.html — kept there for
+   the record): a kind-colored masthead band, trimmed to ONLY the kind
+   chip + title + subtitle, over the split PDF/dossier layout from
+   generation 2. Two earlier drafts of the masthead got argued down
+   from here:
+     - it originally also carried the course-code chip and a year
+       chip — both dropped, because the code chip duplicated the
+       sidebar's "Course" row a few inches away, and the year now has
+       its own row in .rp-facts instead of a chip up top.
+     - the kind chip survived that same argument specifically because
+       it is NOT duplicated as text anywhere else on the page — the
+       sidebar never spells out "this is a past paper," it only
+       implies it through color, and color alone is not an accessible
+       substitute for the one label that lets someone arriving from a
+       raw shared link confirm what they clicked before they read
+       anything else.
    ------------------------------------------------------------ */
 .rp-wrap { padding: 26px 0 var(--section-y); }
 
@@ -8091,25 +8105,51 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 .rp-notfound h1 { font-family: var(--font-course); font-size: 1.6rem; margin: 0; }
 .rp-notfound p { color: var(--ink-soft); margin: 0 0 8px; max-width: 420px; }
 
-.rp-layout {
-  display: grid; grid-template-columns: 1fr 340px; gap: 32px;
-  align-items: start; padding-bottom: var(--section-y);
+.rp-layout { padding-bottom: var(--section-y); }
+
+/* The masthead — full-bleed, colored by the resource's own kind
+   family via --k (set by the k-papers/k-notes/k-assignment/k-reference
+   class on #rpRoot, the same triad the folder cards on the Archive
+   grid already use).
+
+   Both gradient stops are --k darkened toward black (60%/45%), never
+   the raw --k value itself or anything mixed toward white. Checked all
+   four kinds against white text at both stops (WCAG relative-luminance
+   contrast, not eyeballed): raw --papers alone is only 2.55:1 — same
+   failure DESIGN.md already documents for .t-papers's front-flap
+   gradient — and raw --notes is 3.92:1, both under the 4.5:1 floor for
+   normal-size text (the kind chip label and subtitle here are normal
+   size, not "large text"). Darkened to 60%/45% black, the worst case
+   (papers, at the lighter 60% stop) still clears 6.2:1, and the other
+   three kinds clear 8–10:1 — one formula, no per-kind text-color
+   exception, safe everywhere on the band. */
+.rp-masthead {
+  border-radius: 28px; padding: clamp(24px, 4vw, 34px); margin-bottom: 24px;
+  color: #fff;
+  background: linear-gradient(165deg,
+    color-mix(in srgb, var(--k, var(--ink)) 60%, black) 0%,
+    color-mix(in srgb, var(--k, var(--ink)) 45%, black) 100%);
+  box-shadow: 0 20px 40px -18px color-mix(in srgb, var(--k, var(--ink)) 55%, transparent);
 }
-.rp-main { min-width: 0; }
-.rp-head { margin-bottom: 20px; }
 .rp-head-top { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
 .rp-kind-chip {
   display: inline-flex; align-items: center; gap: 7px;
   font: 600 .78rem var(--font-mono); text-transform: uppercase; letter-spacing: .05em;
-  color: var(--k-ink, var(--ink-soft)); background: var(--k-tint, var(--wash));
+  color: inherit; background: rgba(255, 255, 255, .22);
   padding: 6px 13px 6px 11px; border-radius: 999px;
 }
-.rp-kind-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--k, var(--ink-soft)); flex-shrink: 0; }
+.rp-kind-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 .rp-title {
   font-family: var(--font-course); font-weight: 800; font-size: clamp(1.5rem, 3vw, 2.1rem);
-  letter-spacing: var(--track-md); line-height: 1.15; margin: 0 0 8px; color: var(--ink);
+  letter-spacing: var(--track-md); line-height: 1.15; margin: 0 0 8px; color: inherit;
 }
-.rp-sub { margin: 0; color: var(--ink-soft); font-size: .96rem; }
+.rp-sub { margin: 0; color: inherit; opacity: .92; font-size: .96rem; }
+
+.rp-body {
+  display: grid; grid-template-columns: 1fr 340px; gap: 32px;
+  align-items: start;
+}
+.rp-main { min-width: 0; }
 
 /* The viewer itself — a plain <iframe> (see resource.js for why, not
    Adobe) styled as one more "sheet of paper" on the site, same rounded-
@@ -8156,7 +8196,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 }
 
 @media (max-width: 900px) {
-  .rp-layout { grid-template-columns: 1fr; }
+  .rp-body { grid-template-columns: 1fr; }
   .rp-side-card { position: static; }
 }
 @media (max-width: 640px) {
