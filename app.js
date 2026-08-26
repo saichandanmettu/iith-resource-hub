@@ -26,14 +26,18 @@ function groupByCourse(list) {
   return [...map.values()].sort((a, b) => b.items.length - a.items.length);
 }
 
-/* How recent a folder is. There is no timestamp in the data, so newest
-   year wins and id breaks the tie: ids are handed out in the order files
-   were added, so a higher id is a later addition. */
+/* How recent a folder is. Every resource carries `added` (an ISO
+   YYYY-MM-DD date build_record() stamps on publish), which sorts
+   correctly as a plain string — no need to reverse-engineer recency
+   from `id`. (id used to be a numeric auto-increment so `(year*1e6) + id`
+   worked as a tie-break; migrated resources now carry the real backend's
+   string ids like "ep-ep1118-2024-mid-sem", and `numeric + string` in JS
+   silently concatenates instead of adding, so every folder with a real
+   resource scored as a non-numeric string that never compared greater
+   than 0 — this always picked whichever folder happened to sort first
+   by file count instead of the actual most-recent one.) */
 function folderRecency(f) {
-  return f.items.reduce((best, r) => {
-    const score = (r.year || 0) * 1e6 + (r.id || 0);
-    return score > best ? score : best;
-  }, 0);
+  return f.items.reduce((best, r) => (r.added || "") > best ? r.added : best, "");
 }
 
 /* Lead the grid with one folder of each kind, most recent first, so the
@@ -49,7 +53,7 @@ function leadWithEachKind(folders) {
   KIND_ORDER.forEach((kind) => {
     const pick = folders
       .filter((f) => !taken.has(f.course) && dominantKind(f) === kind)
-      .sort((a, b) => folderRecency(b) - folderRecency(a))[0];
+      .sort((a, b) => (folderRecency(b) > folderRecency(a) ? 1 : folderRecency(b) < folderRecency(a) ? -1 : 0))[0];
     if (pick) { lead.push(pick); taken.add(pick.course); }
   });
 
