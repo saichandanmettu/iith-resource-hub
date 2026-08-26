@@ -13,6 +13,16 @@ _local/*
 # experiments; they belong with everything else in _local/ that's just
 # private, not with things that are genuinely safe to lose.
 !_local/*.gs
+# Exception: archived PHP source (Phase 4, deferred — see
+# _local/_archive/phase4-deferred-api/README.md). Same reasoning as the
+# .gs exception above — real source code kept for a deliberate future
+# reason, not a disposable experiment. Scoped narrowly to this one
+# subfolder — the rest of _local/_archive/ (old design experiments, etc.)
+# stays untracked as before.
+!_local/_archive/
+_local/_archive/*
+!_local/_archive/phase4-deferred-api/
+!_local/_archive/phase4-deferred-api/**
 
 # OS / editor
 .DS_Store

@@ -111,6 +111,25 @@ body { background: #EADCC2; }
 }
 .ad-tab.on i { background: var(--papers-tint); color: var(--papers-ink); }
 
+/* ---------------- toolbar (search + add) ---------------- */
+.ad-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+.ad-search {
+  flex: 1; background: var(--paper); border: 1px solid var(--hair); border-radius: 999px;
+  padding: 11px 18px; font-family: var(--font-body); font-size: .9rem; color: var(--ink);
+  transition: border-color .22s var(--ease), box-shadow .22s var(--ease);
+}
+.ad-search:focus { outline: none; border-color: var(--papers); box-shadow: 0 0 0 3px rgba(242,135,0,.16); }
+.ad-toolbar .ad-review-btn { position: static; white-space: nowrap; padding: 11px 22px; }
+.ad-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.ad-edit-btn, .ad-delete-btn {
+  border: 1px solid var(--hair); background: var(--surface); cursor: pointer;
+  font-family: var(--font-body); font-size: .82rem; font-weight: 600;
+  padding: 8px 16px; border-radius: 999px; color: var(--ink-soft);
+  transition: background .22s var(--ease), color .22s var(--ease);
+}
+.ad-edit-btn:hover { background: var(--wash); color: var(--ink); }
+.ad-delete-btn:hover { background: var(--assignment-tint); color: var(--assignment-ink); }
+
 /* ---------------- queue ---------------- */
 .ad-queue { display: grid; gap: 12px; }
 .ad-card {

@@ -1,20 +1,23 @@
 /* ------------------------------------------------------------
-   Abhyas — review console
+   Abhyas — admin console
 
-   Every server call goes through api() below. Right now it is
-   answered by a MOCK so the console can be judged before any PHP
-   exists. Flip USE_MOCK to false once api.php is deployed; no
-   other line in this file changes.
+   Direct publishing, not moderation: the person signed in here IS the
+   person deciding what goes on the archive, so there's no queue, no
+   approve/reject, no separate "pending" pile. Publish a resource, or
+   edit/delete one already live. See BACKEND-PLAN-v3.md for why this is
+   deliberately smaller than a public-submission review console would
+   need to be.
 
-   The console never decides who you are — it only hides itself
-   until the server says the session is good. Anything that
-   matters is checked again server-side on every request.
+   Every server call goes through api() below. Right now it is answered
+   by a MOCK so the console can be judged before any PHP exists. Flip
+   USE_MOCK to false once api/publish.php is deployed; no other line in
+   this file changes.
    ------------------------------------------------------------ */
 (function () {
   "use strict";
 
   const USE_MOCK = true;
-  const API = "../api/moderate.php";
+  const API = "../api/publish.php";
 
   /* ============================================================
      Course registry — one place a code maps to a name.
@@ -48,22 +51,35 @@
     "LA1010": { name: "Communication Skills", sem: 1, professors: ["Srirupa Chatterjee"] },
   };
 
-  let state = { tab: "pending", items: [], current: null };
+  let state = { items: [], contributors: {}, current: null, csrf: null, filter: "" };
+
+  function contributorName(id) {
+    if (!id) return "no credit";
+    return state.contributors[id]?.name || id;
+  }
 
   /* ============================================================
-     Server calls — one seam
+     Server calls — one seam. `publish` sends multipart/form-data
+     (it carries a file); everything else sends JSON. Both carry the
+     CSRF token issued at login — a session cookie alone doesn't stop
+     a forged request from another tab from riding the same session.
      ============================================================ */
   async function api(action, payload) {
     if (USE_MOCK) return mockApi(action, payload);
+    const isForm = payload instanceof FormData;
+    if (isForm && state.csrf) payload.append("csrf", state.csrf);
+    if (!isForm && payload && state.csrf) payload.csrf = state.csrf;
+
     const res = await fetch(`${API}?action=${encodeURIComponent(action)}`, {
       method: payload ? "POST" : "GET",
-      headers: payload ? { "Content-Type": "application/json" } : undefined,
-      body: payload ? JSON.stringify(payload) : undefined,
+      headers: isForm || !payload ? undefined : { "Content-Type": "application/json" },
+      body: isForm ? payload : payload ? JSON.stringify(payload) : undefined,
       credentials: "same-origin",
     });
     if (res.status === 401) { showLogin(); throw new Error("unauthorised"); }
-    if (!res.ok) throw new Error(`${action} failed (${res.status})`);
-    return res.json();
+    const data = await res.json().catch(() => ({ ok: false, error: `${action} failed (${res.status})` }));
+    if (!res.ok && res.status !== 409) throw new Error(data.error || `${action} failed (${res.status})`);
+    return data;
   }
 
   /* ============================================================
@@ -86,9 +102,10 @@
       const r = await api("login", { password: document.getElementById("pw").value });
       if (!r.ok) throw new Error(r.error || "Wrong password");
       document.getElementById("pw").value = "";
+      state.csrf = r.csrf || null;
       showConsole();
       document.getElementById("who").textContent = r.user || "signed in";
-      loadQueue();
+      loadList();
     } catch (ex) {
       err.textContent = ex.message;
       err.hidden = false;
@@ -97,45 +114,58 @@
 
   document.getElementById("logout").addEventListener("click", async () => {
     await api("logout").catch(() => {});
+    state.csrf = null;
     showLogin();
   });
 
+  /* On a page reload, the session cookie may still be good even though
+     `state.csrf` (in-memory only) is gone — ask the server instead of
+     forcing a re-login. */
+  (async function tryResume() {
+    if (USE_MOCK) return;
+    try {
+      const r = await api("me");
+      if (r.ok) {
+        state.csrf = r.csrf;
+        showConsole();
+        document.getElementById("who").textContent = r.user || "signed in";
+        loadList();
+      }
+    } catch { /* not signed in — leave the login form showing */ }
+  })();
+
   /* ============================================================
-     Queue
+     List
      ============================================================ */
-  async function loadQueue() {
-    const data = await api("queue");
+  async function loadList() {
+    const data = await api("list");
     state.items = data.items || [];
+    state.contributors = data.contributors || {};
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-    set("cPending", data.counts.pending);
-    set("cPublished", data.counts.published);
-    set("cRejected", data.counts.rejected);
-    set("sPending", data.counts.pending);
     set("sPublished", data.counts.published);
-    set("sRejected", data.counts.rejected);
     set("sContrib", data.counts.contributors ?? 0);
 
-    /* the headline says what is actually waiting, rather than a fixed slogan */
     const h = document.getElementById("adHeadline");
     const sub = document.getElementById("adSub");
     if (h) {
-      h.innerHTML = data.counts.pending
-        ? `<span class="muted">${data.counts.pending} ${data.counts.pending === 1 ? "file is" : "files are"}</span><br>waiting for you`
-        : `<span class="muted">Nothing is waiting</span><br>the queue is clear`;
+      h.innerHTML = state.items.length
+        ? `<span class="muted">${state.items.length} resource${state.items.length === 1 ? "" : "s"}</span><br>on the archive`
+        : `<span class="muted">Nothing published yet</span><br>add the first one`;
     }
     if (sub) {
-      sub.textContent = data.counts.pending
-        ? "Check the file, correct anything the contributor got wrong, then publish."
-        : "Everything submitted so far has been reviewed.";
+      sub.textContent = "Upload a PDF, fill in the course details, and it appears on the archive immediately.";
     }
-    renderQueue();
+    renderList();
   }
 
-  function renderQueue() {
+  function renderList() {
     const host = document.getElementById("queue");
-    const rows = state.items.filter((i) => i.status === state.tab);
+    const q = state.filter.trim().toLowerCase();
+    const rows = state.items.filter((i) => !q ||
+      [i.title, i.course, i.code, contributorName(i.contributor)].some((f) => String(f || "").toLowerCase().includes(q)));
+
     if (!rows.length) {
-      host.innerHTML = `<div class="ad-empty"><b>Nothing ${esc(state.tab)}</b><span>When something lands here, it will show up in this list.</span></div>`;
+      host.innerHTML = `<div class="ad-empty"><b>${state.items.length ? "No matches" : "Nothing here yet"}</b><span>${state.items.length ? "Try a different search." : "Click “Add resource” to publish the first file."}</span></div>`;
       return;
     }
     host.innerHTML = rows.map((it) => `
@@ -146,19 +176,21 @@
           <div class="ad-cardmeta">
             <span class="ad-kind">${esc(labelOf(it.type))}</span>
             <span>${esc(it.code || "no code")}</span>
-            <span>${esc(it.contributor || "no credit")}</span>
-            <span>${esc(it.submitted)}</span>
-            <span>${esc(it.size)}</span>
-            ${it.duplicateOf ? `<span class="ad-dupe">possible duplicate</span>` : ""}
+            <span>${esc(contributorName(it.contributor))}</span>
+            <span>${esc(it.added || "")}</span>
           </div>
         </div>
-        ${state.tab === "pending"
-          ? `<button class="ad-review-btn" type="button" data-id="${esc(it.id)}">Review</button>`
-          : `<span class="ad-status">${esc(it.status)}</span>`}
+        <div class="ad-card-actions">
+          <button class="ad-edit-btn" type="button" data-id="${esc(it.id)}">Edit</button>
+          <button class="ad-delete-btn" type="button" data-id="${esc(it.id)}">Delete</button>
+        </div>
       </div>`).join("");
 
-    host.querySelectorAll(".ad-review-btn").forEach((b) => {
-      b.addEventListener("click", () => openReview(b.dataset.id));
+    host.querySelectorAll(".ad-edit-btn").forEach((b) => {
+      b.addEventListener("click", () => openEdit(b.dataset.id));
+    });
+    host.querySelectorAll(".ad-delete-btn").forEach((b) => {
+      b.addEventListener("click", () => doDelete(b.dataset.id));
     });
   }
 
@@ -166,21 +198,49 @@
     return { papers: "Past paper", notes: "Notes", assignment: "Assignment", reference: "Reference" }[t] || t;
   }
 
-  document.querySelectorAll("#tabs .ad-tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      state.tab = tab.dataset.tab;
-      document.querySelectorAll("#tabs .ad-tab").forEach((t) => t.classList.toggle("on", t === tab));
-      renderQueue();
-    });
+  document.getElementById("search").addEventListener("input", (e) => {
+    state.filter = e.target.value;
+    renderList();
   });
 
   /* ============================================================
-     Review
+     Add / edit panel
      ============================================================ */
-  function openReview(id) {
+  let previewUrl = null; // revoke the previous blob: URL before making a new one
+
+  function resetForm() {
+    ["fCode", "fCourse", "fSem", "fYear", "fExam", "fProf", "fContrib", "fRoll",
+     "fBookAuthor", "fBookPublisher", "fBookGist"].forEach((id) => { document.getElementById(id).value = ""; });
+    document.getElementById("fType").value = "papers";
+    document.getElementById("fBookCover").value = "ink";
+    document.getElementById("fFile").value = "";
+    document.getElementById("codeHint").hidden = true;
+    document.getElementById("dupeWarn").hidden = true;
+    syncBookFields();
+  }
+
+  function openAdd() {
+    state.current = null;
+    resetForm();
+    fillDepts(null);
+    document.getElementById("revTitle").textContent = "Add resource";
+    document.getElementById("fileField").hidden = false;
+    document.getElementById("btnDelete").hidden = true;
+    document.getElementById("btnSave").textContent = "Publish";
+    document.getElementById("pdfPane").innerHTML = `<div class="ad-pdf-stub">Pick a PDF to preview it here &mdash; nothing uploads until you click Publish.</div>`;
+    openPanel();
+  }
+
+  function openEdit(id) {
     const it = state.items.find((x) => x.id === id);
     if (!it) return;
     state.current = it;
+    resetForm();
+
+    document.getElementById("revTitle").textContent = "Edit resource";
+    document.getElementById("fileField").hidden = true; // the file itself isn't replaceable from here
+    document.getElementById("btnDelete").hidden = false;
+    document.getElementById("btnSave").textContent = "Save changes";
 
     document.getElementById("fCode").value = it.code || "";
     document.getElementById("fCourse").value = it.course || "";
@@ -189,7 +249,7 @@
     document.getElementById("fYear").value = it.year || "";
     document.getElementById("fExam").value = it.examType || "";
     document.getElementById("fProf").value = it.professor || "";
-    document.getElementById("fContrib").value = it.contributor || "";
+    document.getElementById("fContrib").value = it.contributor ? contributorName(it.contributor) : "";
     document.getElementById("fRoll").value = it.roll || "";
     fillDepts(it.department);
     document.getElementById("fBookAuthor").value = it.book?.author || "";
@@ -198,33 +258,51 @@
     document.getElementById("fBookGist").value = it.book?.gist || "";
     syncBookFields();
 
-    const warn = document.getElementById("dupeWarn");
-    warn.hidden = !it.duplicateOf;
-    if (it.duplicateOf) {
-      warn.textContent = `This file is byte-for-byte identical to one already in the archive (${it.duplicateOf}). Approving it would add a second copy — and it scores no points either way.`;
-    }
-
-    /* The file is not on the public web. It is streamed through the
-       API, which checks the session before returning a single byte. */
+    /* Same viewer the public site uses — pointed at the file already live,
+       not a blob: URL, since there's nothing local to preview here. */
     const pane = document.getElementById("pdfPane");
-    pane.innerHTML = USE_MOCK
-      ? `<div class="ad-pdf-stub">PDF preview<br>${esc(it.filename)}<br><br>Served by api.php?action=file&amp;id=${esc(it.id)}<br>only after the session check passes.</div>`
-      : `<iframe src="${API}?action=file&id=${encodeURIComponent(it.id)}" title="Submission preview"></iframe>`;
+    const fileUrl = it.file ? new URL(`../files/${it.file}`, window.location.href).href : null;
+    pane.innerHTML = fileUrl
+      ? `<iframe src="../assets/pdfjs/web/viewer.html?file=${encodeURIComponent(fileUrl)}" title="Preview"></iframe>`
+      : `<div class="ad-pdf-stub">No file on record for this entry.</div>`;
 
+    openPanel();
+  }
+
+  function openPanel() {
     document.getElementById("review").classList.add("open");
     document.body.style.overflow = "hidden";
   }
-
-  function closeReview() {
+  function closePanel() {
     document.getElementById("review").classList.remove("open");
     document.getElementById("pdfPane").innerHTML = "";
     document.body.style.overflow = "";
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+    pendingForcePublish = null;
     state.current = null;
   }
-  document.getElementById("revClose").addEventListener("click", closeReview);
-  document.getElementById("reviewBack").addEventListener("click", closeReview);
+  document.getElementById("btnAdd").addEventListener("click", openAdd);
+  document.getElementById("revClose").addEventListener("click", closePanel);
+  document.getElementById("reviewBack").addEventListener("click", closePanel);
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && state.current) closeReview();
+    if (e.key === "Escape" && document.getElementById("review").classList.contains("open")) closePanel();
+  });
+
+  /* Picking a file previews it entirely client-side — nothing is sent to
+     the server until Publish is clicked. A blob: URL is same-origin, so
+     PDF.js's viewer (loaded from this same site) can render it directly. */
+  document.getElementById("fFile").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    const pane = document.getElementById("pdfPane");
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+    pendingForcePublish = null;
+    document.getElementById("dupeWarn").hidden = true;
+    if (!file) {
+      pane.innerHTML = `<div class="ad-pdf-stub">Pick a PDF to preview it here &mdash; nothing uploads until you click Publish.</div>`;
+      return;
+    }
+    previewUrl = URL.createObjectURL(file);
+    pane.innerHTML = `<iframe src="../assets/pdfjs/web/viewer.html?file=${encodeURIComponent(previewUrl)}" title="Preview"></iframe>`;
   });
 
   /* Reference is the only type that needs the book payload — show those
@@ -261,46 +339,83 @@
     hint.hidden = false;
   });
 
-  document.getElementById("btnApprove").addEventListener("click", async () => {
-    if (!state.current) return;
-    const record = {
-      id: state.current.id,
+  function readForm() {
+    return {
       code: document.getElementById("fCode").value.trim().toUpperCase(),
       course: document.getElementById("fCourse").value.trim(),
       department: document.getElementById("fDept").value,
-      semester: Number(document.getElementById("fSem").value) || null,
+      semester: document.getElementById("fSem").value || "",
       type: document.getElementById("fType").value,
-      year: Number(document.getElementById("fYear").value) || null,
-      examType: document.getElementById("fExam").value || null,
-      professor: document.getElementById("fProf").value.trim() || "—",
-      contributor: document.getElementById("fContrib").value.trim() || null,
-      roll: document.getElementById("fRoll").value.trim() || null,
+      year: document.getElementById("fYear").value || "",
+      examType: document.getElementById("fExam").value || "",
+      professor: document.getElementById("fProf").value.trim(),
+      contributor: document.getElementById("fContrib").value.trim(),
+      roll: document.getElementById("fRoll").value.trim(),
+      bookAuthor: document.getElementById("fBookAuthor").value.trim(),
+      bookPublisher: document.getElementById("fBookPublisher").value.trim(),
+      bookCover: document.getElementById("fBookCover").value,
+      bookGist: document.getElementById("fBookGist").value.trim(),
     };
-    if (record.type === "reference") {
-      record.bookAuthor = document.getElementById("fBookAuthor").value.trim();
-      record.bookPublisher = document.getElementById("fBookPublisher").value.trim();
-      record.bookCover = document.getElementById("fBookCover").value;
-      record.bookGist = document.getElementById("fBookGist").value.trim();
-      if (!record.bookAuthor) {
-        alert("A reference book needs an author, or the Bookshelf cannot render it.");
-        return;
-      }
-    }
-    if (!record.code || !record.course) {
-      alert("A course code and name are required before this can go live.");
+  }
+
+  /* Set once a publish attempt comes back "this looks like a duplicate" —
+     clicking Publish again resubmits the SAME file with force:1 attached,
+     rather than making the admin re-pick it. Cleared on any successful
+     save, any panel close, and any fresh file pick. */
+  let pendingForcePublish = null;
+
+  document.getElementById("btnSave").addEventListener("click", async () => {
+    const f = readForm();
+    if (!f.code || !f.course || !f.department) {
+      alert("Course code, name, and branch are required.");
       return;
     }
-    await api("approve", record);
-    closeReview();
-    loadQueue();
+    if (f.type === "reference" && !f.bookAuthor) {
+      alert("A reference book needs an author, or the Bookshelf cannot render it.");
+      return;
+    }
+
+    try {
+      if (state.current) {
+        await api("edit", { id: state.current.id, ...f });
+      } else if (pendingForcePublish) {
+        const r2 = await api("publish", pendingForcePublish);
+        pendingForcePublish = null;
+        if (!r2.ok) throw new Error(r2.error || "Publish failed");
+      } else {
+        const file = document.getElementById("fFile").files[0];
+        if (!file) { alert("Pick a PDF first."); return; }
+        const fd = new FormData();
+        fd.append("file", file);
+        Object.entries(f).forEach(([k, v]) => fd.append(k, v));
+        const r1 = await api("publish", fd);
+        if (!r1.ok && r1.error && /identical/i.test(r1.error)) {
+          const warn = document.getElementById("dupeWarn");
+          warn.hidden = false;
+          warn.textContent = r1.error + " Click Publish again to confirm.";
+          fd.append("force", "1");
+          pendingForcePublish = fd;
+          return;
+        }
+        if (!r1.ok) throw new Error(r1.error || "Publish failed");
+      }
+      pendingForcePublish = null;
+      closePanel();
+      loadList();
+    } catch (ex) {
+      alert(ex.message);
+    }
   });
 
-  document.getElementById("btnReject").addEventListener("click", async () => {
-    if (!state.current) return;
-    const reason = prompt("Reason for rejecting? (optional, kept for your own records)") ?? "";
-    await api("reject", { id: state.current.id, reason });
-    closeReview();
-    loadQueue();
+  async function doDelete(id) {
+    const it = state.items.find((x) => x.id === id);
+    if (!it) return;
+    if (!confirm(`Remove "${it.title}" from the archive listing?\n\nThe PDF file itself stays on disk — this only unlists it.`)) return;
+    await api("delete", { id });
+    loadList();
+  }
+  document.getElementById("btnDelete").addEventListener("click", () => {
+    if (state.current) { doDelete(state.current.id); closePanel(); }
   });
 
   function esc(s) {
@@ -315,58 +430,61 @@
       `<option value="${c}">${esc(COURSE_CATALOG[c].name)}</option>`).join("");
 
   /* ============================================================
-     MOCK — delete once api.php is live
+     MOCK — delete once api/publish.php is live
      ============================================================ */
+  const mockContributors = {
+    c1: { name: "Aarav Menon", roll: "CS23" },
+    c2: { name: "Rohan Iyer", roll: "MS24" },
+  };
   let mockItems = [
-    { id: "a3f9c1", status: "pending", title: "Algorithms — Mid-Sem 2024", filename: "midsem_scan.pdf",
-      code: "CS2110", course: "", department: "CS", semester: null, type: "papers", year: 2024,
-      examType: "Mid-Sem", professor: "", contributor: "Aarav Menon", roll: "CS23",
-      submitted: "2 hours ago", size: "3.4 MB", duplicateOf: null },
-    { id: "b81e40", status: "pending", title: "flu mech notes", filename: "IMG_20260821.pdf",
-      code: "ME2210", course: "", department: "ME", semester: null, type: "notes", year: 2026,
-      examType: "", professor: "", contributor: "", roll: "",
-      submitted: "5 hours ago", size: "11.2 MB", duplicateOf: null },
-    { id: "c07a55", status: "pending", title: "Materials Chemistry — Quiz 2", filename: "quiz2.pdf",
+    { id: "cs2110-2024-endsem", status: "published", title: "Algorithms — End-Sem", filename: "algo.pdf",
+      code: "CS2110", course: "Design and Analysis of Algorithms", department: "CS", semester: 4, type: "papers",
+      year: 2024, examType: "End-Sem", professor: "", contributor: "c1", roll: "CS23",
+      added: "2026-08-20", file: null },
+    { id: "cy1120-2024-quiz", status: "published", title: "Materials Chemistry — Quiz", filename: "quiz2.pdf",
       code: "CY1120", course: "Materials Chemistry", department: "MSME", semester: 2, type: "papers",
-      year: 2024, examType: "Quiz", professor: "Atul Deshpande", contributor: "Rohan Iyer", roll: "MS24",
-      submitted: "yesterday", size: "1.1 MB", duplicateOf: "CY1120-quiz2-2024.pdf" },
-    { id: "d22b19", status: "published", title: "Calculus-II — Assignment", filename: "assign.pdf",
-      code: "MA1210", course: "Calculus-II", department: "CS", semester: 2, type: "assignment",
-      year: 2024, examType: "", professor: "Sukumar", contributor: "Aarav Menon", roll: "CS23",
-      submitted: "3 days ago", size: "0.8 MB", duplicateOf: null },
-    { id: "e51f77", status: "rejected", title: "wa0032.jpg", filename: "IMG-wa0032.pdf",
-      code: "", course: "", department: "CS", semester: null, type: "papers", year: null,
-      examType: "", professor: "", contributor: "", roll: "",
-      submitted: "4 days ago", size: "0.2 MB", duplicateOf: null },
+      year: 2024, examType: "Quiz", professor: "Atul Deshpande", contributor: "c2", roll: "MS24",
+      added: "2026-08-18", file: null },
   ];
 
   async function mockApi(action, payload) {
     await new Promise((r) => setTimeout(r, 160));
     if (action === "login") {
       return payload.password === "demo"
-        ? { ok: true, user: "admin" }
+        ? { ok: true, user: "admin", csrf: "mock-csrf" }
         : { ok: false, error: "Wrong password. (Mock password is: demo)" };
     }
     if (action === "logout") return { ok: true };
-    if (action === "queue") {
+    if (action === "list") {
       return {
+        ok: true,
         items: mockItems,
+        contributors: mockContributors,
         counts: {
-          pending: mockItems.filter((i) => i.status === "pending").length,
-          published: mockItems.filter((i) => i.status === "published").length,
-          rejected: mockItems.filter((i) => i.status === "rejected").length,
+          published: mockItems.length,
           contributors: new Set(mockItems.filter((i) => i.contributor).map((i) => i.contributor)).size,
         },
       };
     }
-    if (action === "approve") {
+    if (action === "publish") {
+      const id = (payload.get("code") || "new").toLowerCase() + "-" + (payload.get("year") || "0000");
+      mockItems.push({
+        id, status: "published", title: `${payload.get("course")} — ${payload.get("examType") || payload.get("type")}`,
+        code: payload.get("code"), course: payload.get("course"), department: payload.get("department"),
+        semester: Number(payload.get("semester")) || null, type: payload.get("type"), year: Number(payload.get("year")) || null,
+        examType: payload.get("examType"), professor: payload.get("professor") || "—",
+        contributor: payload.get("contributor") || null, roll: payload.get("roll"), added: new Date().toISOString().slice(0, 10),
+        file: null,
+      });
+      return { ok: true, id };
+    }
+    if (action === "edit") {
       const it = mockItems.find((x) => x.id === payload.id);
-      if (it) { Object.assign(it, payload, { status: "published" }); }
+      if (it) Object.assign(it, payload);
       return { ok: true };
     }
-    if (action === "reject") {
-      const it = mockItems.find((x) => x.id === payload.id);
-      if (it) it.status = "rejected";
+    if (action === "delete") {
+      mockItems = mockItems.filter((x) => x.id !== payload.id);
       return { ok: true };
     }
     return { ok: false };
