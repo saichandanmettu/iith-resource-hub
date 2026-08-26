@@ -251,6 +251,58 @@ if ($action === 'reject') {
   ok(['id' => $id]);
 }
 
+/* ---------------- one-time: rename a contributor in place ----------------
+ * TEMPORARY — remove once run. Renames by id, not by matching name, so
+ * this contributor's existing point total / resource history stays
+ * attached to the same id rather than orphaning it under the old name
+ * and crediting a freshly-created one instead.
+ */
+if ($action === 'rename_contributor') {
+  $id = (string) ($body['id'] ?? '');
+  $newName = trim((string) ($body['name'] ?? ''));
+  if ($id === '' || $newName === '') fail(400, 'Missing id or name');
+
+  $cpath = $c['private_dir'] . '/contributors.json';
+  $people = read_json($cpath, []);
+  if (!isset($people[$id])) fail(404, 'No such contributor id');
+  $people[$id]['name'] = $newName;
+  write_json_atomic($cpath, $people);
+  ok(['id' => $id, 'name' => $newName]);
+}
+
+/* ---------------- one-time: backdate migrated resources' `added` ----------------
+ * TEMPORARY — remove once run. Migration ran through `publish`, which
+ * always stamps `added` as today — correct for a resource actually
+ * published today, wrong for one migrated from an archive that already
+ * existed for years. The Honor Roll's "this semester" scope filters on
+ * `added >= SEMESTER_START` (data.js) — leaving today's date on migrated
+ * resources would count them as this semester's contributions, which
+ * they aren't. `all` scope has no date filter, so overall totals were
+ * already correct either way. Body is {"dates": {id: "YYYY-MM-DD", ...}},
+ * built from each resource's real original publish date.
+ */
+if ($action === 'fix_added_dates') {
+  $dates = $body['dates'] ?? null;
+  if (!is_array($dates) || !$dates) fail(400, 'Missing dates map');
+
+  $rpath = $c['private_dir'] . '/resources.json';
+  $all = read_json($rpath, []);
+  $fixed = 0;
+  $missing = [];
+  foreach ($all as $i => $r) {
+    if (array_key_exists($r['id'], $dates)) {
+      $all[$i]['added'] = (string) $dates[$r['id']];
+      $fixed++;
+    }
+  }
+  $known = array_column($all, 'id');
+  foreach (array_keys($dates) as $wantId) {
+    if (!in_array($wantId, $known, true)) $missing[] = $wantId;
+  }
+  if ($fixed > 0) write_json_atomic($rpath, $all);
+  ok(['fixed' => $fixed, 'missing' => $missing]);
+}
+
 /* ---------------- edit (metadata on an already-published resource) ---------------- */
 if ($action === 'edit') {
   $id = (string) ($body['id'] ?? '');
