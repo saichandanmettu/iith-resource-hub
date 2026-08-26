@@ -1,1 +1,10 @@
-{}
+{
+  "LA1760": {
+    "name": "Communication Skills",
+    "branches": ["AI", "BM", "BT", "CE", "CM", "CO", "CS", "EE", "EP", "ES", "IC", "ICT", "ME", "MNC", "MSME"]
+  },
+  "CC1010": {
+    "name": "Introduction to Climate Change",
+    "branches": ["AI", "BM", "BT", "CE", "CM", "CO", "CS", "EE", "EP", "ES", "IC", "ICT", "ME", "MNC", "MSME"]
+  }
+}
