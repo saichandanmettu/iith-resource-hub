@@ -256,7 +256,7 @@ function renderFolderModalFiles() {
     const kColor = KIND[r.type]?.color || "var(--brand)";
     const kLabel = KIND[r.type]?.label || r.type;
     const prof = r.professor && r.professor !== "—" ? `Prof. ${esc(r.professor)}` : "";
-    const metaParts = [kLabel, r.year, prof, r.pages ? `${r.pages} pages` : ""].filter(Boolean).join(" \u00b7 ");
+    const pagesLabel = r.pages ? `${r.pages} page${r.pages === 1 ? "" : "s"}` : "";
 
     return `
       <div class="fm-row">
@@ -264,17 +264,25 @@ function renderFolderModalFiles() {
           <span class="fm-type-dot" style="background: ${kColor};"></span>
           <div class="fm-info">
             <b>${esc(r.title)}</b>
-            <span>${esc(metaParts)}</span>
+            <div class="fm-meta-top">
+              <span class="fm-kind">${esc(kLabel)}</span>
+              ${r.year ? `<span class="fm-year-chip">${esc(String(r.year))}</span>` : ""}
+            </div>
+            ${prof ? `<span class="fm-prof">${prof}</span>` : ""}
           </div>
         </div>
         <div class="fm-actions">
-          <button class="btn-icon" type="button" title="Copy Resource Link" onclick="copyLink('${esc(r.title)}')">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          </button>
-          <a class="btn-dl" href="#" onclick="downloadResource(event, '${esc(r.title)}')">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download
-          </a>
+          <span class="fm-pages">${esc(pagesLabel)}</span>
+          <div class="fm-btn-group">
+            <button class="btn-share" type="button" onclick="copyLink('${esc(r.title)}')">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Share
+            </button>
+            <a class="btn-dl" href="#" onclick="downloadResource(event, '${esc(r.title)}')">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download
+            </a>
+          </div>
         </div>
       </div>`;
   }).join("");
