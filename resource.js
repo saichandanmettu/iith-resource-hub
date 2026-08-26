@@ -106,12 +106,22 @@ function renderViewer(fileUrl, title) {
   return wrap;
 }
 
-function render(root, resource, course, contributor) {
+function render(root, resource, course, contributor, allResources) {
   const kind = KIND[resource.type] || KIND.papers;
   const fileUrl = "files/" + resource.file;
   const branches = (course && Array.isArray(course.branches) && course.branches.length)
     ? course.branches
     : [resource.department];
+
+  /* Real count, not a placeholder: how many resources in the archive carry
+     this same contributor id. Same computation the Honor Roll already does
+     per contributor — reused here as the avatar's content instead of
+     initials, since "how much has this person actually shared" is a more
+     useful first impression than their initials, and unlike a download/
+     share count, this number needs no backend to be real right now. */
+  const contribCount = contributor
+    ? allResources.filter((r) => r.contributor === contributor.id).length
+    : 0;
 
   document.getElementById("rpPageTitle").textContent = `${resource.title} · Abhyas`;
 
@@ -120,9 +130,10 @@ function render(root, resource, course, contributor) {
     <div class="rp-masthead">
       <div class="rp-head-top">
         <span class="rp-kind-chip"><span class="rp-kind-dot"></span>${esc(kind.label)}</span>
+        <span class="rp-plain-chip">${esc(resource.code)}</span>
+        ${resource.year ? `<span class="rp-plain-chip">${esc(String(resource.year))}</span>` : ""}
       </div>
       <h1 class="rp-title">${esc(resource.title)}</h1>
-      <p class="rp-sub">${esc(resource.course)} &middot; Semester ${esc(String(resource.semester || "—"))}</p>
     </div>
 
     <div class="rp-body">
@@ -143,20 +154,27 @@ function render(root, resource, course, contributor) {
             </button>
           </div>
 
+          ${contributor ? `
+          <div class="rp-contrib">
+            <div class="rp-avatar" title="${contribCount} file${contribCount === 1 ? "" : "s"} shared to Abhyas">${contribCount}</div>
+            <div class="rp-contrib-info">
+              <b>${esc(contributor.name || "An IITH student")}</b>
+              <span>${contribCount} file${contribCount === 1 ? "" : "s"} shared</span>
+            </div>
+          </div>` : ""}
+
           <dl class="rp-facts">
             <div><dt>Course</dt><dd>${esc(resource.course)}</dd></div>
             <div><dt>Code</dt><dd>${esc(resource.code)}</dd></div>
-            <div><dt>Semester</dt><dd>${esc(String(resource.semester || "—"))}</dd></div>
             ${resource.year ? `<div><dt>Year</dt><dd>${esc(String(resource.year))}</dd></div>` : ""}
             ${resource.professor && resource.professor !== "—" ? `<div><dt>Professor</dt><dd>${esc(resource.professor)}</dd></div>` : ""}
             ${resource.pages ? `<div><dt>Pages</dt><dd>${esc(String(resource.pages))}</dd></div>` : ""}
-            ${contributor ? `<div><dt>Shared by</dt><dd>${esc(contributor.name || "an IITH student")}</dd></div>` : ""}
           </dl>
 
           <div class="rp-branches">
             <span class="rp-branches-label">Taken by</span>
             <div class="rp-branch-chips">
-              ${branches.map((b) => `<span class="rp-branch-chip" style="--bc: ${departmentAccent(b)}">${esc(departmentName(b))}</span>`).join("")}
+              ${branches.map((b) => `<span class="rp-branch-chip" style="--bc: ${departmentAccent(b)}" title="${esc(departmentName(b))}">${esc(b)}</span>`).join("")}
             </div>
           </div>
         </div>
@@ -196,5 +214,5 @@ function render(root, resource, course, contributor) {
   const course = courses[resource.code];
   const contributor = (globalThis.CONTRIBUTORS || []).find((c) => c.id === resource.contributor);
 
-  render(root, resource, course, contributor);
+  render(root, resource, course, contributor, resources);
 })();

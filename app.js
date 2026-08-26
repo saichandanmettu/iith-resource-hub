@@ -94,7 +94,11 @@ function card(f, i) {
     ? '<div class="fc-open" data-book-action="true">Open the book <span>&rarr;</span></div>'
     : '<div class="fc-open">View all files <span>&rarr;</span></div>';
 
-  const line = [f.code, `Sem ${f.semester}`].filter(Boolean).join(" \u00b7 ");
+  /* Was `${code} \u00b7 Sem N` \u2014 semester is a per-branch fact (the same course
+     can sit in a CE student's 2nd sem and an ME student's 5th), so stamping
+     one number on a folder that mixes every branch's copies of the course
+     was just wrong for whichever branches didn't match it. Code alone. */
+  const line = f.code || "";
 
   const head = `
     <div class="fc-front">
@@ -213,7 +217,10 @@ function openFolderModal(courseName, presetTab) {
 
   const first = activeCourseResources[0];
   document.getElementById("fmTitle").textContent = first.course;
-  document.getElementById("fmDept").textContent = `${first.department} \u00b7 Sem ${first.semester}`;
+  /* Was `${department} \u00b7 Sem N` \u2014 same reasoning as card()'s .fc-meta
+     line above: this folder mixes every branch's copies of the course, and
+     "first" is arbitrary, so its semester isn't a fact about the course. */
+  document.getElementById("fmDept").textContent = first.department || "";
   document.getElementById("fmCode").textContent = first.code || "IITH";
   document.getElementById("fmSub").textContent = `${activeCourseResources.length} ${activeCourseResources.length === 1 ? "file" : "files"} available across past papers, notes & assignments`;
   document.getElementById("fmTabAllCount").textContent = activeCourseResources.length;
