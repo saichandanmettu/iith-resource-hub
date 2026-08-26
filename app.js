@@ -256,23 +256,24 @@ function renderFolderModalFiles() {
     const kColor = KIND[r.type]?.color || "var(--brand)";
     const kLabel = KIND[r.type]?.label || r.type;
     const prof = r.professor && r.professor !== "—" ? `Prof. ${esc(r.professor)}` : "";
-    const pagesLabel = r.pages ? `${r.pages} page${r.pages === 1 ? "" : "s"}` : "";
+    // The kind label ("Past papers") is only useful when the row could be
+    // any kind, i.e. the "All Files" tab. Once a specific kind tab is
+    // selected, every row IS that kind — repeating the label on each row
+    // just says the same thing five times.
+    const showKind = activeFolderTab === "all";
 
     return `
-      <div class="fm-row">
+      <div class="fm-row k-${r.type}">
         <div class="fm-row-left">
           <span class="fm-type-dot" style="background: ${kColor};"></span>
           <div class="fm-info">
             <b>${esc(r.title)}</b>
-            <div class="fm-meta-top">
-              <span class="fm-kind">${esc(kLabel)}</span>
-              ${r.year ? `<span class="fm-year-chip">${esc(String(r.year))}</span>` : ""}
-            </div>
+            ${showKind ? `<span class="fm-kind">${esc(kLabel)}</span>` : ""}
             ${prof ? `<span class="fm-prof">${prof}</span>` : ""}
           </div>
         </div>
         <div class="fm-actions">
-          <span class="fm-pages">${esc(pagesLabel)}</span>
+          ${r.year ? `<span class="fm-year-chip">${esc(String(r.year))}</span>` : ""}
           <div class="fm-btn-group">
             <button class="btn-share" type="button" onclick="copyLink('${esc(r.title)}')">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
