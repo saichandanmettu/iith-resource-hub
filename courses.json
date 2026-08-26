@@ -6,5 +6,9 @@
   "CC1010": {
     "name": "Introduction to Climate Change",
     "branches": ["AI", "BM", "BT", "CE", "CM", "CO", "CS", "EE", "EP", "ES", "IC", "ICT", "ME", "MNC", "MSME"]
+  },
+  "CY1010": {
+    "name": "Environmental Chemistry",
+    "branches": ["AI", "BM", "BT", "CE", "CM", "CO", "CS", "EE", "EP", "ES", "IC", "ICT", "ME", "MNC", "MSME"]
   }
 }

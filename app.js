@@ -12,8 +12,28 @@ const KIND = {
 
 const state = { kind: "all", q: "" };
 let ALL = [];
+let COURSES = {};
 
 const esc = (s) => String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* Same registry resource.js and contribute.js already fetch standalone —
+   read-only reference data, not core archive state, so it isn't part of
+   data.js's ABHYAS_READY load. Used here so the folder modal can tell an
+   open elective (registered with every branch in courses.json) apart
+   from a course that's genuinely owned by one department — a resource's
+   own `department` field is only ever one arbitrary value even for an
+   elective published under all 15, and showing that single code as THE
+   department is exactly as wrong as it was on resource.html before that
+   page started consulting this same registry. */
+async function fetchCourses() {
+  try {
+    const res = await fetch("courses.json", { cache: "no-cache" });
+    if (!res.ok) return {};
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
 
 function groupByCourse(list) {
   const map = new Map();
@@ -241,8 +261,14 @@ function openFolderModal(courseName, presetTab) {
   document.getElementById("fmTitle").textContent = first.course;
   /* Was `${department} \u00b7 Sem N` \u2014 same reasoning as card()'s .fc-meta
      line above: this folder mixes every branch's copies of the course, and
-     "first" is arbitrary, so its semester isn't a fact about the course. */
-  document.getElementById("fmDept").textContent = first.department || "";
+     "first" is arbitrary, so its semester isn't a fact about the course.
+     An open elective (courses.json registers it under every branch) has
+     no single department to show at all -- CY1010 showing "IC" was
+     exactly this, an arbitrary pick from one resource's own field
+     standing in for "every branch takes this." */
+  const registered = COURSES[first.code];
+  const isElective = Array.isArray(registered?.branches) && registered.branches.length > 1;
+  document.getElementById("fmDept").textContent = isElective ? "Elective" : (first.department || "");
   document.getElementById("fmCode").textContent = first.code || "IITH";
   document.getElementById("fmSub").textContent = `${activeCourseResources.length} ${activeCourseResources.length === 1 ? "file" : "files"} available across past papers, notes & assignments`;
   document.getElementById("fmTabAllCount").textContent = activeCourseResources.length;
@@ -556,8 +582,9 @@ function markReveals() {
 /* ============================================================
    Initialization
    ============================================================ */
-fetchResources().then((all) => {
+Promise.all([fetchResources(), fetchCourses()]).then(([all, courses]) => {
   ALL = all;
+  COURSES = courses;
   BookShelf.init(all);
   const refs = all.filter((r) => r.type === "reference" && r.book);
   BookShelf.render(document.getElementById("shelfRow"), refs);

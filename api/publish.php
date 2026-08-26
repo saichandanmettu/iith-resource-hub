@@ -264,6 +264,44 @@ if ($action === 'reject') {
   ok(['id' => $id]);
 }
 
+/* ---------------- one-time: merge a duplicate contributor ----------------
+ * TEMPORARY — remove once run. match_or_create_contributor() only
+ * de-dupes by exact case-insensitive name match at the moment a resource
+ * is published — a direct rename (like the migration's rename_contributor
+ * action, already removed) bypasses that check entirely, so if the new
+ * name happens to already exist under a different id, the person now has
+ * two rows splitting their points. Confirmed live 2026-08-27: "Chandan
+ * Mettu" existed as both c1 (real roll, one resource) and c3 (blank
+ * roll, the migration's 20 resources) after that rename. Reassigns every
+ * resource crediting $drop to $keep, then removes $drop from the
+ * registry -- $keep's own fields (including its roll) are untouched.
+ */
+if ($action === 'merge_contributors') {
+  $keep = (string) ($body['keep'] ?? '');
+  $drop = (string) ($body['drop'] ?? '');
+  if ($keep === '' || $drop === '' || $keep === $drop) fail(400, 'Need two different contributor ids');
+
+  $cpath = $c['private_dir'] . '/contributors.json';
+  $people = read_json($cpath, []);
+  if (!isset($people[$keep]) || !isset($people[$drop])) fail(404, 'Unknown contributor id');
+
+  $rpath = $c['private_dir'] . '/resources.json';
+  $all = read_json($rpath, []);
+  $reassigned = 0;
+  foreach ($all as $i => $r) {
+    if (($r['contributor'] ?? null) === $drop) {
+      $all[$i]['contributor'] = $keep;
+      $reassigned++;
+    }
+  }
+  write_json_atomic($rpath, $all);
+
+  unset($people[$drop]);
+  write_json_atomic($cpath, $people);
+
+  ok(['reassigned' => $reassigned, 'kept' => $keep, 'dropped' => $drop]);
+}
+
 /* ---------------- edit (metadata on an already-published resource) ---------------- */
 if ($action === 'edit') {
   $id = (string) ($body['id'] ?? '');
@@ -280,6 +318,14 @@ if ($action === 'edit') {
   }
   $all[$idx]['department'] = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($all[$idx]['department'] ?? '')));
   if (isset($body['year'])) $all[$idx]['year'] = (int) $body['year'] ?: null;
+  // Lets a wrong `added` be corrected after the fact -- e.g. a resource
+  // that's genuinely from years ago (an old migration, a late-filed
+  // paper) but got published today, which would otherwise count it
+  // toward the Honor Roll's "this semester" scope (added >= SEMESTER_START
+  // in leaderboard.js) when it isn't a new contribution at all.
+  if (isset($body['added']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $body['added'])) {
+    $all[$idx]['added'] = (string) $body['added'];
+  }
 
   if (($all[$idx]['type'] ?? '') === 'reference') {
     $all[$idx]['book'] = [
