@@ -23,7 +23,7 @@
          because the event never reaches the browser's native scroll
          handling for that element. Excluding anything inside .modal fixes
          it regardless of Lenis's running state. */
-      prevent: (node) => !!node.closest?.(".modal"),
+      prevent: (node) => !!(node.closest?.(".modal") || node.closest?.(".mobile-menu")),
     });
     window.__lenis = lenis;
 
@@ -123,6 +123,58 @@
         const h1 = h.querySelector("h1, h2");
         if (h1) h1.classList.add("in");
       });
+    }
+
+    /* 4. Mobile Navigation Menu Controller (Option A) */
+    const menuToggle = document.getElementById("menuToggle");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const mobileBackdrop = document.getElementById("mobileBackdrop");
+
+    if (menuToggle && mobileMenu) {
+      const setMobileMenu = (open) => {
+        menuToggle.classList.toggle("is-open", open);
+        menuToggle.setAttribute("aria-expanded", String(open));
+        mobileMenu.classList.toggle("is-open", open);
+        mobileMenu.setAttribute("aria-hidden", String(!open));
+        if (mobileBackdrop) {
+          mobileBackdrop.classList.toggle("is-open", open);
+        }
+        if (open) {
+          if (typeof window.__pauseLenis === "function") window.__pauseLenis();
+        } else {
+          if (typeof window.__resumeLenis === "function") window.__resumeLenis();
+        }
+      };
+
+      menuToggle.addEventListener("click", () => {
+        const isOpen = menuToggle.classList.contains("is-open");
+        setMobileMenu(!isOpen);
+      });
+
+      if (mobileBackdrop) {
+        mobileBackdrop.addEventListener("click", () => setMobileMenu(false));
+      }
+
+      mobileMenu.querySelectorAll("a").forEach((a) => {
+        a.addEventListener("click", () => setMobileMenu(false));
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && menuToggle.classList.contains("is-open")) {
+          setMobileMenu(false);
+        }
+      });
+
+      // Auto close on resize to desktop (> 720px)
+      window.addEventListener(
+        "resize",
+        () => {
+          if (window.innerWidth > 720 && menuToggle.classList.contains("is-open")) {
+            setMobileMenu(false);
+          }
+        },
+        { passive: true }
+      );
     }
   });
 })();

@@ -153,14 +153,17 @@ any `font-family`.**
 | `--font-mono` | DM Mono | Metadata only. Course codes, dates, counts, status labels, ⌘K keycaps. |
 | *(unnamed, `.h-serif`)* | Instrument Serif, italic — falls back to Newsreader | **One hero word per page, and only that.** The italic accent in "All in *one place*", "Sharing is *caring*", "it *forward*", "And what is *next*", "As you *get started*". Never given a `--font-*` token on purpose — it is not a fourth readable face, it is a single accent glyph run. |
 
-**Fixed 2026-08-26 — unclipped typography & cinematic kinetic blur reveals:**
+**Word-by-word unclipped typography & cinematic kinetic blur reveals:**
 To prevent text clipping on commas, descenders, and serif italic swashes
-(such as "lle", "place", and punctuation), all DOM word-splitting (`.word-span`,
-`.word-inner`) has been eliminated. The hero text renders cleanly as intact
-lines (`.hero h1 > span`) with ample line-height (`1.12` on H1, `1.25` on `.h-serif`),
-`overflow: visible`, and rich cinematic kinetic motion blur transitions (`blur(14px)`
-and subtle scale/translation settling to `none`) that maintain pure glyph fidelity
-and natural font ligatures across all screen sizes.
+(such as cursive "one place", descenders, and punctuation), words are wrapped
+in unclipped spans (`.h-word` with CSS `--w` stagger indexes) inside their
+natural line containers. The hero text renders cleanly with ample line-height
+(`1.12` on H1, `1.25` on `.h-serif`), `overflow: visible`, `vertical-align: baseline`,
+and rich cinematic kinetic motion blur transitions (`blur(14px)` and subtle
+`translateY(22px) scale(0.96)` settling to `blur(0px)` and scale `1`) that
+maintain pure glyph fidelity, natural font ligatures, and fluid wave pacing
+across all screen sizes. The cursive underline SVG is choreographed to stroke
+in right as the italic accent words finish their reveal.
 
 The split between display and course is the point: **Bricolage speaks for the
 brand, Archivo names the content.** A course name and a book title are the
