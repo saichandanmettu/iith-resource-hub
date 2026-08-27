@@ -415,7 +415,10 @@
       </button>
     `;
 
-    DEPARTMENTS.forEach(dept => {
+    // GEN is not a branch anyone belongs to -- it marks an open elective's
+    // resources, and no roll number maps to it, so a pill for it would
+    // never match a single contributor.
+    DEPARTMENTS.filter(d => !d.elective).forEach(dept => {
       const active = currentDept === dept.code ? 'on' : '';
       html += `
         <button class="lbg-dept-pill ${active}" data-dept="${dept.code}" type="button">
@@ -698,7 +701,7 @@
                   <div class="m-file-title">${esc(r.title || r.course)}</div>
                   <div class="m-file-meta">
                     <span class="m-file-code">${esc(r.code || '')}</span>
-                    ${r.year ? `<span>&middot;</span><span>${r.year}</span>` : ''}
+                    ${r.year ? `<span>&middot;</span><span>${academicYear(r.year)}</span>` : ''}
                     ${r.pages ? `<span>&middot;</span><span>${r.pages} pgs</span>` : ''}
                   </div>
                 </div>

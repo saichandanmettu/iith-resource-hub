@@ -104,7 +104,7 @@ function dominantKind(f) {
 }
 
 function meta(r) {
-  return r.year || "";
+  return academicYear(r.year);
 }
 
 function sheet(r, n) {
@@ -328,7 +328,7 @@ function renderFolderModalFiles() {
           </div>
         </div>
         <div class="fm-actions">
-          ${r.year ? `<span class="fm-year-chip">${esc(String(r.year))}</span>` : ""}
+          ${r.year ? `<span class="fm-year-chip">${esc(academicYear(r.year))}</span>` : ""}
           <div class="fm-btn-group">
             <button class="btn-share" type="button" data-share-title="${esc(r.title)}" data-share-id="${r.id}">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>

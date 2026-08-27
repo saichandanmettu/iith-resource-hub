@@ -200,7 +200,7 @@
     const yearSel = document.getElementById("filterYear");
     const current = yearSel.value;
     yearSel.innerHTML = `<option value="all">Year: All</option>` +
-      [...years].sort((a, b) => b - a).map((y) => `<option value="${y}">${y}</option>`).join("");
+      [...years].sort((a, b) => b - a).map((y) => `<option value="${y}">${esc(academicYear(y))}</option>`).join("");
     yearSel.value = [...years].map(String).includes(current) ? current : "all";
   }
 
@@ -344,10 +344,11 @@
   let previewUrl = null; // revoke the previous blob: URL before making a new one
 
   function resetForm() {
-    ["fCode", "fCourse", "fYear", "fExam", "fTitle", "fProf", "fContrib", "fRoll",
+    ["fCode", "fCourse", "fExam", "fTitle", "fProf", "fContrib", "fRoll",
      "fBookTitle", "fBookAuthor", "fBookPublisher", "fBookGist", "fBookLink", "fBookPages"]
       .forEach((id) => { document.getElementById(id).value = ""; });
     document.getElementById("fType").value = "papers";
+    fillYears(null);
     document.getElementById("fBookCover").value = "ink";
     document.getElementById("fFile").value = "";
     document.getElementById("codeHint").hidden = true;
@@ -428,7 +429,7 @@
     document.getElementById("fCode").value = it.code || "";
     document.getElementById("fCourse").value = it.course || "";
     document.getElementById("fType").value = it.type || "papers";
-    document.getElementById("fYear").value = it.year || "";
+    fillYears(it.year);
     document.getElementById("fExam").value = it.examType || "";
     document.getElementById("fProf").value = it.professor || "";
     document.getElementById("fContrib").value = it.contributor ? contributorName(it.contributor) : "";
@@ -481,7 +482,7 @@
     document.getElementById("fCode").value = it.code || "";
     document.getElementById("fCourse").value = it.course || "";
     document.getElementById("fType").value = it.type || "papers";
-    document.getElementById("fYear").value = it.year || "";
+    fillYears(it.year);
     document.getElementById("fExam").value = it.examType || "";
     document.getElementById("fProf").value = it.professor || "";
     document.getElementById("fContrib").value = it.contributor || "";
@@ -523,7 +524,7 @@
     document.getElementById("pdfPane").innerHTML = "";
     document.body.style.overflow = "";
     if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
-    pendingForcePublish = null;
+    pendingForceRetry = null;
     state.current = null;
   }
   document.getElementById("btnAdd").addEventListener("click", openAdd);
@@ -540,7 +541,7 @@
     const file = e.target.files[0];
     const pane = document.getElementById("pdfPane");
     if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
-    pendingForcePublish = null;
+    pendingForceRetry = null;
     document.getElementById("dupeWarn").hidden = true;
     if (!file) {
       pane.innerHTML = `<div class="ad-pdf-stub">Pick a PDF to preview it here &mdash; nothing uploads until you click Publish.</div>`;
@@ -568,11 +569,43 @@
   }
   document.getElementById("fType").addEventListener("change", syncBookFields);
 
+  /* GEN ("General / Open Elective") sits at the top, apart from the real
+     branches: for a course several branches take, picking one of them is
+     not a smaller mistake than picking none -- it is the CY1010-filed-
+     under-IC bug waiting to happen again. Nothing on the public site
+     filters the archive by this field (app.js groups by course), so GEN
+     costs nothing beyond being honest. */
+  /* Academic years, newest first, back far enough to cover anything worth
+     archiving. The label is the span ("2025-26"); the value is the start
+     year, which is what the record, the id and the filename all carry.
+     Defaults to the session in progress -- terms start around July, so
+     before then "this year" is still the one that began last calendar
+     year. A record whose stored year predates the list keeps its own
+     option rather than being silently snapped to another year. */
+  function fillYears(selected) {
+    const sel = document.getElementById("fYear");
+    const now = new Date();
+    const current = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+    const years = [];
+    for (let y = current; y >= current - 14; y--) years.push(y);
+    const chosen = Number(selected) || current;
+    if (!years.includes(chosen)) years.push(chosen);
+    years.sort((a, b) => b - a);
+    sel.innerHTML = years.map((y) =>
+      `<option value="${y}"${y === chosen ? " selected" : ""}>${esc(academicYear(y))}</option>`).join("");
+  }
+
   function fillDepts(selected) {
     const sel = document.getElementById("fDept");
-    sel.innerHTML = DEPARTMENTS.map((d) =>
-      `<option value="${esc(d.code)}"${d.code === selected ? " selected" : ""}>${esc(d.code)} — ${esc(d.short)}</option>`
-    ).join("");
+    const branches = DEPARTMENTS.filter((d) => !d.elective);
+    const general = DEPARTMENTS.filter((d) => d.elective);
+    const opt = (d) => `<option value="${esc(d.code)}"${d.code === selected ? " selected" : ""}>${esc(d.code)} — ${esc(d.short)}</option>`;
+    sel.innerHTML = general.map(opt).join("") +
+      `<option disabled>──────────</option>` +
+      branches.map(opt).join("");
+    // Nothing matched (a record filed before GEN existed, or a blank add):
+    // fall back to the first real branch rather than silently landing on GEN.
+    if (!sel.value || sel.selectedIndex < 0) sel.value = selected || branches[0].code;
   }
 
   /* Auto-fill from the registry: name, professors, AND branch — keyed to
@@ -598,8 +631,18 @@
     const dept = document.getElementById("fDept");
     if (!course.value.trim()) course.value = hit.name;
     if (!prof.value.trim() && hit.professors?.length) prof.value = hit.professors.join(", ");
-    if (!deptTouched && hit.branches?.length) dept.value = hit.branches[0];
-    hint.textContent = `Known course — ${hit.name}`;
+    /* A course registered to more than one branch is an open elective:
+       there IS no single owning branch, so offer GEN rather than the
+       arbitrary first entry in its branches list. Still only a default --
+       touching the dropdown yourself always wins. */
+    const isElective = (hit.branches?.length || 0) > 1;
+    if (!deptTouched) {
+      if (isElective) dept.value = "GEN";
+      else if (hit.branches?.length) dept.value = hit.branches[0];
+    }
+    hint.textContent = isElective
+      ? `Known course — ${hit.name} · open elective (${hit.branches.length} branches), filed as General`
+      : `Known course — ${hit.name}`;
     hint.hidden = false;
   });
 

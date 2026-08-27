@@ -49,7 +49,31 @@ const DEPARTMENTS = [
   { code: "MSME", name: "Materials Science and Metallurgical Engineering", accent: "#9B5A08", short: "Materials Science" },
   { code: "MNC",  name: "Mathematics and Computing", accent: "#445927", short: "Maths & Computing" },
   { code: "ME",   name: "Mechanical and Aerospace Engineering", accent: "#85321D", short: "Mechanical & Aerospace" },
+  /* Not a programme, and flagged so the one place that means "a person's
+     own branch" (the Honor Roll's branch pills, keyed off roll numbers,
+     which never start GEN) can leave it out. It belongs in this list
+     because everything else here answers "which code goes with which
+     label" -- and an open elective genuinely has no owning branch.
+     Filing CC1010 under whichever branch happened to be picked was the
+     CY1010-under-IC bug over again; GEN says the true thing instead. */
+  { code: "GEN",  name: "General / Open Elective", accent: "#8C6597", short: "General / Elective", elective: true },
 ];
+
+
+/* A resource's `year` is stored as ONE integer -- the year the academic
+   session STARTS -- because it has to stay an integer: it is part of every
+   resource id and every filename on disk, and the Honor Roll sorts on it.
+   But a bare "2025" is genuinely ambiguous to a reader (the 2024-25
+   session that ended that year, or the 2025-26 one that began in it?),
+   which is how the same course ends up filed under two different years by
+   two different people. Store the start, always show the span.
+   The admin console's Year dropdown writes the same start year, so the
+   choice is unambiguous at the point it is made too. */
+function academicYear(startYear) {
+  const y = parseInt(startYear, 10);
+  if (!y) return "";
+  return `${y}\u2013${String(y + 1).slice(-2)}`; // 2024 -> "2024–25"
+}
 
 
 /* What a contribution is worth, keyed by the SAME four ids that carry the

@@ -229,9 +229,15 @@ body { background: #EADCC2; }
   display: block; font: 500 .7rem var(--font-mono); color: var(--muted);
   letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px;
 }
+/* background-COLOR, not the `background` shorthand: the shorthand resets
+   background-image and background-repeat, and styles.css (imported at the
+   top of this file) draws the <select> chevron as a no-repeat background
+   image. The shorthand wiped both -- so the closed select lost its chevron
+   entirely, and :focus, which re-set only background-image, got it back
+   with repeat restored to the default and tiled it across the whole box. */
 .ad-field input, .ad-field select, .ad-field textarea {
   width: 100%; box-sizing: border-box;
-  background: var(--paper); border: 1px solid var(--hair); border-radius: 12px;
+  background-color: var(--paper); border: 1px solid var(--hair); border-radius: 12px;
   padding: 12px 14px; font-family: var(--font-body); font-size: .94rem; color: var(--ink);
   transition: border-color .22s var(--ease), box-shadow .22s var(--ease);
 }

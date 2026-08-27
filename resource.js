@@ -195,7 +195,7 @@ function render(root, resource, course, contributor, allResources) {
       <div class="rp-head-top">
         <span class="rp-kind-chip"><span class="rp-kind-dot"></span>${esc(kind.label)}</span>
         <span class="rp-plain-chip">${esc(resource.code)}</span>
-        ${resource.year ? `<span class="rp-plain-chip">${esc(String(resource.year))}</span>` : ""}
+        ${resource.year ? `<span class="rp-plain-chip">${esc(academicYear(resource.year))}</span>` : ""}
       </div>
       <h1 class="rp-title">${esc(resource.title)}</h1>
     </div>
@@ -235,7 +235,7 @@ function render(root, resource, course, contributor, allResources) {
           <dl class="rp-facts">
             <div><dt>Course</dt><dd>${esc(resource.course)}</dd></div>
             <div><dt>Code</dt><dd>${esc(resource.code)}</dd></div>
-            ${resource.year ? `<div><dt>Year</dt><dd>${esc(String(resource.year))}</dd></div>` : ""}
+            ${resource.year ? `<div><dt>Year</dt><dd>${esc(academicYear(resource.year))}</dd></div>` : ""}
             ${resource.professor && resource.professor !== "—" ? `<div><dt>Professor</dt><dd>${esc(resource.professor)}</dd></div>` : ""}
             ${resource.pages ? `<div><dt>Pages</dt><dd>${esc(String(resource.pages))}</dd></div>` : ""}
           </dl>
