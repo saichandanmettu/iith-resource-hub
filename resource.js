@@ -20,20 +20,21 @@
    ============================================================ */
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (n) => Number(n || 0).toLocaleString("en-US");
 
-/* Real download/share counts, same pattern as releases.js's VOTE_API — one
+/* Real download/share/view counts, same pattern as releases.js's VOTE_API — one
    more Apps Script web app, source kept at _local/counters-apps-script.gs.
    Deploy it, paste the /exec URL below, and counts start appearing; until
-   then this stays a placeholder and the buttons just don't show a number
+   then this stays a placeholder and the buttons/chips just don't show a number
    (same graceful no-op releases.js already uses for its own PASTE_ guard) —
    never a fabricated number in the meantime. */
 const COUNTER_API = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
 const counterConfigured = () => COUNTER_API.indexOf("PASTE_") !== 0;
 
-async function loadCounts(id) {
+async function loadCounts(id, action = "read") {
   if (!counterConfigured()) return null;
   try {
-    const res = await fetch(`${COUNTER_API}?action=read&id=${encodeURIComponent(id)}`);
+    const res = await fetch(`${COUNTER_API}?action=${encodeURIComponent(action)}&id=${encodeURIComponent(id)}`);
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -45,7 +46,7 @@ function bumpCount(id, action) {
   if (!counterConfigured()) return;
   /* Fire-and-forget — a download or share should never wait on this, and
      a failed count update shouldn't block or error the actual action. */
-  fetch(`${COUNTER_API}?action=${action}&id=${encodeURIComponent(id)}`).catch(() => {});
+  fetch(`${COUNTER_API}?action=${encodeURIComponent(action)}&id=${encodeURIComponent(id)}`).catch(() => {});
 }
 
 /* This page doesn't load app.js (no folder grid, no filters — nothing else
@@ -196,6 +197,7 @@ function render(root, resource, course, contributor, allResources) {
         <span class="rp-kind-chip"><span class="rp-kind-dot"></span>${esc(kind.label)}</span>
         <span class="rp-plain-chip">${esc(resource.code)}</span>
         ${resource.year ? `<span class="rp-plain-chip">${esc(academicYear(resource.year))}</span>` : ""}
+        <span class="rp-plain-chip rp-views-chip" id="rpViewChip" hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span id="rpViewCount"></span></span>
       </div>
       <h1 class="rp-title">${esc(resource.title)}</h1>
     </div>
@@ -238,6 +240,7 @@ function render(root, resource, course, contributor, allResources) {
             ${resource.year ? `<div><dt>Year</dt><dd>${esc(academicYear(resource.year))}</dd></div>` : ""}
             ${resource.professor && resource.professor !== "—" ? `<div><dt>Professor</dt><dd>${esc(resource.professor)}</dd></div>` : ""}
             ${resource.pages ? `<div><dt>Pages</dt><dd>${esc(String(resource.pages))}</dd></div>` : ""}
+            <div id="rpViewsRow" hidden><dt>Views</dt><dd id="rpViewsFact"></dd></div>
           </dl>
 
           <div class="rp-branches">
@@ -257,21 +260,74 @@ function render(root, resource, course, contributor, allResources) {
 
   const dlCountEl = document.getElementById("rpDlCount");
   const shareCountEl = document.getElementById("rpShareCount");
-  const showCount = (el, n) => { el.textContent = ` ${n}`; el.hidden = false; };
+  const viewChipEl = document.getElementById("rpViewChip");
+  const viewCountEl = document.getElementById("rpViewCount");
+  const viewsRowEl = document.getElementById("rpViewsRow");
+  const viewsFactEl = document.getElementById("rpViewsFact");
 
-  loadCounts(resource.id).then((counts) => {
+  /* Views increment once per browser session per resource. sessionStorage
+     throws in strict privacy settings (e.g. cookies blocked) — wrap in
+     try/catch so a storage failure degrades to a non-incrementing read
+     rather than crashing the page render. */
+  let isNewView = false;
+  const viewKey = `abhyas_viewed_${resource.id}`;
+  try {
+    isNewView = !sessionStorage.getItem(viewKey);
+  } catch {
+    isNewView = false;
+  }
+  /* Deliberately NOT marked as viewed yet -- the flag is written once the
+     view has actually been recorded (below). Setting it here instead would
+     burn the session on a view that never counted: every visit before the
+     Apps Script is deployed, and any request that fails afterwards. The
+     cost is a narrow double-count window on a very fast reload, which is
+     the right way round for a metric that should undercount, not over. */
+  const initialAction = isNewView ? "view" : "read";
+
+  /* Hold numeric counts in memory to avoid reading formatted text (e.g. "1,240")
+     back out of the DOM, which would parse to NaN on optimistic increment. */
+  let currentViews = null;
+  let currentDownloads = null;
+  let currentShares = null;
+
+  loadCounts(resource.id, initialAction).then((counts) => {
     if (!counts) return;
+    if (isNewView) {
+      try { sessionStorage.setItem(viewKey, "1"); } catch { /* storage blocked — worst case this view counts twice */ }
+    }
+
+    if (typeof counts.views === "number") {
+      currentViews = counts.views;
+      if (viewCountEl) viewCountEl.textContent = `${fmt(currentViews)} view${currentViews === 1 ? "" : "s"}`;
+      if (viewChipEl) viewChipEl.hidden = false;
+      if (viewsFactEl) viewsFactEl.textContent = fmt(currentViews);
+      if (viewsRowEl) viewsRowEl.hidden = false;
+    }
+
     // Nothing to count downloads OF when there's no file to download —
     // "Find this book online" leaves the archive entirely, not something
     // this site's counters track. Share still applies either way.
-    if (dlCountEl) showCount(dlCountEl, counts.downloads);
-    showCount(shareCountEl, counts.shares);
+    if (dlCountEl && typeof counts.downloads === "number") {
+      currentDownloads = counts.downloads;
+      dlCountEl.textContent = ` ${fmt(currentDownloads)}`;
+      dlCountEl.hidden = false;
+    }
+
+    if (shareCountEl && typeof counts.shares === "number") {
+      currentShares = counts.shares;
+      shareCountEl.textContent = ` ${fmt(currentShares)}`;
+      shareCountEl.hidden = false;
+    }
   });
 
   if (hasFile) {
     document.getElementById("rpDownloadBtn").addEventListener("click", () => {
       bumpCount(resource.id, "download");
-      if (!dlCountEl.hidden) showCount(dlCountEl, Number(dlCountEl.textContent) + 1);
+      if (currentDownloads !== null && dlCountEl) {
+        currentDownloads += 1;
+        dlCountEl.textContent = ` ${fmt(currentDownloads)}`;
+        dlCountEl.hidden = false;
+      }
     });
   }
 
@@ -280,7 +336,11 @@ function render(root, resource, course, contributor, allResources) {
     if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
     showToast(`Link copied for "${resource.title}"`);
     bumpCount(resource.id, "share");
-    if (!shareCountEl.hidden) showCount(shareCountEl, Number(shareCountEl.textContent) + 1);
+    if (currentShares !== null && shareCountEl) {
+      currentShares += 1;
+      shareCountEl.textContent = ` ${fmt(currentShares)}`;
+      shareCountEl.hidden = false;
+    }
   });
 }
 

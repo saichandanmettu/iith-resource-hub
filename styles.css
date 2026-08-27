@@ -8295,6 +8295,13 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   font: 600 .78rem var(--font-mono); color: inherit; background: rgba(255, 255, 255, .65);
   padding: 6px 13px; border-radius: 999px;
 }
+.rp-views-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.rp-views-chip svg {
+  flex-shrink: 0; opacity: .7;
+}
 .rp-title {
   font-family: var(--font-course); font-weight: 800; font-size: clamp(1.5rem, 3vw, 2.1rem);
   letter-spacing: var(--track-md); line-height: 1.15; margin: 0; color: inherit;
