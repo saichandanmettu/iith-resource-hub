@@ -72,12 +72,12 @@ const RELEASES = [
     items: ["Points per resource kind", "This semester and all time", "Credit stays optional"]
   },
   {
-    status: "building",
+    status: "shipped",
     tag: "Archive",
-    title: "Download & share counts, per file",
-    date: "August 2026",
-    body: "Every resource page already has Download and Share buttons — the real counts next to them go live once the counter is wired in. No fake numbers in the meantime.",
-    items: ["Real per-file download counts", "Real per-file share counts", "Shown only once they're real"]
+    title: "Views, downloads & shares, per file",
+    date: "27 Aug 2026",
+    body: "The counter is wired in and live. Every resource page shows how many times it has been read, downloaded and shared — and shows nothing at all until those numbers are real.",
+    items: ["View count per resource", "Real download & share counts", "Counted once per visit, never inflated"]
   },
   {
     status: "building",
@@ -260,6 +260,59 @@ const STATUS_META = {
    inline onclick handlers, which only resolve against the global scope.
    ============================================================ */
 const VERSIONS = [
+  {
+    id: "v3-1",
+    version: "3.1",
+    theme: "papers", // Warm Amber (#F28700)
+    title: "Version 3.1",
+    date: "27 Aug 2026",
+    daysSince: "5 days later",
+    votes: 0,
+    announcement: [
+      "3.0 rebuilt the shell. <strong>3.1 fills it.</strong> The archive now takes files from anyone, reviews them before they go live, gives every resource a page of its own, and counts who is actually using it — and the first real course materials are in."
+    ],
+    groups: [
+      {
+        label: "ANYONE CAN CONTRIBUTE",
+        items: [
+          "Submit From the Contribute Page: Send a file straight from the site — no email, no forms to chase",
+          "Nothing Goes Live Unsupervised: Every submission waits in a private review queue until it is checked",
+          "Credit Is Yours, and Optional: Attach your name and roll number, or stay anonymous"
+        ]
+      },
+      {
+        label: "EVERY FILE, ITS OWN PAGE",
+        items: [
+          "Read Before You Download: The PDF opens inline on the page, full screen if you want it",
+          "One Link Per Resource: Share a specific paper, not the whole archive",
+          "Views, Downloads and Shares: Real counts on every page, shown only once they are real"
+        ]
+      },
+      {
+        label: "THE ARCHIVE UNDERSTANDS ITSELF BETTER",
+        items: [
+          "Open Electives Filed as Electives: A course every branch takes is no longer forced under one branch it does not belong to",
+          "Academic Years, Not Bare Numbers: 2024-25 instead of a 2024 that could mean either half of it",
+          "Contributors Identified Properly: Full roll numbers on record, with only the batch shown publicly"
+        ]
+      },
+      {
+        label: "BUILT FOR THE PHONE IT IS READ ON",
+        items: [
+          "Pages That Actually Scroll: The inline PDF no longer swallows every swipe",
+          "Course Folders Fit Their Contents: No more empty tabs, hidden tabs or half a blank screen",
+          "Reworked Headers and Menus: Titles first, controls sized for a thumb"
+        ]
+      },
+      {
+        label: "CONTENT",
+        items: [
+          "Real Course Materials Imported: Papers, notes and assignments are being uploaded and reviewed course by course",
+          "Reference Shelf Restocked: Real textbooks behind the courses that set them"
+        ]
+      }
+    ]
+  },
   {
     id: "v3-0",
     version: "3.0",
