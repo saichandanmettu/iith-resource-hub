@@ -267,15 +267,21 @@ body { background: #EADCC2; }
   position: absolute; inset: 24px; background: var(--paper);
   border-radius: 26px; overflow: hidden;
   display: grid; grid-template-columns: 1.4fr .9fr;
+  /* Without an explicit row track the implicit row is `auto` -- sized to
+     the TALLEST form, not to the panel. .ad-side then grew past the panel,
+     `overflow: hidden` above quietly clipped the overspill, and
+     .ad-side-body's `overflow-y: auto` never had a constrained height to
+     scroll within. minmax(0,1fr) pins the row to the panel instead. */
+  grid-template-rows: minmax(0, 1fr);
   box-shadow: 0 50px 100px -30px rgba(0,0,0,.5);
 }
-.ad-pdf { background: #574d44; display: grid; place-items: center; }
+.ad-pdf { background: #574d44; display: grid; place-items: center; min-height: 0; }
 .ad-pdf iframe { width: 100%; height: 100%; border: 0; }
 .ad-pdf-stub {
   color: rgba(255,255,255,.6); font: 400 .82rem var(--font-mono);
   text-align: center; line-height: 1.8; padding: 30px;
 }
-.ad-side { display: flex; flex-direction: column; border-left: 1px solid var(--hair); }
+.ad-side { display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--hair); }
 .ad-side-head {
   padding: 20px 24px; border-bottom: 1px solid var(--hair);
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -289,7 +295,7 @@ body { background: #EADCC2; }
   width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; line-height: 1;
 }
 .ad-close:hover { background: var(--wash-strong); color: var(--ink); }
-.ad-side-body { flex: 1; overflow-y: auto; padding: 22px 24px; }
+.ad-side-body { flex: 1; min-height: 0; overflow-y: auto; padding: 22px 24px; }
 .ad-hint { margin: -9px 0 16px; font: 400 .72rem var(--font-mono); color: var(--notes-ink); }
 .ad-warn {
   margin: 0 0 18px; padding: 13px 15px; border-radius: 12px;

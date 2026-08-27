@@ -603,9 +603,12 @@
     sel.innerHTML = general.map(opt).join("") +
       `<option disabled>──────────</option>` +
       branches.map(opt).join("");
-    // Nothing matched (a record filed before GEN existed, or a blank add):
-    // fall back to the first real branch rather than silently landing on GEN.
-    if (!sel.value || sel.selectedIndex < 0) sel.value = selected || branches[0].code;
+    /* Anything we can't place -- a blank Add form, or a stored branch that
+       is no longer in the list -- keeps the first option, GEN. "Not
+       attributed to a branch" is the honest answer there; whichever branch
+       happens to sort first alphabetically is not. Typing a known course
+       code corrects it a moment later anyway. */
+    if (selected && [...sel.options].some((o) => o.value === selected)) sel.value = selected;
   }
 
   /* Auto-fill from the registry: name, professors, AND branch — keyed to
