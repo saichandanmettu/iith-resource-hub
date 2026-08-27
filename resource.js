@@ -129,7 +129,17 @@ function renderViewer(fileUrl, title) {
          breaks the viewer's query parsing. */
       const absolute = new URL(fileUrl, window.location.href).href;
       const viewerUrl = `assets/pdfjs/web/viewer.html?file=${encodeURIComponent(absolute)}`;
-      wrap.innerHTML = `<iframe class="rp-pdf-frame" src="${esc(viewerUrl)}" title="${esc(title)}" loading="lazy" allow="fullscreen"></iframe>`;
+      /* The embed captures touch-scroll: once a finger lands on it, it
+         pages the PDF instead of the document, and at full width on a
+         phone there is barely any page left to catch. The frame is
+         shortened in CSS so there is always page above and below it, and
+         this bar gives the real reading path out of the embed entirely. */
+      wrap.innerHTML = `
+        <iframe class="rp-pdf-frame" src="${esc(viewerUrl)}" title="${esc(title)}" loading="lazy" allow="fullscreen"></iframe>
+        <a class="rp-viewer-expand" href="${esc(viewerUrl)}" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+          Open full screen
+        </a>`;
     })
     .catch(() => {
       wrap.innerHTML = `
@@ -193,13 +203,22 @@ function render(root, resource, course, contributor, allResources) {
   root.className = `rp-layout k-${resource.type}`;
   root.innerHTML = `
     <div class="rp-masthead">
-      <div class="rp-head-top">
-        <span class="rp-kind-chip"><span class="rp-kind-dot"></span>${esc(kind.label)}</span>
-        <span class="rp-plain-chip">${esc(resource.code)}</span>
-        ${resource.year ? `<span class="rp-plain-chip">${esc(academicYear(resource.year))}</span>` : ""}
-        <span class="rp-plain-chip rp-views-chip" id="rpViewChip" hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span id="rpViewCount"></span></span>
-      </div>
       <h1 class="rp-title">${esc(resource.title)}</h1>
+      <!-- Two groups, not four loose chips: left to wrap on their own at
+           375px the four broke wherever they happened to run out of room,
+           stranding the view chip alone on a line of its own. What the
+           chip says pairs it -- kind and code identify the file, year and
+           views describe it -- so each pair wraps as a unit. -->
+      <div class="rp-head-top">
+        <span class="rp-chip-group">
+          <span class="rp-kind-chip"><span class="rp-kind-dot"></span>${esc(kind.label)}</span>
+          <span class="rp-plain-chip">${esc(resource.code)}</span>
+        </span>
+        <span class="rp-chip-group">
+          ${resource.year ? `<span class="rp-plain-chip">${esc(academicYear(resource.year))}</span>` : ""}
+          <span class="rp-plain-chip rp-views-chip" id="rpViewChip" hidden><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span id="rpViewCount"></span></span>
+        </span>
+      </div>
     </div>
 
     <div class="rp-body">
