@@ -281,17 +281,26 @@ function openFolderModal(courseName, presetTab) {
   const isElective = Array.isArray(registered?.branches) && registered.branches.length > 1;
   document.getElementById("fmDept").textContent = isElective ? "Elective" : (first.department || "");
   document.getElementById("fmCode").textContent = first.code || "IITH";
-  document.getElementById("fmSub").textContent = `${activeCourseResources.length} ${activeCourseResources.length === 1 ? "file" : "files"} available across past papers, notes & assignments`;
+  const kindCounts = {};
+  activeCourseResources.forEach((r) => { kindCounts[r.type] = (kindCounts[r.type] || 0) + 1; });
+  const kindsPresent = Object.keys(kindCounts).length;
+
+  /* Was a fixed "across past papers, notes & assignments" regardless of
+     what the folder actually held — it advertised categories that weren't
+     there, the same way the empty tabs did. Now it names what's inside. */
+  const breakdown = Object.entries(kindCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, n]) => `${n} ${(FOLDER_TAB_LABELS[k] || k).toLowerCase()}`)
+    .join(" · ");
+  const total = activeCourseResources.length;
+  document.getElementById("fmSub").textContent =
+    kindsPresent > 1 ? `${total} files — ${breakdown}` : `${total} ${total === 1 ? "file" : "files"}`;
   /* Only offer tabs that lead somewhere. Five fixed tabs meant a course
      with one past paper still showed Notes, Assignments and Reference
      Books -- three dead ends -- and pushed the real ones off the edge of
      a phone screen into a horizontal scroll nobody discovers. Counts go
      in the label for the same reason: what's behind a tab should be
      legible before it's tapped, not after. */
-  const kindCounts = {};
-  activeCourseResources.forEach((r) => { kindCounts[r.type] = (kindCounts[r.type] || 0) + 1; });
-  const kindsPresent = Object.keys(kindCounts).length;
-
   document.querySelectorAll("#fmTabs .fm-tab").forEach((tab) => {
     const k = tab.dataset.fmtab;
     const n = k === "all" ? activeCourseResources.length : (kindCounts[k] || 0);
