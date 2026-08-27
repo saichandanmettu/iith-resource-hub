@@ -1222,17 +1222,18 @@ body[data-menu-open="true"] .mobile-backdrop {
   line-height: 1.05; margin: 0 0 6px;
 }
 .fm-sub { color: var(--ink-soft); font-size: .92rem; margin: 0 0 18px; }
+/* WRAPS, never scrolls sideways. The old strip scrolled with a fade to
+   hint at more, and the hint did not work: a tab you cannot see is a tab
+   nobody finds, which is the same conclusion the archive's own filter
+   pills reached. Two things make wrapping affordable here — empty tabs
+   are no longer rendered at all, and a folder holding one kind drops the
+   strip entirely (both in openFolderModal) — so five tabs is now the rare
+   case rather than the default. */
 .fm-tabs {
-  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
-  padding-bottom: 6px; border-bottom: 1px solid var(--hair);
-  /* Signals "more tabs, swipe" when the strip overflows — Reference Books
-     is the 5th tab and never fits on a phone screen alongside the other
-     four. Fades transparent right at the very end of scroll too (a small,
-     accepted tradeoff for not needing JS to track scroll position). */
-  -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
-  mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--hair);
 }
-.fm-tabs::-webkit-scrollbar { display: none; }
+.fm-tab[hidden], .fm-tabs[hidden] { display: none; }
 .fm-tab {
   border: 0; background: transparent; cursor: pointer; font-family: inherit;
   font-size: .84rem; font-weight: 600; color: var(--ink-soft);
@@ -1394,6 +1395,7 @@ body[data-menu-open="true"] .mobile-backdrop {
    `width` was, when the grid/percentage bleed bug was fixed). */
 @media (max-width: 640px) {
   .folder-modal-card { padding: 26px 20px 20px; }
+  .fm-tab { font-size: .8rem; padding: 7px 13px; }
   .fm-title { font-size: 1.32rem; }
   .fm-sub { font-size: .86rem; }
   /* Stack each file row: title+meta on their own line at full width, then

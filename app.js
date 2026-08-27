@@ -35,6 +35,17 @@ async function fetchCourses() {
   }
 }
 
+/* Tab labels are rebuilt with counts on every open, so the base text has
+   to live here rather than in index.html's markup. Keys match data-fmtab
+   and the four resource kinds. */
+const FOLDER_TAB_LABELS = {
+  all: "All Files",
+  papers: "Past Papers",
+  notes: "Notes & Slides",
+  assignment: "Assignments",
+  reference: "Reference Books",
+};
+
 function groupByCourse(list) {
   const map = new Map();
   list.forEach((r) => {
@@ -271,12 +282,31 @@ function openFolderModal(courseName, presetTab) {
   document.getElementById("fmDept").textContent = isElective ? "Elective" : (first.department || "");
   document.getElementById("fmCode").textContent = first.code || "IITH";
   document.getElementById("fmSub").textContent = `${activeCourseResources.length} ${activeCourseResources.length === 1 ? "file" : "files"} available across past papers, notes & assignments`;
-  document.getElementById("fmTabAllCount").textContent = activeCourseResources.length;
+  /* Only offer tabs that lead somewhere. Five fixed tabs meant a course
+     with one past paper still showed Notes, Assignments and Reference
+     Books -- three dead ends -- and pushed the real ones off the edge of
+     a phone screen into a horizontal scroll nobody discovers. Counts go
+     in the label for the same reason: what's behind a tab should be
+     legible before it's tapped, not after. */
+  const kindCounts = {};
+  activeCourseResources.forEach((r) => { kindCounts[r.type] = (kindCounts[r.type] || 0) + 1; });
+  const kindsPresent = Object.keys(kindCounts).length;
+
+  document.querySelectorAll("#fmTabs .fm-tab").forEach((tab) => {
+    const k = tab.dataset.fmtab;
+    const n = k === "all" ? activeCourseResources.length : (kindCounts[k] || 0);
+    tab.hidden = k !== "all" && n === 0;
+    tab.textContent = `${FOLDER_TAB_LABELS[k] || k} (${n})`;
+  });
+  /* One kind in the folder makes the whole strip a tautology -- "All Files
+     (1)" and "Past Papers (1)" are the same list -- so it goes away and
+     the files start right under the title. */
+  document.getElementById("fmTabs").hidden = kindsPresent <= 1;
 
   /* Land on the tab the folder's own colour promised. Someone who clicks an
      amber past-papers folder wants past papers, not an "all files" list they
      have to filter down again. Fall back to "all" if that tab would be empty. */
-  const wanted = presetTab && activeCourseResources.some((r) => r.type === presetTab)
+  const wanted = kindsPresent > 1 && presetTab && activeCourseResources.some((r) => r.type === presetTab)
     ? presetTab
     : "all";
   activeFolderTab = wanted;
