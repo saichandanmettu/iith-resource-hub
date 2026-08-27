@@ -147,16 +147,10 @@ function renderViewer(fileUrl, title) {
           Open full screen
         </a>`;
 
-      /* Only mark the wrapper shielded where CSS actually shows the shield,
-         so the expand pill doesn't jump to the top on desktop where nothing
-         is covering it. */
-      const shield = wrap.querySelector(".rp-viewer-shield");
-      if (shield && getComputedStyle(shield).display !== "none") {
-        wrap.classList.add("is-shielded");
-      }
-      shield?.addEventListener("click", () => {
-        shield.hidden = true;
-        wrap.classList.remove("is-shielded");
+      /* One tap and the layer is gone for the rest of the visit. Desktop
+         never sees it at all — CSS keeps it display:none above 640px. */
+      wrap.querySelector(".rp-viewer-shield")?.addEventListener("click", (ev) => {
+        ev.currentTarget.hidden = true;
       });
     })
     .catch(() => {

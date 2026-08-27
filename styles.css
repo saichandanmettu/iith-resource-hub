@@ -8361,8 +8361,10 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   background: transparent; border: 0; padding: 0; width: 100%;
   cursor: pointer; font: inherit;
 }
+/* Centred, not pinned to the bottom edge: it is an invitation to tap the
+   whole layer, and it kept the corner free for the expand pill. */
 .rp-viewer-shield span {
-  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
   font: 600 .78rem var(--font-body); color: var(--ink);
   background: rgba(255, 255, 255, .93); padding: 8px 15px; border-radius: 999px;
@@ -8370,8 +8372,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 }
 /* Once tapped the layer is gone for good and the embed behaves normally. */
 .rp-viewer-shield[hidden] { display: none; }
-/* The expand pill moves out from under the shield's own label. */
-.rp-viewer.is-shielded .rp-viewer-expand { bottom: auto; top: 12px; }
+
 .rp-pdf-frame { width: 100%; min-height: 480px; height: 70vh; border: 0; display: block; background: #fff; }
 .rp-viewer-loading, .rp-viewer-empty {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
