@@ -80,14 +80,6 @@ const RELEASES = [
     items: ["View count per resource", "Real download & share counts", "Counted once per visit, never inflated"]
   },
   {
-    status: "building",
-    tag: "Releases",
-    title: "This page",
-    date: "August 2026",
-    body: "A running log of what is shipping, so contributors can see the archive is alive and know what is coming.",
-    items: ["Changelog entries", "Status per item", "What is next"]
-  },
-  {
     status: "shipped",
     tag: "Bookshelf",
     title: "The reference shelf",
@@ -269,46 +261,16 @@ const VERSIONS = [
     daysSince: "5 days later",
     votes: 0,
     announcement: [
-      "3.0 rebuilt the shell. <strong>3.1 fills it.</strong> The archive now takes files from anyone, reviews them before they go live, gives every resource a page of its own, and counts who is actually using it — and the first real course materials are in."
+      "Anyone can add to the archive now. Every file has a page of its own. And the real course material is going in."
     ],
     groups: [
       {
-        label: "ANYONE CAN CONTRIBUTE",
+        label: "WHAT'S NEW",
         items: [
-          "Submit From the Contribute Page: Send a file straight from the site — no email, no forms to chase",
-          "Nothing Goes Live Unsupervised: Every submission waits in a private review queue until it is checked",
-          "Credit Is Yours, and Optional: Attach your name and roll number, or stay anonymous"
-        ]
-      },
-      {
-        label: "EVERY FILE, ITS OWN PAGE",
-        items: [
-          "Read Before You Download: The PDF opens inline on the page, full screen if you want it",
-          "One Link Per Resource: Share a specific paper, not the whole archive",
-          "Views, Downloads and Shares: Real counts on every page, shown only once they are real"
-        ]
-      },
-      {
-        label: "THE ARCHIVE UNDERSTANDS ITSELF BETTER",
-        items: [
-          "Open Electives Filed as Electives: A course every branch takes is no longer forced under one branch it does not belong to",
-          "Academic Years, Not Bare Numbers: 2024-25 instead of a 2024 that could mean either half of it",
-          "Contributors Identified Properly: Full roll numbers on record, with only the batch shown publicly"
-        ]
-      },
-      {
-        label: "BUILT FOR THE PHONE IT IS READ ON",
-        items: [
-          "Pages That Actually Scroll: The inline PDF no longer swallows every swipe",
-          "Course Folders Fit Their Contents: No more empty tabs, hidden tabs or half a blank screen",
-          "Reworked Headers and Menus: Titles first, controls sized for a thumb"
-        ]
-      },
-      {
-        label: "CONTENT",
-        items: [
-          "Real Course Materials Imported: Papers, notes and assignments are being uploaded and reviewed course by course",
-          "Reference Shelf Restocked: Real textbooks behind the courses that set them"
+          "Contribute Your Own Files: Send papers and notes straight from the site — nothing goes live until it is reviewed",
+          "A Page For Every File: Read it in the browser, download it, or share a link straight to it",
+          "Real Course Material: Papers, notes and assignments going in, course by course",
+          "Built For Your Phone: Reworked around how the archive actually gets read"
         ]
       }
     ]
@@ -331,13 +293,6 @@ const VERSIONS = [
           "Platform Evolution: Resource Hub is now Abhyas with our official brand logo & identity",
           "Built From Scratch: Re-architected website, new deployment pipeline, file system, and design system",
           "Usability & Performance: Faster navigation and a more user-friendly interface across devices"
-        ]
-      },
-      {
-        label: "CONTENT UPDATES",
-        items: [
-          "50+ Course Materials Added: Fresh resources uploaded across multiple engineering departments",
-          "More Releases Soon: Stay tuned for ongoing course material expansions"
         ]
       }
     ]
