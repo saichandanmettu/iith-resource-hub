@@ -335,3 +335,10 @@ body { background: #EADCC2; }
 @media (prefers-reduced-motion: reduce) {
   .ad-card, .ad-review-btn, .ad-approve, .ad-btn-primary { transition: none !important; }
 }
+
+/* Contributors tab: same card, but the "file icon" slot carries initials
+   instead of a type, since a person has no filetype to show. */
+.ad-person .ad-fileicon {
+  font: 500 .78rem var(--font-mono); letter-spacing: .04em;
+  background: var(--wash-strong); color: var(--ink-soft);
+}

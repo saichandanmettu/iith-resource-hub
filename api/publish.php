@@ -302,6 +302,64 @@ if ($action === 'merge_contributors') {
   ok(['reassigned' => $reassigned, 'kept' => $keep, 'dropped' => $drop]);
 }
 
+/* ---------------- update a contributor's own record ----------------
+ * Roll numbers are identity data, not a property of any one upload, so
+ * they need somewhere to be corrected that isn't "find a resource this
+ * person happens to have contributed and edit that". Name changes go
+ * through here too, and are refused if they would collide with someone
+ * already in the registry -- match_or_create_contributor() de-dupes by
+ * exact name, so two rows sharing one would split that person's points
+ * on the Honor Roll (exactly the c1/c3 split merge_contributors exists
+ * to clean up after).
+ */
+if ($action === 'update_contributor') {
+  $id = (string) ($body['id'] ?? '');
+  if ($id === '') fail(400, 'Missing contributor id');
+
+  $cpath  = $c['private_dir'] . '/contributors.json';
+  $people = read_json($cpath, []);
+  if (!isset($people[$id])) fail(404, 'Unknown contributor');
+
+  if (array_key_exists('name', $body)) {
+    $name = trim((string) $body['name']);
+    if ($name === '') fail(400, 'A contributor needs a name.');
+    foreach ($people as $other => $p) {
+      if ($other !== $id && strcasecmp(trim($p['name'] ?? ''), $name) === 0) {
+        fail(409, "\"$name\" is already in the registry — merge them instead of creating a second row.");
+      }
+    }
+    $people[$id]['name'] = $name;
+  }
+
+  // Uppercased and stripped of spaces, so "ms24 btech 11021" and
+  // "MS24BTECH11021" cannot become two spellings of one person's roll.
+  if (array_key_exists('roll', $body)) {
+    $people[$id]['roll'] = strtoupper(preg_replace('/\s+/', '', (string) $body['roll']));
+  }
+
+  write_json_atomic($cpath, $people);
+  ok(['id' => $id, 'contributor' => $people[$id]]);
+}
+
+/* ---------------- delete a contributor nobody credits ---------------- */
+if ($action === 'delete_contributor') {
+  $id = (string) ($body['id'] ?? '');
+  $cpath  = $c['private_dir'] . '/contributors.json';
+  $people = read_json($cpath, []);
+  if (!isset($people[$id])) fail(404, 'Unknown contributor');
+
+  // Never orphan a credit: a resource pointing at a missing id renders as
+  // the raw id on the Honor Roll. Reassign or merge first.
+  $all = read_json($c['private_dir'] . '/resources.json', []);
+  $used = 0;
+  foreach ($all as $r) if (($r['contributor'] ?? null) === $id) $used++;
+  if ($used > 0) fail(409, "That contributor is credited on $used resource(s) — reassign or merge them first.");
+
+  unset($people[$id]);
+  write_json_atomic($cpath, $people);
+  ok(['id' => $id]);
+}
+
 /* ---------------- edit (metadata on an already-published resource) ---------------- */
 if ($action === 'edit') {
   $id = (string) ($body['id'] ?? '');

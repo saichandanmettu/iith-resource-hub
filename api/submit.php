@@ -78,7 +78,7 @@ $record = [
   'examType'    => $field('examType', 100),
   'professor'   => $field('professor'),
   'contributor' => $field('contributor', 80),
-  'roll'        => $field('roll', 12),
+  'roll'        => $field('roll', 20),
 ];
 
 /* Duplicate check spans BOTH the live index and the pending queue — two

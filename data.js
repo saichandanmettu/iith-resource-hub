@@ -76,6 +76,22 @@ function academicYear(startYear) {
 }
 
 
+/* A contributor's `roll` is now the FULL institute roll (MS24BTECH11021),
+   not the batch token it used to be (MS24) — a name alone doesn't identify
+   anyone once two students share one, and the roll is the id the institute
+   already uses. Public surfaces still show only the batch: the full roll
+   is an institute identifier tied to logins and email addresses, and
+   nothing on the Honor Roll needs more than "MS24" to place someone.
+   Storage keeps the whole thing; this trims it for display.
+   Tolerant by design — anything that doesn't parse is shown as-is rather
+   than blanked, so an MTech/PhD roll in another format still reads. */
+function batchOf(roll) {
+  const r = String(roll || "").trim().toUpperCase();
+  const m = r.match(/^([A-Z]+\d{2})/);
+  return m ? m[1] : r;
+}
+
+
 /* What a contribution is worth, keyed by the SAME four ids that carry the
    colour (papers / notes / assignment / reference). One taxonomy for score
    and colour: if you add a kind, it needs an entry here, a `--kind` colour

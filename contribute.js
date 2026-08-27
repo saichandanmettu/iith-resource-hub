@@ -212,7 +212,9 @@
       const pr = document.getElementById("cgPrevRoll");
       const pa = document.getElementById("cgPrevAvatar");
       if (pn) pn.textContent = n || "Your Name";
-      if (pr) pr.textContent = r || "BATCH CODE";
+      // The board shows the batch, not the whole roll (see batchOf in
+      // data.js) -- this chip is a preview of the board, so it matches.
+      if (pr) pr.textContent = batchOf(r) || "BATCH";
       if (pa) pa.textContent = n
         ? n.split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()
         : "YOU";

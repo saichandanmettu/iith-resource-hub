@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=9">
+<link rel="stylesheet" href="admin.css?v=10">
 </head>
 <body>
 
@@ -58,6 +58,7 @@
     <button class="ad-tab on" type="button" data-tab="pending">Pending <i id="cPending">0</i></button>
     <button class="ad-tab" type="button" data-tab="published">Published <i id="cPublished">0</i></button>
     <button class="ad-tab" type="button" data-tab="trash">Trash <i id="cTrash">0</i></button>
+    <button class="ad-tab" type="button" data-tab="people">Contributors <i id="cPeople">0</i></button>
   </div>
 
   <div class="ad-toolbar">
@@ -216,8 +217,8 @@
             <input type="text" id="fContrib" placeholder="Leave blank for no credit">
           </label>
           <label class="ad-field">
-            <span>Batch</span>
-            <input type="text" id="fRoll" placeholder="CS23">
+            <span>Roll number</span>
+            <input type="text" id="fRoll" placeholder="MS24BTECH11021" maxlength="20" autocomplete="off">
           </label>
         </div>
       </div>
@@ -235,7 +236,7 @@
 <!-- Same toast used site-wide (styles.css) — not a separate admin-only notification system. -->
 <div class="toast" id="toast" aria-live="polite" hidden></div>
 
-<script src="../data.js?v=13"></script>
-<script src="admin.js?v=17"></script>
+<script src="../data.js?v=14"></script>
+<script src="admin.js?v=18"></script>
 </body>
 </html>

@@ -182,6 +182,7 @@
     set("cPending", data.counts.pending ?? 0);
     set("cPublished", data.counts.published);
     set("cTrash", data.counts.trash ?? 0);
+    set("cPeople", Object.keys(state.contributors).length);
     populateFilterOptions();
     renderList();
   }
@@ -204,9 +205,91 @@
     yearSel.value = [...years].map(String).includes(current) ? current : "all";
   }
 
+  /* Contributors are people, not resources: no kind, branch or year axis
+     applies, so the filter bar steps out of the way rather than sitting
+     there doing nothing. */
+  function renderPeople(host, q) {
+    const rows = Object.entries(state.contributors)
+      .filter(([id, p]) => !q || `${p.name} ${p.roll || ""} ${id}`.toLowerCase().includes(q))
+      .sort((a, b) => String(a[1].name || "").localeCompare(String(b[1].name || "")));
+
+    if (!rows.length) {
+      host.innerHTML = `<div class="ad-empty"><b>${Object.keys(state.contributors).length ? "No matches" : "Nobody credited yet"}</b><span>${Object.keys(state.contributors).length ? "Try a different search." : "Contributors appear here once a resource credits one."}</span></div>`;
+      return;
+    }
+
+    // Credit counts come from the resources already loaded -- it is the
+    // number that decides whether someone can be removed at all.
+    const credits = {};
+    state.items.forEach((r) => { if (r.contributor) credits[r.contributor] = (credits[r.contributor] || 0) + 1; });
+
+    host.innerHTML = rows.map(([id, p]) => {
+      const n = credits[id] || 0;
+      return `
+      <div class="ad-card ad-person">
+        <div class="ad-fileicon">${esc(initialsOf(p.name))}</div>
+        <div class="ad-cardmain">
+          <p class="ad-cardtitle">${esc(p.name || id)}</p>
+          <div class="ad-cardmeta">
+            <span>${esc(p.roll || "no roll on record")}</span>
+            <span>${n} resource${n === 1 ? "" : "s"}</span>
+            ${!p.roll || batchOf(p.roll) === p.roll ? `<span class="ad-newtag">roll incomplete</span>` : ""}
+          </div>
+        </div>
+        <div class="ad-card-actions">
+          <button class="ad-edit-btn" type="button" data-person="${esc(id)}">Edit</button>
+          ${n === 0 ? `<button class="ad-delete-btn" type="button" data-person-del="${esc(id)}">Delete</button>` : ""}
+        </div>
+      </div>`;
+    }).join("");
+
+    host.querySelectorAll("[data-person]").forEach((b) => {
+      b.addEventListener("click", () => editPerson(b.dataset.person));
+    });
+    host.querySelectorAll("[data-person-del]").forEach((b) => {
+      b.addEventListener("click", () => deletePerson(b.dataset.personDel));
+    });
+  }
+
+  function initialsOf(name) {
+    return String(name || "?").split(/\s+/).slice(0, 2).map((w) => w[0] || "").join("").toUpperCase() || "?";
+  }
+
+  /* Deliberately prompt()s rather than growing a third panel mode: this is
+     a two-field record that gets touched a handful of times a semester. */
+  async function editPerson(id) {
+    const p = state.contributors[id];
+    if (!p) return;
+    const name = prompt(`Name for this contributor:`, p.name || "");
+    if (name === null) return;
+    const roll = prompt(`Full roll number for ${name.trim() || "them"} — e.g. MS24BTECH11021.\n\nOnly the batch (MS24) is ever shown publicly.`, p.roll || "");
+    if (roll === null) return;
+    try {
+      const r = await api("update_contributor", { id, name: name.trim(), roll: roll.trim() });
+      if (!r.ok) throw new Error(r.error || "Couldn't save that");
+      loadList();
+      toast(`Updated ${r.contributor?.name || name}.`);
+    } catch (ex) { alert(ex.message); }
+  }
+
+  async function deletePerson(id) {
+    const p = state.contributors[id];
+    if (!p) return;
+    if (!confirm(`Remove "${p.name}" from the contributor registry?\n\nOnly possible because nothing credits them.`)) return;
+    try {
+      const r = await api("delete_contributor", { id });
+      if (!r.ok) throw new Error(r.error || "Couldn't remove them");
+      loadList();
+      toast(`Removed ${p.name}.`);
+    } catch (ex) { alert(ex.message); }
+  }
+
   function renderList() {
     const host = document.getElementById("queue");
     const q = state.filter.trim().toLowerCase();
+    const onPeople = state.tab === "people";
+    document.getElementById("filterBar").hidden = onPeople;
+    if (onPeople) return renderPeople(host, q);
     const onPending = state.tab === "pending";
     const onTrash = state.tab === "trash";
     const source = onPending ? state.pending : onTrash ? state.trash : state.items;

@@ -359,7 +359,7 @@
           <div class="pbfront">
             <div class="pbtop">
               <p class="pbname">${esc(c.name)}</p>
-              <span class="pbroll">${esc(c.roll || '')}</span>
+              <span class="pbroll">${esc(batchOf(c.roll))}</span>
             </div>
             <div class="pbbot">
               <span class="pbscore"><b>${c.totalPoints}</b><span>pts</span></span>
@@ -457,6 +457,8 @@
       const q = searchQuery.trim().toLowerCase();
       list = list.filter(c => {
         const nameMatch = c.name && c.name.toLowerCase().includes(q);
+        // Searches the FULL roll even though only the batch is shown --
+        // typing a whole roll number should find its owner.
         const rollMatch = c.roll && c.roll.toLowerCase().includes(q);
         const deptMatch = c.department && (c.department.code.toLowerCase().includes(q) || c.department.name.toLowerCase().includes(q));
         return nameMatch || rollMatch || deptMatch;
@@ -518,7 +520,7 @@
       const isTop3 = rankNum <= 3;
       const rankClass = rankNum === 1 ? 'rank-1' : rankNum === 2 ? 'rank-2' : rankNum === 3 ? 'rank-3' : '';
       const deptAccent = c.department ? c.department.accent : '#F28700';
-      const deptShort = c.department ? c.department.short : c.roll;
+      const deptShort = c.department ? c.department.short : batchOf(c.roll);
 
       rowsHtml += `
         <div class="lbg-row ${rankClass} ${isTop3 ? 'is-podium' : ''}" data-id="${c.id}" tabindex="0" role="button" aria-label="Rank ${rankNum}: ${esc(c.name)}, ${c.totalPoints} points">
@@ -535,7 +537,7 @@
             <div class="lbg-u-info">
               <div class="lbg-u-name-line">
                 <span class="lbg-u-name">${esc(c.name)}</span>
-                <span class="lbg-u-roll">${esc(c.roll)}</span>
+                <span class="lbg-u-roll">${esc(batchOf(c.roll))}</span>
               </div>
             </div>
           </div>
@@ -615,7 +617,7 @@
 
     if (modalAvatar) modalAvatar.textContent = getInitials(c.name);
     if (modalName) modalName.textContent = c.name;
-    if (modalRoll) modalRoll.textContent = c.roll;
+    if (modalRoll) modalRoll.textContent = batchOf(c.roll);
     if (modalDept) modalDept.textContent = c.department ? (c.department.name || c.department.short) : c.roll;
     if (modalTier) {
       modalTier.textContent = c.tier.name;
