@@ -8299,6 +8299,13 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   display: inline-flex; align-items: center; gap: 6px;
   font-variant-numeric: tabular-nums;
 }
+/* A `display` set by a class beats the hidden attribute's UA display:none,
+   so without these the two view surfaces render as empty shells for the
+   1-3s the Apps Script takes to answer -- a bare eye icon with no number,
+   and a VIEWS row with no value. Same trap admin.css calls out at the top
+   of its own file. The download/share badges never showed it because
+   .rp-btn-count sets no display of its own. */
+.rp-views-chip[hidden] { display: none; }
 .rp-views-chip svg {
   flex-shrink: 0; opacity: .7;
 }
@@ -8364,6 +8371,7 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
 
 .rp-facts { margin: 0; display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px solid var(--hair); }
 .rp-facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.rp-facts > div[hidden] { display: none; }
 .rp-facts dt { font: 600 .74rem var(--font-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0; }
 .rp-facts dd { margin: 0; font: 600 .88rem var(--font-body); color: var(--ink); text-align: right; }
 
