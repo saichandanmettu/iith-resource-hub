@@ -1424,14 +1424,22 @@ body[data-menu-open="true"] .mobile-backdrop {
      animation), not lists, and going full-screen would just leave empty
      space under them. */
   #folderModal { padding: 0; }
+  /* A bottom sheet, not a forced full screen. height:100dvh was right for
+     a long file list and absurd for a short one -- a folder with a single
+     file left two thirds of the screen blank above its own footer. Auto
+     height capped at the viewport gives both: short folders end where
+     their content ends, long ones still fill the screen and scroll
+     internally exactly as before. Anchoring to the bottom keeps the close
+     button and the list within thumb reach either way. */
+  #folderModal { padding: 0; place-items: end stretch; }
   #folderModal .folder-modal-card {
     width: 100vw;
     max-width: 100vw;
-    height: 100dvh;
-    max-height: 100dvh;
-    border-radius: 0;
+    height: auto;
+    max-height: 92dvh;
+    border-radius: 22px 22px 0 0;
   }
-  #folderModal .fm-body { max-height: none; flex: 1; }
+  #folderModal .fm-body { max-height: none; flex: 0 1 auto; }
 }
 
 /* Toast Notification */
@@ -8347,6 +8355,23 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   transition: background .2s, transform .2s;
 }
 .rp-viewer-expand:hover { background: var(--ink); transform: translateY(-1px); }
+
+.rp-viewer-shield {
+  display: none; position: absolute; inset: 0; z-index: 1;
+  background: transparent; border: 0; padding: 0; width: 100%;
+  cursor: pointer; font: inherit;
+}
+.rp-viewer-shield span {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+  font: 600 .78rem var(--font-body); color: var(--ink);
+  background: rgba(255, 255, 255, .93); padding: 8px 15px; border-radius: 999px;
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, .35);
+}
+/* Once tapped the layer is gone for good and the embed behaves normally. */
+.rp-viewer-shield[hidden] { display: none; }
+/* The expand pill moves out from under the shield's own label. */
+.rp-viewer.is-shielded .rp-viewer-expand { bottom: auto; top: 12px; }
 .rp-pdf-frame { width: 100%; min-height: 480px; height: 70vh; border: 0; display: block; background: #fff; }
 .rp-viewer-loading, .rp-viewer-empty {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -8419,6 +8444,14 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
      are now both comfortably in reach of a thumb. */
   .rp-viewer, .rp-pdf-frame { min-height: 260px; }
   .rp-pdf-frame { height: 44vh; }
+  /* The shield is what actually makes this page scrollable on a phone.
+     Shortening the frame was not enough: every swipe that lands ON the
+     embed is still swallowed by PDF.js, and the embed is most of the
+     width. This transparent layer sits over it so those swipes scroll the
+     PAGE, and a tap lifts it when someone actually wants to read here.
+     Desktop never needs it — a mouse wheel over an iframe is a deliberate
+     act and there is a scrollbar to escape to. */
+  .rp-viewer-shield { display: block; }
   .rp-side-card { padding: 18px; }
 
   /* Each pair gets its own line, in the order asked for: kind + code,

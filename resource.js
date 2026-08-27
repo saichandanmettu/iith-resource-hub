@@ -136,10 +136,28 @@ function renderViewer(fileUrl, title) {
          this bar gives the real reading path out of the embed entirely. */
       wrap.innerHTML = `
         <iframe class="rp-pdf-frame" src="${esc(viewerUrl)}" title="${esc(title)}" loading="lazy" allow="fullscreen"></iframe>
+        <button class="rp-viewer-shield" type="button" aria-label="Tap to scroll inside the document">
+          <span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V6a2 2 0 1 1 4 0v5"/><path d="M13 11V4a2 2 0 1 1 4 0v7"/><path d="M17 11V7a2 2 0 1 1 4 0v9a5 5 0 0 1-5 5h-3a6 6 0 0 1-5-2.7l-2.6-4a2 2 0 0 1 3.3-2.2L9 14"/></svg>
+            Tap to read here
+          </span>
+        </button>
         <a class="rp-viewer-expand" href="${esc(viewerUrl)}" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
           Open full screen
         </a>`;
+
+      /* Only mark the wrapper shielded where CSS actually shows the shield,
+         so the expand pill doesn't jump to the top on desktop where nothing
+         is covering it. */
+      const shield = wrap.querySelector(".rp-viewer-shield");
+      if (shield && getComputedStyle(shield).display !== "none") {
+        wrap.classList.add("is-shielded");
+      }
+      shield?.addEventListener("click", () => {
+        shield.hidden = true;
+        wrap.classList.remove("is-shielded");
+      });
     })
     .catch(() => {
       wrap.innerHTML = `
