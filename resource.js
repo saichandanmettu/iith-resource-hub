@@ -28,7 +28,7 @@ const fmt = (n) => Number(n || 0).toLocaleString("en-US");
    then this stays a placeholder and the buttons/chips just don't show a number
    (same graceful no-op releases.js already uses for its own PASTE_ guard) —
    never a fabricated number in the meantime. */
-const COUNTER_API = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+const COUNTER_API = "https://script.google.com/macros/s/AKfycbyMe04SXXfbhwXgbn1WuxAy1mmjOJNwgmjj9UYhkWlRk_23f0vtYQEe__n-bk3lYYCkNQ/exec";
 const counterConfigured = () => COUNTER_API.indexOf("PASTE_") !== 0;
 
 async function loadCounts(id, action = "read") {
