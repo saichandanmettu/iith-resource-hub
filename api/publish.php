@@ -316,6 +316,7 @@ if ($action === 'edit') {
   foreach (['course', 'department', 'type', 'examType', 'professor', 'year', 'roll'] as $k) {
     if (array_key_exists($k, $body)) $all[$idx][$k] = $body[$k];
   }
+  unset($all[$idx]['roll']); // the batch belongs to the contributor registry, not the resource
   $all[$idx]['department'] = strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($all[$idx]['department'] ?? '')));
   if (isset($body['year'])) $all[$idx]['year'] = (int) $body['year'] ?: null;
   // Lets a wrong `added` be corrected after the fact -- e.g. a resource
@@ -325,6 +326,28 @@ if ($action === 'edit') {
   // in leaderboard.js) when it isn't a new contribution at all.
   if (isset($body['added']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $body['added'])) {
     $all[$idx]['added'] = (string) $body['added'];
+  }
+
+  /* The title is derived, and derived means re-derived on every save --
+     otherwise correcting a course name leaves the old title on the card,
+     the resource page and search, which reads exactly like Save having
+     done nothing at all. An explicitly typed title pins itself instead
+     (titleCustom); clearing that field hands the title back to the
+     generator. Reference books are excluded: their title is the book's
+     own, set from bookTitle just below. */
+  if (($all[$idx]['type'] ?? '') !== 'reference') {
+    $explicit = trim((string) ($body['title'] ?? ''));
+    if ($explicit !== '') {
+      $all[$idx]['title'] = $explicit;
+      $all[$idx]['titleCustom'] = true;
+    } else {
+      $all[$idx]['title'] = auto_title(
+        (string) ($all[$idx]['course'] ?? ''),
+        (string) ($all[$idx]['examType'] ?? ''),
+        (string) ($all[$idx]['type'] ?? 'papers')
+      );
+      unset($all[$idx]['titleCustom']);
+    }
   }
 
   if (($all[$idx]['type'] ?? '') === 'reference') {
@@ -479,6 +502,24 @@ function find_duplicate(array $existing, string $sha256): ?string {
   return null;
 }
 
+/**
+ * The one place the generated title is spelled out. Both writers go
+ * through it -- build_record() at publish time, `edit` again on every
+ * save -- which is what keeps a corrected course name correcting the
+ * title with it. admin.js's autoTitle() mirrors this for the live
+ * placeholder; change one, change both.
+ */
+function auto_title(string $course, string $examType, string $type): string {
+  /* The exam type goes in AS TYPED. The slugified form belongs to the id
+     and the filename, where it has to be url-safe -- putting it in the
+     title too is what turned "Elementary Linear Algebra" into the
+     "Elementary-linear-algebra" half of a title that read as the course
+     name twice over. */
+  $labels = ['papers' => 'Past paper', 'notes' => 'Notes', 'assignment' => 'Assignment'];
+  $tail = trim($examType) !== '' ? trim($examType) : ($labels[$type] ?? ucfirst($type));
+  return trim($course) . ' — ' . $tail;
+}
+
 function build_record(array $fields, string $admin, string $rel, string $sha256, array $body): array {
   ['code' => $code, 'dept' => $dept, 'course' => $course, 'type' => $type, 'exam' => $exam, 'year' => $year] = $fields;
 
@@ -487,9 +528,11 @@ function build_record(array $fields, string $admin, string $rel, string $sha256,
   // assignments) would show "Calculus-I — Thomas Calculus" instead of
   // "Thomas' Calculus". books.js's title() also expects exactly this
   // " — Reference Book" suffix to strip back off for display.
+  $explicitTitle = trim((string) ($body['title'] ?? ''));
   $title = $type === 'reference'
     ? trim((string) ($body['bookTitle'] ?? '')) . ' — Reference Book'
-    : $course . ' — ' . ucfirst($exam);
+    : ($explicitTitle !== '' ? $explicitTitle
+       : auto_title($course, (string) ($body['examType'] ?? ''), $type));
 
   $record = [
     // Department is part of the id, not just code-year-exam: a course
@@ -514,6 +557,10 @@ function build_record(array $fields, string $admin, string $rel, string $sha256,
     'approvedBy'  => $admin,        // audit trail, for free
     'status'      => 'published',
   ];
+
+  // Marks a title that was typed rather than generated, so a later edit
+  // knows not to regenerate over the top of it (see the `edit` action).
+  if ($type !== 'reference' && $explicitTitle !== '') $record['titleCustom'] = true;
 
   if ($type === 'reference') {
     if (trim((string) ($body['bookTitle'] ?? '')) === '') fail(400, 'A reference book needs its own title.');
@@ -548,8 +595,19 @@ function match_or_create_contributor(array $c, string $name, string $roll): ?str
 
   $cpath = $c['private_dir'] . '/contributors.json';
   $people = read_json($cpath, []);
+  $roll = trim($roll);
   foreach ($people as $cid => $p) {
-    if (strcasecmp(trim($p['name'] ?? ''), $name) === 0) return (string) $cid;
+    if (strcasecmp(trim($p['name'] ?? ''), $name) !== 0) continue;
+    /* An existing person's batch used to be read-only through this path:
+       whatever they were first filed with stuck, and the admin console's
+       Batch field silently did nothing on every later save. A supplied
+       batch now corrects the registry entry (a blank one still means
+       "leave it alone" -- never let an empty field wipe a known roll). */
+    if ($roll !== '' && $roll !== trim((string) ($p['roll'] ?? ''))) {
+      $people[$cid]['roll'] = $roll;
+      write_json_atomic($cpath, $people);
+    }
+    return (string) $cid;
   }
   $match = 'c' . (count($people) + 1);
   while (isset($people[$match])) $match .= 'x';

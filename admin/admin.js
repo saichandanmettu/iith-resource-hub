@@ -344,7 +344,7 @@
   let previewUrl = null; // revoke the previous blob: URL before making a new one
 
   function resetForm() {
-    ["fCode", "fCourse", "fYear", "fExam", "fProf", "fContrib", "fRoll",
+    ["fCode", "fCourse", "fYear", "fExam", "fTitle", "fProf", "fContrib", "fRoll",
      "fBookTitle", "fBookAuthor", "fBookPublisher", "fBookGist", "fBookLink", "fBookPages"]
       .forEach((id) => { document.getElementById(id).value = ""; });
     document.getElementById("fType").value = "papers";
@@ -356,6 +356,38 @@
     deptTouched = false; // let the next code typed autofill branch again
     syncBookFields();
   }
+
+  /* The title shown on the card, the resource page and search is normally
+     DERIVED from the course name and exam type, not typed. Keeping it
+     derived is what makes "fix the course name" fix the title everywhere
+     as well -- before this, editing the course left a stale title behind,
+     which read exactly like Save doing nothing. Typing in the field
+     overrides it (record.titleCustom); clearing the field hands it back.
+     Must stay in step with build_record()/auto_title() in api/publish.php. */
+  function autoTitle() {
+    const course = document.getElementById("fCourse").value.trim();
+    const type = document.getElementById("fType").value;
+    if (type === "reference") {
+      const bt = document.getElementById("fBookTitle").value.trim();
+      return bt ? `${bt} — Reference Book` : "";
+    }
+    const exam = document.getElementById("fExam").value.trim();
+    return course ? `${course} — ${exam || labelOf(type)}` : "";
+  }
+  function syncTitlePlaceholder() {
+    const auto = autoTitle();
+    document.getElementById("fTitle").placeholder = auto || "Built from the course name";
+    const custom = document.getElementById("fTitle").value.trim();
+    // The greyed-out placeholder already shows what the automatic title
+    // would be -- the hint only has to say which of the two is in force.
+    document.getElementById("titleHint").textContent = custom
+      ? "Custom title — clear this field to go back to the automatic one."
+      : "Building itself from the course name and exam type. Type here to override.";
+  }
+  ["fCourse", "fExam", "fType", "fTitle", "fBookTitle"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", syncTitlePlaceholder);
+    document.getElementById(id).addEventListener("change", syncTitlePlaceholder);
+  });
 
   /* Three modes share one dialog: add (blank), edit (an already-published
      resource), review (a pending submission awaiting approve/reject).
@@ -378,6 +410,7 @@
     document.getElementById("fileField").hidden = false;
     setFooterButtons("add");
     document.getElementById("pdfPane").innerHTML = `<div class="ad-pdf-stub">Pick a PDF to preview it here &mdash; nothing uploads until you click Publish.</div>`;
+    syncTitlePlaceholder();
     openPanel();
   }
 
@@ -399,8 +432,15 @@
     document.getElementById("fExam").value = it.examType || "";
     document.getElementById("fProf").value = it.professor || "";
     document.getElementById("fContrib").value = it.contributor ? contributorName(it.contributor) : "";
-    document.getElementById("fRoll").value = it.roll || "";
+    /* The batch lives on the contributor registry entry, not on the
+       resource -- `it.roll` has never existed on a published record, so
+       this field came up blank on every edit and saving it blanked
+       nothing back. Read it from the same registry the name comes from. */
+    document.getElementById("fRoll").value = state.contributors[it.contributor]?.roll || "";
     fillDepts(it.department);
+    // Only a deliberately overridden title goes in the box; an automatic
+    // one stays automatic so it keeps tracking the course name.
+    document.getElementById("fTitle").value = it.titleCustom ? (it.title || "") : "";
     // The book's own title, not the record's generated one — strip the
     // " — Reference Book/Guide" suffix build_record() appends, same regex
     // books.js's title() uses to show it clean everywhere else.
@@ -412,6 +452,7 @@
     document.getElementById("fBookLink").value = it.book?.link || "";
     document.getElementById("fBookPages").value = it.pages || "";
     syncBookFields();
+    syncTitlePlaceholder();
 
     /* Same viewer the public site uses — pointed at the file already live,
        not a blob: URL, since there's nothing local to preview here. */
@@ -447,6 +488,7 @@
     document.getElementById("fRoll").value = it.roll || "";
     fillDepts(it.department || null);
     syncBookFields();
+    syncTitlePlaceholder();
 
     const info = document.getElementById("submissionInfo");
     const bits = [`Uploaded as "${it.filename || "unnamed file"}"`, it.sizeLabel, it.submitted ? new Date(it.submitted).toLocaleString() : null];
@@ -517,6 +559,10 @@
   function syncBookFields() {
     const isBook = document.getElementById("fType").value === "reference";
     document.getElementById("bookFields").hidden = !isBook;
+    // A reference book's title is the book's own title (books.js depends on
+    // the " — Reference Book" suffix), so there's nothing to override here.
+    document.getElementById("titleField").hidden = isBook;
+    document.getElementById("titleHint").hidden = isBook;
     document.getElementById("fileFieldLabel").textContent = isBook ? "PDF file (optional)" : "PDF file";
     document.getElementById("noFileHint").hidden = !isBook;
   }
@@ -557,6 +603,23 @@
     hint.hidden = false;
   });
 
+  /* Batch is a property of the person, not of the upload, and it is
+     already on record for anyone who has contributed before -- so once
+     the name matches a known contributor, fill their batch in rather
+     than making it be retyped (and risk a second spelling of the same
+     person's roll). Only ever fills a blank box: a batch typed by hand
+     is a correction, and match_or_create_contributor() writes it back to
+     the registry. */
+  const contribInput = document.getElementById("fContrib");
+  contribInput.addEventListener("input", () => {
+    const typed = contribInput.value.trim().toLowerCase();
+    if (!typed) return;
+    const hit = Object.values(state.contributors)
+      .find((p) => String(p.name || "").trim().toLowerCase() === typed);
+    const rollBox = document.getElementById("fRoll");
+    if (hit?.roll && !rollBox.value.trim()) rollBox.value = hit.roll;
+  });
+
   function readForm() {
     return {
       code: document.getElementById("fCode").value.trim().toUpperCase(),
@@ -564,10 +627,13 @@
       department: document.getElementById("fDept").value,
       type: document.getElementById("fType").value,
       year: document.getElementById("fYear").value || "",
-      examType: document.getElementById("fExam").value || "",
+      examType: document.getElementById("fExam").value.trim(),
+      // Empty means "keep deriving it" -- the server regenerates on every
+      // save, so a corrected course name corrects the title with it.
+      title: document.getElementById("fTitle").value.trim(),
       professor: document.getElementById("fProf").value.trim(),
       contributor: document.getElementById("fContrib").value.trim(),
-      roll: document.getElementById("fRoll").value.trim(),
+      roll: document.getElementById("fRoll").value.trim().toUpperCase(),
       bookTitle: document.getElementById("fBookTitle").value.trim(),
       bookAuthor: document.getElementById("fBookAuthor").value.trim(),
       bookPublisher: document.getElementById("fBookPublisher").value.trim(),
@@ -624,7 +690,8 @@
         if (!r.ok) throw new Error(r.error || "Failed");
         successMsg = action === "approve" ? "Approved and published." : "Published.";
       } else if (state.mode === "edit") {
-        await api("edit", { id: state.current.id, ...f });
+        const r = await api("edit", { id: state.current.id, ...f });
+        if (!r.ok) throw new Error(r.error || "Couldn't save those changes");
         successMsg = "Changes saved.";
       } else if (state.mode === "review") {
         const payload = { id: state.current.id, ...f };

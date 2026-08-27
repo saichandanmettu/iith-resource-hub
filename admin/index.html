@@ -147,16 +147,36 @@
           </label>
         </div>
 
+        <!-- Free text, not a fixed <select>: the Contribute page offers this
+             same field as open text ("Resource Title / Specifics"), so a
+             submission can arrive saying "Quiz 2" or "Lab Manual". A select
+             with four options silently blanked anything outside its list on
+             review, losing what the student actually wrote. The datalist
+             keeps the common answers one keystroke away without closing the
+             door on the rest. -->
         <label class="ad-field">
           <span>Exam type</span>
-          <select id="fExam">
-            <option value="">&mdash;</option>
-            <option>Mid-Sem</option>
-            <option>End-Sem</option>
-            <option>Quiz</option>
-            <option>Makeup</option>
-          </select>
+          <input type="text" id="fExam" list="examList" placeholder="Mid-Sem, Quiz 2, Lab Manual… (optional)" autocomplete="off">
+          <datalist id="examList">
+            <option value="Mid-Sem"></option>
+            <option value="End-Sem"></option>
+            <option value="Quiz 1"></option>
+            <option value="Quiz 2"></option>
+            <option value="Makeup"></option>
+            <option value="Lecture Notes"></option>
+            <option value="Lab Manual"></option>
+          </datalist>
         </label>
+
+        <!-- The headline shown on the card, the resource page and search.
+             It is normally derived (course — exam type) and stays derived
+             while this is blank, so correcting a course name corrects the
+             title everywhere too. Type here only to override that. -->
+        <label class="ad-field" id="titleField">
+          <span>Display title</span>
+          <input type="text" id="fTitle" autocomplete="off">
+        </label>
+        <p class="ad-hint" id="titleHint">Leave blank to build it from the course name and exam type.</p>
 
         <!-- Reference books carry the payload library.html renders. Without it
              the Bookshelf filters the record out and the shelf shows nothing. -->
