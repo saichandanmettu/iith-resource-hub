@@ -23,7 +23,7 @@
          because the event never reaches the browser's native scroll
          handling for that element. Excluding anything inside .modal fixes
          it regardless of Lenis's running state. */
-      prevent: (node) => !!(node.closest?.(".modal") || node.closest?.(".mobile-menu") || node.closest?.(".mobile-backdrop")),
+      prevent: (node) => !!(node.closest?.(".modal") || node.closest?.(".mobile-menu") || node.closest?.(".mobile-backdrop") || node.closest?.("[data-lenis-prevent]")),
     });
     window.__lenis = lenis;
 

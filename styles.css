@@ -2273,6 +2273,50 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   border-radius: 999px;
 }
 
+/* Sticky bar at the top of the scroll area — stays put while the cards
+   scroll under it, and carries the always-visible Collapse control. */
+.ab-sheets-head {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px 10px;
+  background: var(--f-back);
+  border-bottom: 1px solid var(--f-border);
+}
+.ab-sheets-head-title {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--f-pill-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.ab-collapse-btn.ab-restack-btn { flex-shrink: 0; }
+.ab-collapse-btn.ab-restack-btn {
+  width: auto;
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  background: var(--f-pill-bg);
+  color: var(--f-pill-ink);
+  border: 1px solid var(--f-border);
+  backdrop-filter: none;
+}
+.ab-collapse-btn.ab-restack-btn:hover {
+  background: var(--f-pill-bg);
+  filter: brightness(0.96);
+}
+.ab-collapse-btn.ab-restack-btn svg { transform: none; }
+
 .ab-sheets-list {
   display: flex;
   flex-direction: column;

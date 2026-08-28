@@ -214,7 +214,14 @@ const STATUS_META = {
 
           <!-- Open Folder (Full Readable Cards) -->
           <div class="ab-folder-spread">
-            <div class="ab-spread-inner">
+            <div class="ab-spread-inner" data-lenis-prevent>
+              <div class="ab-sheets-head">
+                <span class="ab-sheets-head-title">${esc(meta.frontTitle)} &middot; ${rows.length}</span>
+                <button class="ab-collapse-btn ab-restack-btn" type="button" aria-label="Collapse folder">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m18 15-6-6-6 6"/></svg>
+                  <span>Collapse</span>
+                </button>
+              </div>
               <div class="ab-sheets-list">
                 ${rows.map((r, i) => sheetCard(r, ci, i)).join("")}
                 <button class="ab-restack-btn" type="button">
