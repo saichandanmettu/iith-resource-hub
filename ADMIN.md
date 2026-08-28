@@ -17,6 +17,20 @@ Short, task-oriented. For *why* things are built this way, see
    archive, you'll be told which one and asked to confirm before it goes
    through anyway — it's a heads-up, not a block.
 
+### Reference books
+
+Pick **Type → Reference book**. The form changes: the file field now
+takes the **book's cover image** (JPG/PNG/WebP), not a PDF, and the book
+detail fields appear (title, author, publisher, pages, cover colour,
+summary, link). No PDF is ever hosted for a reference book — it's a
+pointer to a real textbook, so add a **link** where students can find it.
+A reference book needs a cover image *or* a link (ideally both). The
+cover you upload is what the Bookshelf renders; with no image it falls
+back to the generated colour cover, which is why the cover colour and
+author are still required. The cover isn't replaceable from the Edit
+panel later — only the text fields are — so re-add the book if you need
+to swap the image.
+
 ## Review a public submission
 
 Students submit through the Contribute page; nothing they send goes live

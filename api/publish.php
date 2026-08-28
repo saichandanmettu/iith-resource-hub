@@ -171,9 +171,10 @@ if ($action === 'publish') {
 
   /* A reference book is a pointer to something real, not a copy of it —
      there's nowhere legitimate to host the actual text of a commercial
-     textbook, so it's the one type allowed to skip the file entirely and
-     carry a link out instead (see build_record()'s book.link). Every
-     other type still needs a real PDF, same as always. */
+     textbook. Its upload, when there is one, is the COVER IMAGE the
+     Bookshelf renders (handled below); the book itself is reached by
+     book.link. It can also be filed with no upload at all, on the link
+     alone. Every other type still needs a real PDF, same as always. */
   if (!$hasFile && $fields['type'] !== 'reference') fail(400, 'No file received.');
 
   $rel = '';
@@ -184,21 +185,40 @@ if ($action === 'publish') {
     if ($_FILES['file']['error'] !== UPLOAD_ERR_OK) fail(400, 'No file received.');
     $f = $_FILES['file'];
     if ($f['size'] <= 0 || $f['size'] > $c['max_upload_bytes']) fail(413, 'That file is too large.');
-    if (!is_uploaded_file($f['tmp_name']) || !looks_like_pdf($f['tmp_name'])) fail(415, 'Only PDF files can be accepted.');
+    if (!is_uploaded_file($f['tmp_name'])) fail(400, 'No file received.');
 
-    $sha256 = hash_file('sha256', $f['tmp_name']);
-    $duplicateOf = find_duplicate($existing, $sha256);
-    // Non-blocking: tell the admin, let them decide. They are the moderator
-    // AND the uploader here, so a hard block would just be in their own way.
-    if ($duplicateOf !== null && empty($body['force'])) {
-      fail(409, "This looks byte-for-byte identical to an existing file ($duplicateOf). Resubmit with confirmation to publish anyway.");
+    if ($fields['type'] === 'reference') {
+      // A reference book's upload is its COVER SCAN, not the text of the
+      // book (there's nowhere legal to host a commercial textbook). It
+      // lands beside where the PDF would have gone, with a -cover suffix,
+      // and the record carries it as book.coverImage — the top-level
+      // `file` stays empty so books.js links out rather than to the image.
+      $ext = image_ext($f['tmp_name']);
+      if ($ext === null) fail(415, 'The cover must be a JPG, PNG or WebP image.');
+      $rel  = cover_dest_for($c, $fields, $ext);
+      $dest = $c['files_dir'] . '/' . $rel;
+      if (!is_dir(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+      if (!move_uploaded_file($f['tmp_name'], $dest)) fail(500, 'Could not store the file.');
+      @chmod($dest, 0644);
+      $body['coverImage'] = $rel;
+      $rel = '';
+    } else {
+      if (!looks_like_pdf($f['tmp_name'])) fail(415, 'Only PDF files can be accepted.');
+
+      $sha256 = hash_file('sha256', $f['tmp_name']);
+      $duplicateOf = find_duplicate($existing, $sha256);
+      // Non-blocking: tell the admin, let them decide. They are the moderator
+      // AND the uploader here, so a hard block would just be in their own way.
+      if ($duplicateOf !== null && empty($body['force'])) {
+        fail(409, "This looks byte-for-byte identical to an existing file ($duplicateOf). Resubmit with confirmation to publish anyway.");
+      }
+
+      $rel  = dest_for($c, $fields);
+      $dest = $c['files_dir'] . '/' . $rel;
+      if (!is_dir(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+      if (!move_uploaded_file($f['tmp_name'], $dest)) fail(500, 'Could not store the file.');
+      @chmod($dest, 0644);
     }
-
-    $rel  = dest_for($c, $fields);
-    $dest = $c['files_dir'] . '/' . $rel;
-    if (!is_dir(dirname($dest))) @mkdir(dirname($dest), 0755, true);
-    if (!move_uploaded_file($f['tmp_name'], $dest)) fail(500, 'Could not store the file.');
-    @chmod($dest, 0644);
   }
 
   $record = build_record($fields, $admin, $rel, $sha256, $body);
@@ -219,6 +239,10 @@ if ($action === 'approve') {
   $sub = read_json($c['pending_dir'] . '/' . $id . '.json', []);
 
   $fields = parsed_fields($body);
+  // The review queue only ever holds PDFs (api/submit.php). A reference
+  // book is a cover scan plus a link, published straight from Add resource
+  // — there's no reviewed-PDF path that makes sense for it.
+  if ($fields['type'] === 'reference') fail(400, 'Reference books are published from Add resource, not the review queue.');
   $sha256 = (string) ($sub['sha256'] ?? hash_file('sha256', $src));
 
   $existing = read_json($c['private_dir'] . '/resources.json', []);
@@ -410,11 +434,14 @@ if ($action === 'edit') {
 
   if (($all[$idx]['type'] ?? '') === 'reference') {
     $all[$idx]['book'] = [
-      'author'    => (string) ($body['bookAuthor'] ?? $all[$idx]['book']['author'] ?? ''),
-      'publisher' => (string) ($body['bookPublisher'] ?? $all[$idx]['book']['publisher'] ?? ''),
-      'cover'     => (string) ($body['bookCover'] ?? $all[$idx]['book']['cover'] ?? 'ink'),
-      'gist'      => (string) ($body['bookGist'] ?? $all[$idx]['book']['gist'] ?? ''),
-      'link'      => trim((string) ($body['bookLink'] ?? $all[$idx]['book']['link'] ?? '')),
+      'author'     => (string) ($body['bookAuthor'] ?? $all[$idx]['book']['author'] ?? ''),
+      'publisher'  => (string) ($body['bookPublisher'] ?? $all[$idx]['book']['publisher'] ?? ''),
+      'cover'      => (string) ($body['bookCover'] ?? $all[$idx]['book']['cover'] ?? 'ink'),
+      'gist'       => (string) ($body['bookGist'] ?? $all[$idx]['book']['gist'] ?? ''),
+      'link'       => trim((string) ($body['bookLink'] ?? $all[$idx]['book']['link'] ?? '')),
+      // The cover scan isn't replaceable from the edit panel (same as the
+      // PDF on any other type) — carry the existing one straight through.
+      'coverImage' => (string) ($all[$idx]['book']['coverImage'] ?? ''),
     ];
     if (array_key_exists('bookTitle', $body) && trim((string) $body['bookTitle']) !== '') {
       $all[$idx]['title'] = trim((string) $body['bookTitle']) . ' — Reference Book';
@@ -534,6 +561,20 @@ function dest_for(array $c, array $fields): string {
 }
 
 /**
+ * Same scheme as dest_for(), for a reference book's cover scan: beside
+ * where its PDF would have gone, a -cover suffix, and the image's real
+ * extension. api/file.php's path whitelist accepts these too.
+ */
+function cover_dest_for(array $c, array $fields, string $ext): string {
+  ['code' => $code, 'dept' => $dept, 'exam' => $exam, 'year' => $year] = $fields;
+  $base = "$dept/$code/" . strtolower($code) . "-$exam-$year-cover";
+  $rel = "$base.$ext";
+  $n = 2;
+  while (is_file($c['files_dir'] . '/' . $rel)) { $rel = "$base-$n.$ext"; $n++; }
+  return $rel;
+}
+
+/**
  * No cron on shared hosting, so instead of a scheduled job, every `list`
  * call (i.e. every time the admin console loads) sweeps trash.json for
  * anything older than 14 days and drops it from the index for good. The
@@ -624,16 +665,23 @@ function build_record(array $fields, string $admin, string $rel, string $sha256,
     if (trim((string) ($body['bookTitle'] ?? '')) === '') fail(400, 'A reference book needs its own title.');
 
     $record['book'] = [
-      'author'    => (string) ($body['bookAuthor'] ?? ''),
-      'publisher' => (string) ($body['bookPublisher'] ?? ''),
-      'cover'     => (string) ($body['bookCover'] ?? 'ink'),
-      'gist'      => (string) ($body['bookGist'] ?? ''),
-      'link'      => trim((string) ($body['bookLink'] ?? '')),
+      'author'     => (string) ($body['bookAuthor'] ?? ''),
+      'publisher'  => (string) ($body['bookPublisher'] ?? ''),
+      'cover'      => (string) ($body['bookCover'] ?? 'ink'),
+      'gist'       => (string) ($body['bookGist'] ?? ''),
+      'link'       => trim((string) ($body['bookLink'] ?? '')),
+      // Path under /files/ to the uploaded cover scan, same convention as
+      // the top-level `file`. Set by the publish action; '' when none.
+      'coverImage' => trim((string) ($body['coverImage'] ?? '')),
     ];
     if ($record['book']['author'] === '') fail(400, 'A reference book needs an author.');
-    // Needs SOMETHING for a reader to actually get to — the file we just
-    // stored, or, since that's optional for this type, a link out.
-    if ($rel === '' && $record['book']['link'] === '') fail(400, 'A reference book needs either a file or a link to find it online.');
+    // Needs SOMETHING a reader can actually act on — the cover we shelve,
+    // or a link out to where the book itself can be found.
+    if ($record['book']['coverImage'] === '' && $record['book']['link'] === '') {
+      fail(400, 'A reference book needs a cover image or a link to find it online.');
+    }
+    // A reference book never carries a hosted file of its own text.
+    $record['file'] = '';
 
     $pages = (int) ($body['pages'] ?? 0);
     if ($pages > 0) $record['pages'] = $pages;

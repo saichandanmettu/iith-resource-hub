@@ -1162,6 +1162,11 @@ body[data-menu-open="true"] .mobile-backdrop {
   border-radius: 0 3px 3px 0;
   background: repeating-linear-gradient(180deg, #fdfaf3 0 2px, #ded7c8 2px 3px);
 }
+/* An uploaded cover scan: fills the board edge to edge, under the spine
+   and page-block so the shelf still reads as a 3D book. Inherits the
+   book's rounded corner and clips the image to it. */
+.book .cover-art { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; background: linear-gradient(135deg, var(--c1), var(--c2)); }
+.book .cover-art img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
 .book .cover-in { position: absolute; inset: 0; padding: 20px 15px 16px 21px; display: flex; flex-direction: column; }
 .book .b-title { font-family: var(--font-course); font-size: .92rem; font-weight: 800; line-height: 1.18; letter-spacing: var(--track-xs); }
 .book .b-author { margin-top: auto; font-size: .62rem; font-weight: 700; opacity: .8; letter-spacing: .04em; text-transform: uppercase; }

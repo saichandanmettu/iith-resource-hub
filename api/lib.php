@@ -154,6 +154,23 @@ function looks_like_pdf(string $tmpPath): bool {
   return $head === '%PDF-';
 }
 
+/**
+ * An image by its magic bytes, not its name — used for reference-book
+ * cover uploads (api/publish.php). Returns the canonical extension
+ * (jpg|png|webp), or null if it is none of those.
+ */
+function image_ext(string $tmpPath): ?string {
+  $fh = fopen($tmpPath, 'rb');
+  if (!$fh) return null;
+  $head = fread($fh, 12);
+  fclose($fh);
+  if ($head === false || strlen($head) < 12) return null;
+  if (strncmp($head, "\xFF\xD8\xFF", 3) === 0) return 'jpg';
+  if (strncmp($head, "\x89PNG\x0D\x0A\x1A\x0A", 8) === 0) return 'png';
+  if (strncmp($head, 'RIFF', 4) === 0 && substr($head, 8, 4) === 'WEBP') return 'webp';
+  return null;
+}
+
 function slugify(string $s): string {
   $s = strtolower(trim($s));
   $s = preg_replace('/[^a-z0-9]+/', '-', $s) ?? '';

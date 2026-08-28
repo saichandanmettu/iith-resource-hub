@@ -21,7 +21,21 @@ const BookShelf = (function () {
     return r.title.replace(/\s+[—–-]\s+Reference (Book|Guide)$/i, "");
   }
 
+  /* A real cover scan carries its own title, author and edition, so when
+     one was uploaded it fills the whole board and the typeset face steps
+     aside — the spine and page-block stay for the shelf's 3D read. With
+     no image we fall back to the generated cover, which is why every book
+     still needs an author and a cover colour. coverImage is a path under
+     /files/, same convention as r.file (see api/publish.php). */
   function coverFace(r) {
+    if (r.book.coverImage) {
+      return `
+        <span class="cover-art">
+          <img src="api/file.php?path=${encodeURIComponent(r.book.coverImage)}" alt="" loading="lazy" decoding="async">
+        </span>
+        <span class="spine"></span>
+        <span class="pages"></span>`;
+    }
     return `
       <span class="spine"></span>
       <span class="pages"></span>

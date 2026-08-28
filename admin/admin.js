@@ -493,7 +493,7 @@
     document.getElementById("revTitle").textContent = "Add resource";
     document.getElementById("fileField").hidden = false;
     setFooterButtons("add");
-    document.getElementById("pdfPane").innerHTML = `<div class="ad-pdf-stub">Pick a PDF to preview it here &mdash; nothing uploads until you click Publish.</div>`;
+    previewStub();
     syncTitlePlaceholder();
     openPanel();
   }
@@ -541,10 +541,16 @@
     /* Same viewer the public site uses — pointed at the file already live,
        not a blob: URL, since there's nothing local to preview here. */
     const pane = document.getElementById("pdfPane");
+    const coverPath = it.book?.coverImage;
     const fileUrl = it.file ? new URL(`../api/file.php?path=${encodeURIComponent(it.file)}`, window.location.href).href : null;
-    pane.innerHTML = fileUrl
-      ? `<iframe src="../assets/pdfjs/web/viewer.html?file=${encodeURIComponent(fileUrl)}" title="Preview"></iframe>`
-      : `<div class="ad-pdf-stub">No file on record for this entry.</div>`;
+    if (coverPath) {
+      const src = new URL(`../api/file.php?path=${encodeURIComponent(coverPath)}`, window.location.href).href;
+      pane.innerHTML = `<div class="ad-cover-preview"><img src="${src}" alt="Cover"></div>`;
+    } else {
+      pane.innerHTML = fileUrl
+        ? `<iframe src="../assets/pdfjs/web/viewer.html?file=${encodeURIComponent(fileUrl)}" title="Preview"></iframe>`
+        : `<div class="ad-pdf-stub">No file on record for this entry.</div>`;
+    }
 
     openPanel();
   }
@@ -626,12 +632,13 @@
     if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
     pendingForceRetry = null;
     document.getElementById("dupeWarn").hidden = true;
-    if (!file) {
-      pane.innerHTML = `<div class="ad-pdf-stub">Pick a PDF to preview it here &mdash; nothing uploads until you click Publish.</div>`;
-      return;
-    }
+    if (!file) { previewStub(); return; }
     previewUrl = URL.createObjectURL(file);
-    pane.innerHTML = `<iframe src="../assets/pdfjs/web/viewer.html?file=${encodeURIComponent(previewUrl)}" title="Preview"></iframe>`;
+    // A reference book's file is its cover image — show the picture, not
+    // the PDF viewer. Everything else is still a PDF.
+    pane.innerHTML = document.getElementById("fType").value === "reference"
+      ? `<div class="ad-cover-preview"><img src="${previewUrl}" alt="Cover preview"></div>`
+      : `<iframe src="../assets/pdfjs/web/viewer.html?file=${encodeURIComponent(previewUrl)}" title="Preview"></iframe>`;
   });
 
   /* Reference is the only type that needs the book payload — show those
@@ -647,10 +654,30 @@
     // the " — Reference Book" suffix), so there's nothing to override here.
     document.getElementById("titleField").hidden = isBook;
     document.getElementById("titleHint").hidden = isBook;
-    document.getElementById("fileFieldLabel").textContent = isBook ? "PDF file (optional)" : "PDF file";
+    // For a reference book the "file" isn't the text of the book — there's
+    // nowhere legal to host a commercial textbook — it's the cover scan the
+    // Bookshelf renders. Everything else still takes a PDF.
+    const fFile = document.getElementById("fFile");
+    document.getElementById("fileFieldLabel").textContent =
+      isBook ? "Book cover image (optional)" : "PDF file";
+    fFile.accept = isBook ? "image/jpeg,image/png,image/webp" : "application/pdf";
+    document.getElementById("noFileHint").textContent = isBook
+      ? "Upload the book's cover image. Add a link below so readers can find the book itself."
+      : "";
     document.getElementById("noFileHint").hidden = !isBook;
+    if (state.mode === "add" && !fFile.files[0]) previewStub();
   }
   document.getElementById("fType").addEventListener("change", syncBookFields);
+
+  /* The empty state of the preview pane, worded for whatever the file
+     field is currently asking for. */
+  function previewStub() {
+    const isBook = document.getElementById("fType").value === "reference";
+    document.getElementById("pdfPane").innerHTML =
+      `<div class="ad-pdf-stub">${isBook
+        ? "Pick the book's cover image to preview it here"
+        : "Pick a PDF to preview it here"} &mdash; nothing uploads until you click Publish.</div>`;
+  }
 
   /* GEN ("General / Open Elective") sits at the top, apart from the real
      branches: for a course several branches take, picking one of them is
@@ -805,8 +832,9 @@
       return;
     }
     const fileForAdd = state.mode === "add" ? document.getElementById("fFile").files[0] : null;
-    if (f.type === "reference" && !fileForAdd && !f.bookLink) {
-      alert("A reference book needs either a file or a link to find it online.");
+    const hasCover = state.mode === "add" ? !!fileForAdd : !!state.current?.book?.coverImage;
+    if (f.type === "reference" && !hasCover && !f.bookLink) {
+      alert("A reference book needs a cover image or a link to find it online.");
       return;
     }
 
