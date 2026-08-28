@@ -9,6 +9,14 @@
 const RELEASES = [
   {
     status: "shipped",
+    tag: "Archive",
+    title: "800+ files imported from the IITH-Past-Papers archive",
+    date: "28 Aug 2026",
+    body: "A one-time backfill from the community IITH-Past-Papers GitHub repository — 818 papers, assignments and notes across 59 courses, mostly EE with CS, AI and maths, each now searchable with its own page here. The original uploaders are credited.",
+    items: ["818 files across 59 courses", "Full EE core, plus CS / AI / maths", "Original uploaders credited from the source repo"]
+  },
+  {
+    status: "shipped",
     tag: "Contribute",
     title: "Public submissions are open",
     date: "27 Aug 2026",
