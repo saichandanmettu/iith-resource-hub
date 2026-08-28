@@ -1,14 +1,416 @@
 {
-  "LA1760": {
-    "name": "Communication Skills",
-    "branches": ["AI", "BM", "BT", "CE", "CM", "CO", "CS", "EE", "EP", "ES", "IC", "ICT", "ME", "MNC", "MSME"]
+  "AI1000": {
+    "name": "Matrix Theory",
+    "branches": [
+      "AI",
+      "EE"
+    ]
+  },
+  "AI1110": {
+    "name": "Probability",
+    "branches": [
+      "AI",
+      "EE"
+    ]
+  },
+  "AI2000": {
+    "name": "Foundations of Machine Learning",
+    "branches": [
+      "AI"
+    ]
+  },
+  "AI2100": {
+    "name": "Deep Learning",
+    "branches": [
+      "AI"
+    ]
+  },
+  "AI2113": {
+    "name": "Optimization 2",
+    "branches": [
+      "AI"
+    ]
+  },
+  "AI2200": {
+    "name": "Concentration Inequalities",
+    "branches": [
+      "AI"
+    ]
+  },
+  "AI4010": {
+    "name": "Online Learning",
+    "branches": [
+      "AI"
+    ]
+  },
+  "BT1010": {
+    "name": "Introduction to Life Sciences",
+    "branches": [
+      "GEN"
+    ]
   },
   "CC1010": {
     "name": "Introduction to Climate Change",
-    "branches": ["AI", "BM", "BT", "CE", "CM", "CO", "CS", "EE", "EP", "ES", "IC", "ICT", "ME", "MNC", "MSME"]
+    "branches": [
+      "AI",
+      "BM",
+      "BT",
+      "CE",
+      "CM",
+      "CO",
+      "CS",
+      "EE",
+      "EP",
+      "ES",
+      "IC",
+      "ICT",
+      "ME",
+      "MNC",
+      "MSME"
+    ]
+  },
+  "CS1010": {
+    "name": "Discrete Mathematics for Computer Science",
+    "branches": [
+      "CS"
+    ]
+  },
+  "CS2030": {
+    "name": "Theory of Computation",
+    "branches": [
+      "CS"
+    ]
+  },
+  "CS2323": {
+    "name": "Computer Architecture",
+    "branches": [
+      "CS"
+    ]
+  },
+  "CS2443": {
+    "name": "Algorithms",
+    "branches": [
+      "CS"
+    ]
+  },
+  "CS3523": {
+    "name": "Operating Systems II",
+    "branches": [
+      "CS"
+    ]
+  },
+  "CS3550": {
+    "name": "DBMS I",
+    "branches": [
+      "CS"
+    ]
+  },
+  "CS5600": {
+    "name": "Data Mining",
+    "branches": [
+      "CS"
+    ]
+  },
+  "CS6490": {
+    "name": "Hardware Architecture for Deep Learning",
+    "branches": [
+      "CS"
+    ]
   },
   "CY1010": {
     "name": "Environmental Chemistry",
-    "branches": ["AI", "BM", "BT", "CE", "CM", "CO", "CS", "EE", "EP", "ES", "IC", "ICT", "ME", "MNC", "MSME"]
+    "branches": [
+      "AI",
+      "BM",
+      "BT",
+      "CE",
+      "CM",
+      "CO",
+      "CS",
+      "EE",
+      "EP",
+      "ES",
+      "IC",
+      "ICT",
+      "ME",
+      "MNC",
+      "MSME"
+    ]
+  },
+  "EE1010": {
+    "name": "Maths For EE",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE1030": {
+    "name": "Matrix Theory",
+    "branches": [
+      "AI",
+      "EE"
+    ]
+  },
+  "EE1060": {
+    "name": "Differential Equations Transform Techniques",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE1080": {
+    "name": "Probability",
+    "branches": [
+      "AI",
+      "EE"
+    ]
+  },
+  "EE1101": {
+    "name": "Circuits and Network Analysis",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE1200": {
+    "name": "Electric Circuits Lab",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE1201": {
+    "name": "Digital Systems",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE1203": {
+    "name": "Vector Calculus",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE1204": {
+    "name": "Engineering Electromagnetics",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE1501": {
+    "name": "Digital Systems Lab",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE2000": {
+    "name": "Signal Processing",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE2080": {
+    "name": "Random Process",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE2100": {
+    "name": "Matrix Theory",
+    "branches": [
+      "AI",
+      "EE"
+    ]
+  },
+  "EE2101": {
+    "name": "Control Systems",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE2102": {
+    "name": "Probability",
+    "branches": [
+      "AI",
+      "EE"
+    ]
+  },
+  "EE2104": {
+    "name": "Semiconductor Device Fundamentals",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE2400": {
+    "name": "Analog Electronics",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE2503": {
+    "name": "Numerical Methods for Device Modelling",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE2510": {
+    "name": "Productivity Tools for IC Design",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE2520": {
+    "name": "Introduction to CMOS Processing",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE3140": {
+    "name": "Waveguides and Antennas",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE3301": {
+    "name": "Introduction to VLSI Design",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE3400": {
+    "name": "Microprocessor & Computer Architecture",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE3401": {
+    "name": "Microprocessor Lab",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE3500": {
+    "name": "Electrical Machines Lab",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE3800": {
+    "name": "Information Theory",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE4130": {
+    "name": "PCB Design and Layout for electronic systems",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE5604": {
+    "name": "Introduction to Statistical Learning Theory",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE5605": {
+    "name": "Kernel Methods",
+    "branches": [
+      "EE"
+    ]
+  },
+  "EE6327": {
+    "name": "Statistical Learning Theory",
+    "branches": [
+      "EE"
+    ]
+  },
+  "ID1063": {
+    "name": "Introduction to Programming",
+    "branches": [
+      "GEN"
+    ]
+  },
+  "ID2230": {
+    "name": "Data Structures and Applications",
+    "branches": [
+      "GEN"
+    ]
+  },
+  "LA1020": {
+    "name": "Psychology of Well being",
+    "branches": [
+      "GEN"
+    ]
+  },
+  "LA1030": {
+    "name": "Introductory Economics",
+    "branches": [
+      "GEN"
+    ]
+  },
+  "LA1260": {
+    "name": "Fundamentals of Organizational Structure",
+    "branches": [
+      "GEN"
+    ]
+  },
+  "LA1760": {
+    "name": "Communication Skills",
+    "branches": [
+      "AI",
+      "BM",
+      "BT",
+      "CE",
+      "CM",
+      "CO",
+      "CS",
+      "EE",
+      "EP",
+      "ES",
+      "IC",
+      "ICT",
+      "ME",
+      "MNC",
+      "MSME"
+    ]
+  },
+  "LA2140": {
+    "name": "Social Life of Genes",
+    "branches": [
+      "GEN"
+    ]
+  },
+  "MA1110": {
+    "name": "Calculus 1",
+    "branches": [
+      "GEN"
+    ]
+  },
+  "MA1150": {
+    "name": "Differential Equations",
+    "branches": [
+      "GEN"
+    ]
+  },
+  "MA2130": {
+    "name": "Complex Variables",
+    "branches": [
+      "MNC"
+    ]
+  },
+  "MA2140": {
+    "name": "Introduction to Statistics",
+    "branches": [
+      "MNC"
+    ]
+  },
+  "MA2150": {
+    "name": "Metric Spaces",
+    "branches": [
+      "MNC"
+    ]
+  },
+  "MA3060": {
+    "name": "Numerical Analysis",
+    "branches": [
+      "MNC"
+    ]
   }
 }
