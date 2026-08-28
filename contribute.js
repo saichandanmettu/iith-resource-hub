@@ -15,7 +15,10 @@
 
   const SUBMIT_ENDPOINT = "api/submit.php";
   const MAX_BYTES = 25 * 1024 * 1024;
-  const OK_TYPES = ["pdf", "jpg", "jpeg", "png"];
+  // Must match api/submit.php, which only accepts real PDFs. Photos of a
+  // paper need to be combined into one PDF first (every phone's Files /
+  // Photos app can "Create PDF" or "Print to PDF" from selected images).
+  const OK_TYPES = ["pdf"];
 
   const KIND_META = [
     { id: "papers",     title: "Quizzes &amp; Past Papers", tint: "--papers-tint",     ink: "--papers-ink",     k: "--papers",     glow: "rgba(242,135,0,.25)" },
@@ -145,7 +148,7 @@
     function add(files) {
       files.forEach((f) => {
         const ext = (f.name.split(".").pop() || "").toLowerCase();
-        if (!OK_TYPES.includes(ext)) return toast(`${f.name} is not a PDF or an image, so it can’t be accepted.`);
+        if (!OK_TYPES.includes(ext)) return toast(`${f.name} isn’t a PDF. Combine photos into one PDF first, then add it here.`);
         if (f.size > MAX_BYTES) return toast(`${f.name} is over 25 MB.`);
         if (stagedFiles.some((s) => s.name === f.name && s.size === f.size)) return;
         stagedFiles.push(f);
@@ -273,7 +276,7 @@
       const hit = COURSES[code];
       const dept = (hit && hit.branches && hit.branches[0]) || "";
 
-      let sent = 0, failed = 0, reference = "";
+      let sent = 0, failed = 0, threw = 0, lastError = "", reference = "";
       for (const file of stagedFiles) {
         const fd = new FormData();
         fd.append("file", file);
@@ -293,9 +296,9 @@
           const res = await fetch(SUBMIT_ENDPOINT, { method: "POST", body: fd });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.ok) { sent++; reference = data.reference || reference; }
-          else { failed++; toast(data.error || "That file could not be accepted."); }
+          else { failed++; lastError = data.error || `That file couldn’t be accepted (error ${res.status}).`; }
         } catch {
-          failed++;
+          threw++;
         }
       }
 
@@ -307,7 +310,11 @@
         initDropzone.render?.();
         toast(`Held for review${reference ? ` · ref ${reference}` : ""}. Nothing goes live until it is checked.`);
       } else if (failed) {
-        toast("Could not reach the archive. The upload service may not be running yet.");
+        // Surface the server's actual reason (wrong type, too large, queue
+        // full, cooldown) rather than a generic "service is down".
+        toast(lastError || "That file couldn’t be accepted.");
+      } else if (threw) {
+        toast("Couldn’t reach the archive — check your connection and try again.");
       }
     });
 
