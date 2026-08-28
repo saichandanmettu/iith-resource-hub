@@ -134,7 +134,8 @@ const STATUS_META = {
   const root = document.getElementById("releaseList");
   if (!root) return;
 
-  const order = ["shipped", "building", "next"];
+  // Left-to-right as a pipeline: planned -> being built -> shipped.
+  const order = ["next", "building", "shipped"];
 
   const sheetCard = (r, ci, i) => `
     <article class="ab-sheet-card" style="--i:${i}">
@@ -150,12 +151,14 @@ const STATUS_META = {
     </article>`;
 
   const miniCard = (r, idx, total) => {
+    // idx 0 is the newest entry (RELEASES is authored newest-first) and it
+    // gets cm-center — the card that lifts to the front on hover.
     let posClass = "cm-single";
     if (total === 2) {
-      posClass = idx === 0 ? "cm-left" : "cm-right";
+      posClass = idx === 0 ? "cm-center" : "cm-right";
     } else if (total >= 3) {
-      if (idx === 0) posClass = "cm-left";
-      else if (idx === 1) posClass = "cm-center";
+      if (idx === 0) posClass = "cm-center";
+      else if (idx === 1) posClass = "cm-left";
       else posClass = "cm-right";
     }
     return `
