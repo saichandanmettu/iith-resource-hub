@@ -50,6 +50,7 @@
   let state = {
     items: [], pending: [], trash: [], contributors: {}, current: null, mode: "add", tab: "pending",
     csrf: null, filter: "", filterKind: "all", filterDept: "all", filterYear: "all",
+    peopleOpen: null,
   };
 
   /* Same toast used site-wide (resource.js) — one visible confirmation
@@ -223,18 +224,50 @@
     const credits = {};
     state.items.forEach((r) => { if (r.contributor) credits[r.contributor] = (credits[r.contributor] || 0) + 1; });
 
+    // Resources each person is credited on, so selecting someone shows
+    // exactly what a rename or merge would carry with them.
+    const byPerson = {};
+    state.items.forEach((r) => {
+      if (!r.contributor) return;
+      (byPerson[r.contributor] = byPerson[r.contributor] || []).push(r);
+    });
+
     host.innerHTML = rows.map(([id, p]) => {
       const n = credits[id] || 0;
+      const mine = (byPerson[id] || []).slice().sort((a, b) =>
+        String(b.year || "").localeCompare(String(a.year || "")) ||
+        String(a.course || "").localeCompare(String(b.course || "")));
+      const others = rows.filter(([oid]) => oid !== id);
+      const open = state.peopleOpen === id;
       return `
-      <div class="ad-card ad-person">
+      <div class="ad-card ad-person${open ? " is-open" : ""}">
         <div class="ad-fileicon">${esc(initialsOf(p.name))}</div>
         <div class="ad-cardmain">
           <p class="ad-cardtitle">${esc(p.name || id)}</p>
           <div class="ad-cardmeta">
             <span>${esc(p.roll || "no roll on record")}</span>
-            <span>${n} resource${n === 1 ? "" : "s"}</span>
+            ${n ? `<button class="ad-linkbtn" type="button" data-person-open="${esc(id)}">${n} resource${n === 1 ? "" : "s"}${open ? " ▲" : " ▾"}</button>`
+                : `<span>0 resources</span>`}
             ${!p.roll || batchOf(p.roll) === p.roll ? `<span class="ad-newtag">roll incomplete</span>` : ""}
           </div>
+          ${open ? `
+          <div class="ad-person-detail">
+            <ul class="ad-person-resources">
+              ${mine.map((r) => `<li><b>${esc(r.course || r.title || r.code || "Untitled")}</b>
+                <span>${esc(r.code || "")}${r.year ? " · " + esc(String(r.year)) : ""} · ${esc(labelOf(r.type))}</span></li>`).join("") || `<li><span>No published resources.</span></li>`}
+            </ul>
+            ${others.length ? `
+            <div class="ad-person-merge">
+              <label>Merge <b>${esc(p.name || id)}</b> into
+                <select data-merge-target="${esc(id)}">
+                  <option value="">choose contributor…</option>
+                  ${others.map(([oid, op]) => `<option value="${esc(oid)}">${esc(op.name || oid)}${op.roll ? " (" + esc(op.roll) + ")" : ""}</option>`).join("")}
+                </select>
+              </label>
+              <button class="ad-edit-btn" type="button" data-merge-do="${esc(id)}">Merge</button>
+              <p class="ad-hint">This entry is removed; its ${n} resource${n === 1 ? "" : "s"} move to the chosen contributor.</p>
+            </div>` : ""}
+          </div>` : ""}
         </div>
         <div class="ad-card-actions">
           <button class="ad-edit-btn" type="button" data-person="${esc(id)}">Edit</button>
@@ -249,6 +282,37 @@
     host.querySelectorAll("[data-person-del]").forEach((b) => {
       b.addEventListener("click", () => deletePerson(b.dataset.personDel));
     });
+    host.querySelectorAll("[data-person-open]").forEach((b) => {
+      b.addEventListener("click", () => {
+        state.peopleOpen = state.peopleOpen === b.dataset.personOpen ? null : b.dataset.personOpen;
+        renderList();
+      });
+    });
+    host.querySelectorAll("[data-merge-do]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const sel = host.querySelector(`[data-merge-target="${CSS.escape(b.dataset.mergeDo)}"]`);
+        mergePerson(b.dataset.mergeDo, sel ? sel.value : "");
+      });
+    });
+  }
+
+  /* Fold the "drop" contributor into "keep": every resource crediting the
+     dropped id is reassigned server-side, then the dropped registry entry
+     is removed (api/publish.php `merge_contributors`). Used to reconcile a
+     GitHub-derived name with a real one already in the registry. */
+  async function mergePerson(dropId, keepId) {
+    const drop = state.contributors[dropId];
+    const keep = state.contributors[keepId];
+    if (!drop || !keep) return alert("Pick a contributor to merge into.");
+    if (dropId === keepId) return alert("Those are the same contributor.");
+    if (!confirm(`Merge "${drop.name}" into "${keep.name}"?\n\nEverything crediting "${drop.name}" will be reassigned to "${keep.name}", and "${drop.name}" will be removed from the registry.`)) return;
+    try {
+      const r = await api("merge_contributors", { keep: keepId, drop: dropId });
+      if (!r.ok) throw new Error(r.error || "Couldn't merge them");
+      state.peopleOpen = null;
+      loadList();
+      toast(`Merged into ${keep.name}${r.reassigned != null ? ` — ${r.reassigned} resource${r.reassigned === 1 ? "" : "s"} moved` : ""}.`);
+    } catch (ex) { alert(ex.message); }
   }
 
   function initialsOf(name) {

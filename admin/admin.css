@@ -349,3 +349,36 @@ body { background: #EADCC2; }
   font: 500 .78rem var(--font-mono); letter-spacing: .04em;
   background: var(--wash-strong); color: var(--ink-soft);
 }
+
+/* Contributors tab — expandable detail: the resources a person is
+   credited on, and a control to fold them into another contributor.
+   Lives inside .ad-cardmain (column 2), so an open card grows downward
+   and the icon/actions align to the top instead of the vertical centre. */
+.ad-person.is-open { align-items: start; }
+.ad-linkbtn {
+  border: 0; background: none; cursor: pointer; padding: 0;
+  font: 400 .75rem var(--font-mono); color: var(--papers-ink);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.ad-linkbtn:hover { color: var(--ink); }
+.ad-person-detail {
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--hair);
+  display: grid; gap: 14px;
+}
+.ad-person-resources { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.ad-person-resources li {
+  display: flex; flex-wrap: wrap; gap: 3px 10px; align-items: baseline;
+  font-family: var(--font-body); font-size: .84rem; color: var(--ink);
+}
+.ad-person-resources li span { font: 400 .72rem var(--font-mono); color: var(--muted); }
+.ad-person-merge { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ad-person-merge label {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  font-family: var(--font-body); font-size: .84rem; color: var(--ink-soft);
+}
+.ad-person-merge select {
+  background: var(--wash); border: 1px solid var(--hair); border-radius: 999px;
+  padding: 7px 14px; font-family: var(--font-body); font-size: .82rem; color: var(--ink);
+  cursor: pointer;
+}
+.ad-person-merge .ad-hint { flex-basis: 100%; margin: 0; }
