@@ -506,7 +506,10 @@
     resetForm();
 
     document.getElementById("revTitle").textContent = "Edit resource";
-    document.getElementById("fileField").hidden = true; // the file itself isn't replaceable from here
+    // A PDF is never replaceable from here (HANDOVER.md §4). A reference
+    // book's cover image is — it's the one uploaded file that isn't
+    // irreplaceable source material, just artwork on the shelf.
+    document.getElementById("fileField").hidden = it.type !== "reference";
     setFooterButtons("edit");
 
     document.getElementById("fCode").value = it.code || "";
@@ -537,6 +540,17 @@
     document.getElementById("fBookPages").value = it.pages || "";
     syncBookFields();
     syncTitlePlaceholder();
+
+    // syncBookFields() words the file field for a fresh add; in edit mode
+    // it's a swap of an existing (or missing) cover.
+    if (it.type === "reference") {
+      document.getElementById("fileFieldLabel").textContent =
+        it.book?.coverImage ? "Replace cover image" : "Add cover image";
+      document.getElementById("noFileHint").textContent = it.book?.coverImage
+        ? "Pick a new image to replace the cover on the shelf. The old file stays on disk."
+        : "Upload the book's cover image to show it on the shelf instead of the plain cover.";
+      document.getElementById("noFileHint").hidden = false;
+    }
 
     /* Same viewer the public site uses — pointed at the file already live,
        not a blob: URL, since there's nothing local to preview here. */
@@ -831,8 +845,10 @@
       alert("A reference book needs its own title — the course name isn't the book's name.");
       return;
     }
-    const fileForAdd = state.mode === "add" ? document.getElementById("fFile").files[0] : null;
-    const hasCover = state.mode === "add" ? !!fileForAdd : !!state.current?.book?.coverImage;
+    const pickedFile = document.getElementById("fFile").files[0];
+    const hasCover = state.mode === "add"
+      ? !!pickedFile
+      : (!!state.current?.book?.coverImage || !!pickedFile);
     if (f.type === "reference" && !hasCover && !f.bookLink) {
       alert("A reference book needs a cover image or a link to find it online.");
       return;
@@ -849,6 +865,14 @@
       } else if (state.mode === "edit") {
         const r = await api("edit", { id: state.current.id, ...f });
         if (!r.ok) throw new Error(r.error || "Couldn't save those changes");
+        // A reference book's cover image rides its own multipart call —
+        // the `edit` action is JSON and only touches the text fields.
+        if (f.type === "reference" && pickedFile) {
+          const fd = new FormData();
+          fd.append("id", state.current.id);
+          fd.append("file", pickedFile);
+          await api("set_cover", fd);
+        }
         successMsg = "Changes saved.";
       } else if (state.mode === "review") {
         const payload = { id: state.current.id, ...f };

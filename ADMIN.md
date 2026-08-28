@@ -27,9 +27,14 @@ pointer to a real textbook, so add a **link** where students can find it.
 A reference book needs a cover image *or* a link (ideally both). The
 cover you upload is what the Bookshelf renders; with no image it falls
 back to the generated colour cover, which is why the cover colour and
-author are still required. The cover isn't replaceable from the Edit
-panel later — only the text fields are — so re-add the book if you need
-to swap the image.
+author are still required.
+
+To **add or replace a cover on a book that's already published**, open it
+from **Manage**, pick an image in the cover field, and Save. A
+replacement is written under a new filename and the record re-pointed at
+it — the old image stays on disk (nothing here ever overwrites an
+uploaded file). Editing a non-reference resource still has no file
+field: PDFs are not replaceable this way.
 
 ## Review a public submission
 

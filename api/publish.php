@@ -231,6 +231,54 @@ if ($action === 'publish') {
   ok(['id' => $record['id'], 'file' => $rel]);
 }
 
+/* ---------------- set_cover (add / replace a published reference book's cover image) ----------------
+   The Edit panel can't swap a PDF (HANDOVER.md §4 — no web action ever
+   overwrites an uploaded file), and a cover scan is held to the same
+   rule: a new upload is written under a fresh -N name and the record is
+   pointed at it, the old image is left on disk. Reference books only. */
+if ($action === 'set_cover') {
+  require_csrf($_POST['csrf'] ?? null);
+
+  $id = (string) ($body['id'] ?? '');
+  if ($id === '') fail(400, 'Missing id');
+
+  if (empty($_FILES['file']['name']) || ($_FILES['file']['error'] ?? 1) !== UPLOAD_ERR_OK) fail(400, 'No image received.');
+  $f = $_FILES['file'];
+  if ($f['size'] <= 0 || $f['size'] > $c['max_upload_bytes']) fail(413, 'That image is too large.');
+  if (!is_uploaded_file($f['tmp_name'])) fail(400, 'No image received.');
+  $ext = image_ext($f['tmp_name']);
+  if ($ext === null) fail(415, 'The cover must be a JPG, PNG or WebP image.');
+
+  $rpath = $c['private_dir'] . '/resources.json';
+  $all = read_json($rpath, []);
+  $idx = null;
+  foreach ($all as $i => $r) { if (($r['id'] ?? '') === $id) { $idx = $i; break; } }
+  if ($idx === null) fail(404, 'Resource not found');
+  if (($all[$idx]['type'] ?? '') !== 'reference') fail(400, 'Only reference books have a cover image.');
+
+  // The naming scheme keys off the record's own fields — the book-title
+  // slug matches what parsed_fields() derived at publish time (same
+  // suffix-strip regex books.js uses).
+  $bookSlug = slugify(preg_replace('/\s+[—–-]\s+Reference (Book|Guide)$/i', '', (string) ($all[$idx]['title'] ?? '')));
+  $fields = [
+    'code' => strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) ($all[$idx]['code'] ?? ''))),
+    'dept' => strtoupper(preg_replace('/[^A-Za-z]/', '', (string) ($all[$idx]['department'] ?? ''))),
+    'exam' => $bookSlug ?: 'reference',
+    'year' => (int) ($all[$idx]['year'] ?? 0) ?: (int) date('Y'),
+  ];
+  $rel  = cover_dest_for($c, $fields, $ext);
+  $dest = $c['files_dir'] . '/' . $rel;
+  if (!is_dir(dirname($dest))) @mkdir(dirname($dest), 0755, true);
+  if (!move_uploaded_file($f['tmp_name'], $dest)) fail(500, 'Could not store the image.');
+  @chmod($dest, 0644);
+
+  if (!isset($all[$idx]['book']) || !is_array($all[$idx]['book'])) $all[$idx]['book'] = [];
+  $all[$idx]['book']['coverImage'] = $rel;
+  write_json_atomic($rpath, $all);
+
+  ok(['id' => $id, 'coverImage' => $rel]);
+}
+
 /* ---------------- approve (a public submission, reviewed and confirmed) ---------------- */
 if ($action === 'approve') {
   $id  = safe_id((string) ($body['id'] ?? ''));
