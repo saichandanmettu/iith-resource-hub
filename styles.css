@@ -2259,6 +2259,19 @@ main > #shelves { padding-top: 34px; padding-bottom: var(--section-y); }
   overflow: hidden;
   min-height: 0;
 }
+/* Open folder: cap the readable list at roughly three cards and scroll
+   inside, rather than letting a long changelog run to the page bottom. */
+.ab-folder-col.is-open .ab-spread-inner {
+  max-height: clamp(480px, 70vh, 820px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.ab-folder-col.is-open .ab-spread-inner::-webkit-scrollbar { width: 8px; }
+.ab-folder-col.is-open .ab-spread-inner::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 999px;
+}
 
 .ab-sheets-list {
   display: flex;
